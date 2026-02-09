@@ -1,0 +1,16 @@
+# Backend
+backend/node_modules/
+backend/.env
+backend/uploads/
+
+# Frontend
+titik-jeda/node_modules/
+titik-jeda/.env
+titik-jeda/.env.local
+titik-jeda/dist/
+titik-jeda/build/
+
+# General
+.DS_Store
+npm-debug.log
+yarn-error.log
