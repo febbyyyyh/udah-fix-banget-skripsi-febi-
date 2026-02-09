@@ -9,6 +9,7 @@ titik-jeda/.env
 titik-jeda/.env.local
 titik-jeda/dist/
 titik-jeda/build/
+titik-jeda/.vite/
 
 # General
 .DS_Store
