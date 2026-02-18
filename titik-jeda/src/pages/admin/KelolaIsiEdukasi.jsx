@@ -72,7 +72,7 @@ export default function KelolaIsiEdukasi() {
 
     /* ================= LOGIC UPDATE PLAYLIST (Sinkron dengan KelolaEdukasi) ================= */
     const handleUpdateCategory = async () => {
-        if (!playlistName || !playlistDesc) return alert("Nama dan Deskripsi tidak boleh kosong!");
+        if (!playlistName || !playlistDesc) return alert("Gagal simpan. Semua kolom wajib diisi.");
 
         const formData = new FormData();
         formData.append("name", playlistName);
@@ -96,7 +96,7 @@ export default function KelolaIsiEdukasi() {
 
     /* ================= LOGIC CRUD VIDEO ================= */
     const handleSaveVideo = async () => {
-        if (!videoTitle) return alert("Judul video harus diisi!");
+        if (!videoTitle) return alert("Gagal simpan. Semua kolom wajib diisi.");
 
         const formData = new FormData();
         formData.append("title", videoTitle);
@@ -117,7 +117,7 @@ export default function KelolaIsiEdukasi() {
             setTempVideoFile(null);
             fetchData();
         } catch (error) {
-            alert("Gagal menyimpan video");
+            alert("Gagal simpan. Semua kolom wajib diisi.");
         }
     };
 
@@ -137,6 +137,12 @@ export default function KelolaIsiEdukasi() {
         if (previewCover) return previewCover; // Jika user baru pilih file
         if (category?.cover_image) return `${UPLOAD_URL}/${category.cover_image}`; // Dari server
         return cd1; // Default
+    };
+
+    const getVideoUrl = (path) => {
+        if (!path) return "";
+        if (path.startsWith("http")) return path;
+        return `${API_BASE}/uploads/learngrow/videos/${path}`;
     };
 
     if (loading || !category) return <div className="p-8 text-center text-gray-500">Memuat data...</div>;
@@ -334,16 +340,37 @@ export default function KelolaIsiEdukasi() {
             )}
 
             {/* ================= MODAL: PREVIEW VIDEO ================= */}
-            {showPreview && (
+            {showPreview && selectedVideo && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-lg mb-4 text-[#0A1D48]">{selectedVideo.title}</h3>
-                    <div className="rounded-2xl overflow-hidden bg-black aspect-video">
-                        <video controls className="w-full h-full">
-                            <source src={`${API_BASE}/${selectedVideo.video_file}`} type="video/mp4" />
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-[#0A1D48] leading-tight">{selectedVideo.title}</h3>
+                        <button
+                            onClick={() => setShowPreview(false)}
+                            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <div className="rounded-2xl overflow-hidden bg-black aspect-video mt-4 shadow-inner">
+                        <video
+                            key={selectedVideo.id} // Memaksa refresh player
+                            controls
+                            autoPlay // Opsional: video langsung jalan saat modal buka
+                            preload="auto"
+                            className="w-full h-full"
+                            src={getVideoUrl(selectedVideo.video_file)} // Taruh src di sini
+                        >
                             Browser kamu tidak mendukung pemutaran video.
                         </video>
                     </div>
-                    <button onClick={() => setShowPreview(false)} className="w-full mt-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors">Tutup Preview</button>
+
+                    <button
+                        onClick={() => setShowPreview(false)}
+                        className="w-full mt-6 bg-gray-100 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+                    >
+                        Tutup
+                    </button>
                 </ModalWrapper>
             )}
 

@@ -80,29 +80,22 @@ function UserLayout() {
 /* ================= ADMIN LAYOUT ================= */
 function AdminLayout() {
   return (
-    <div className="flex min-h-screen bg-[#F7F9FC]">
+    // Tambahkan h-screen dan overflow-hidden agar halaman utama tidak scroll
+    <div className="flex h-screen overflow-hidden bg-[#F7F9FC]">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
+      {/* Bagian kanan: Topbar + Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
         <Topbar />
 
-        <main className="flex-1 p-6">
+        {/* Tambahkan overflow-y-auto di sini agar hanya konten ini yang bisa scroll */}
+        <main className="flex-1 overflow-y-auto p-6">
           <Routes>
             <Route path="dashboard" element={<DashboardAdmin />} />
-
             <Route path="kelola-meditasi" element={<KelolaMeditasi />} />
-            <Route
-              path="kelola-meditasi/:id"
-              element={<KelolaIsiMeditasi />}
-            />
-
+            <Route path="kelola-meditasi/:id" element={<KelolaIsiMeditasi />} />
             <Route path="kelola-edukasi" element={<KelolaEdukasi />} />
-            <Route
-              path="kelola-edukasi/:id"
-              element={<KelolaIsiEdukasi />}
-            />
-
-            {/* Fallback Admin */}
+            <Route path="kelola-edukasi/:id" element={<KelolaIsiEdukasi />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />
           </Routes>
         </main>
@@ -110,7 +103,6 @@ function AdminLayout() {
     </div>
   );
 }
-
 /* ================= ROOT APP ================= */
 export default function App() {
   return (

@@ -16,6 +16,9 @@ function FlipCard() {
         "Kamu itu cukup. Bahkan ketika kamu merasa tidak.",
         "Healing gak harus buru-buru. Pelan juga tetap maju.",
         "You deserve rest, peace, and gentle days.",
+        "Tenang, tidak semua yang kamu takutkan akan terjadi.",
+        "Kamu sedang bertahan, dan itu sudah luar biasa.",
+        "Apa pun yang kamu rasakan hari ini, kamu tidak sendirian.",
         "Nggak apa-apa istirahat. Kamu bukan robot."
     ];
 
@@ -103,18 +106,16 @@ export default function Home() {
                     It's okay to feel tired. <br /> You’ve been trying.
                 </h1>
 
-                <p className="text-gray-700 max-w-xl mt-4">
-                    Capek itu bukan tanda kamu gagal, kadang itu cuma tanda kamu udah berjuang terlalu lama.
-                    Yuk, cek kondisi kamu lewat DASS-21.
+                <p className="text-lg text-gray-700 max-w-xl mt-4">
+                    Merasa lelah adalah hal yang manusiawi. Luangkan waktu sejenak untuk mengecek kondisi emosionalmu melalui DASS-21.
                 </p>
 
-                {/* Tombol Check In Now dengan logic baru */}
                 <button
                     onClick={handleCheckIn}
                     disabled={loading}
                     className="mt-8 bg-[#0a1d48] text-white px-8 py-3 rounded-full font-semibold text-lg shadow-md hover:bg-[#0c275f] transition inline-block cursor-pointer disabled:opacity-50"
                 >
-                    {loading ? "Checking..." : "Check In Now"}
+                    {loading ? "Checking..." : "Start Screening"}
                 </button>
             </section>
 

@@ -8,7 +8,7 @@ import { getRecommendation } from "../controllers/meditationController.js";
 
 const router = express.Router();
 
-router.get("/init", async (req, res) => { // Tambahkan async
+router.get("/init", async (req, res) => { 
     let sessionId = req.cookies.session_id;
 
     try {
@@ -25,7 +25,7 @@ router.get("/init", async (req, res) => { // Tambahkan async
                 httpOnly: true,
                 secure: false,
                 sameSite: "lax",
-                maxAge: 365 * 24 * 60 * 60 * 1000
+                maxAge: 72 * 60 * 60 * 1000
             });
 
             return res.json({ message: "New session created", sessionId });
@@ -49,7 +49,6 @@ router.get("/dass/last-result", getLastResult)
 router.get("/meditations", getAllMeditations);
 router.get("/meditations/:id/audios", getAudiosByMeditationId);
 
-// Route Education untuk User
 router.get("/education", getPlaylists);
 router.get("/education/:id", getPlaylistDetailWithVideos);
 

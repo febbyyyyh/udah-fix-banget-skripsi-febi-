@@ -7,8 +7,6 @@ import Footer from "../../components/user/Footer";
 export default function DassResult() {
     const { state } = useLocation();
     const navigate = useNavigate();
-
-    // Simpan skor di state lokal agar stabil
     const [scores, setScores] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -16,23 +14,20 @@ export default function DassResult() {
         const fetchOrSaveData = async () => {
             setLoading(true);
             try {
-                // Skenario 1: Baru selesai isi tes (Data datang dari redirect DassQuestion)
+                // Skenario 1: Baru selesai tes (Simpan ke DB)
                 if (state?.depression !== undefined) {
                     await axios.post("http://localhost:5000/api/user/dass/save", {
                         depression_score: state.depression,
                         anxiety_score: state.anxiety,
                         stress_score: state.stress
                     }, { withCredentials: true });
-
-                    setScores(state); // Gunakan data dari state langsung
+                    setScores(state);
                 }
-                // Skenario 2: Klik dari Navbar (Ambil data terakhir dari DB)
+                // Skenario 2: Mengakses hasil terakhir dari database
                 else {
                     const res = await axios.get("http://localhost:5000/api/user/dass/last-result", {
                         withCredentials: true
                     });
-
-                    // Kita samakan format objectnya dengan state dari DassQuestion
                     setScores({
                         depression: res.data.depression,
                         anxiety: res.data.anxiety,
@@ -41,7 +36,6 @@ export default function DassResult() {
                 }
             } catch (err) {
                 console.error("Error fetching/saving DASS:", err);
-                // Jika error 404 (belum ada data), arahkan ke halaman intro DASS
                 if (err.response?.status === 404 || !state) {
                     navigate("/dass");
                 }
@@ -49,56 +43,59 @@ export default function DassResult() {
                 setLoading(false);
             }
         };
-
         fetchOrSaveData();
     }, [state, navigate]);
 
-    // Fungsi Kategori & Warna (Logika kamu tetap dipertahankan)
+    // --- LOGIKA KATEGORI ---
     const getCategory = (type, score) => {
         if (type === "depression") {
-            if (score <= 9) return "Resiko rendah";
-            if (score <= 13) return "Resiko ringan";
-            if (score <= 20) return "Resiko sedang";
-            if (score <= 27) return "Resiko tinggi";
-            return "Resiko sangat tinggi";
+            if (score <= 9) return "Normal";
+            if (score <= 13) return "Ringan";
+            if (score <= 20) return "Sedang";
+            if (score <= 27) return "Parah";
+            return "Sangat Parah";
         }
         if (type === "anxiety") {
-            if (score <= 7) return "Resiko rendah";
-            if (score <= 9) return "Resiko ringan";
-            if (score <= 14) return "Resiko sedang";
-            if (score <= 19) return "Resiko tinggi";
-            return "Resiko sangat tinggi";
+            if (score <= 7) return "Normal";
+            if (score <= 9) return "Ringan";
+            if (score <= 14) return "Sedang";
+            if (score <= 19) return "Parah";
+            return "Sangat Parah";
         }
         if (type === "stress") {
-            if (score <= 14) return "Resiko rendah";
-            if (score <= 18) return "Resiko ringan";
-            if (score <= 25) return "Resiko sedang";
-            if (score <= 33) return "Resiko tinggi";
-            return "Resiko sangat tinggi";
+            if (score <= 14) return "Normal";
+            if (score <= 18) return "Ringan";
+            if (score <= 25) return "Sedang";
+            if (score <= 33) return "Parah";
+            return "Sangat Parah";
         }
     };
 
-    const getRiskColor = (risk) => {
-        switch (risk) {
-            case "Resiko sangat tinggi": return "#E00F00";
-            case "Resiko tinggi": return "#FF9300";
-            case "Resiko sedang": return "#FACC15";
-            case "Resiko ringan": return "#5CB2FF";
-            default: return "#72FF6F";
-        }
+    // --- FUNGSI WEIGHT (INI YANG TADI KURANG SEHINGGA WHITE SCREEN) ---
+    const getSeverityWeight = (type, score) => {
+        const cat = getCategory(type, score);
+        const weights = {
+            "Normal": 1,
+            "Ringan": 2,
+            "Sedang": 3,
+            "Parah": 4,
+            "Sangat Parah": 5
+        };
+        return weights[cat] || 1;
     };
 
-    const getRiskBackground = (risk) => {
-        switch (risk) {
-            case "Resiko sangat tinggi": return "rgba(224, 15, 0, 0.15)";
-            case "Resiko tinggi": return "rgba(255, 147, 0, 0.15)";
-            case "Resiko sedang": return "rgba(250, 204, 21, 0.18)";
-            case "Resiko ringan": return "rgba(92, 178, 255, 0.18)";
-            default: return "rgba(114, 255, 111, 0.18)";
-        }
+    // --- CARI PRIORITAS TERTINGGI ---
+    const getHighestSeverity = () => {
+        if (!scores) return { label: "General", type: "general" };
+        const results = [
+            { label: "Depression", type: "depression", weight: getSeverityWeight("depression", scores.depression) },
+            { label: "Anxiety", type: "anxiety", weight: getSeverityWeight("anxiety", scores.anxiety) },
+            { label: "Stress", type: "stress", weight: getSeverityWeight("stress", scores.stress) }
+        ];
+        // Sort descending berdasarkan weight, ambil yang pertama
+        return results.sort((a, b) => b.weight - a.weight)[0];
     };
 
-    // --- RENDER LOGIC ---
     if (loading) return (
         <div className="w-full h-screen flex flex-col items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0a1d48]"></div>
@@ -106,67 +103,71 @@ export default function DassResult() {
         </div>
     );
 
-    if (!scores) return null; // Mencegah crash jika data kosong
+    if (!scores) return null;
+
+    const topRecommendation = getHighestSeverity();
 
     const cards = [
-        { title: "Depresi", score: scores.depression, risk: getCategory("depression", scores.depression), affirmation: "Kamu berharga, dan perasaan ini tidak menentukan masa depanmu." },
-        { title: "Kecemasan", score: scores.anxiety, risk: getCategory("anxiety", scores.anxiety), affirmation: "Tarik napas… kamu mampu menghadapi satu hal dalam satu waktu." },
-        { title: "Stres", score: scores.stress, risk: getCategory("stress", scores.stress), affirmation: "Kamu pantas mendapat istirahat. Tidak apa-apa untuk berhenti sejenak." }
+        { title: "Depression", type: "depression", score: scores.depression, max: 42, affirmation: "Kamu berharga, dan perasaan ini tidak menentukan masa depanmu." },
+        { title: "Anxiety", type: "anxiety", score: scores.anxiety, max: 42, affirmation: "Tarik napas… kamu mampu menghadapi satu hal dalam satu waktu." },
+        { title: "Stress", type: "stress", score: scores.stress, max: 42, affirmation: "Kamu pantas mendapat istirahat. Tidak apa-apa untuk berhenti sejenak." }
     ];
 
     return (
         <>
             <Navbar />
             <div className="w-full min-h-screen flex flex-col items-center px-6 py-20 bg-white">
-                <h1 className="text-3xl md:text-4xl font-bold text-center">
-                    {state ? "Your Results Are Ready" : "Your Last Results"}
-                </h1>
-                <p className="text-gray-600 text-center max-w-2xl mt-3">
-                    {state
-                        ? "Ini adalah gambaran umum kondisi emosional kamu berdasarkan pengisian 21 pertanyaan."
-                        : "Berikut adalah hasil rekaman kondisi emosional terakhir kamu."}
-                </p>
+                <div className="text-center mb-12">
+                    <h1 className="text-3xl md:text-5xl font-bold text-[#0a1d48] tracking-tight">
+                        {state ? "Your Results Are Ready" : "Your Last Results"}
+                    </h1>
+                    <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
+                        {state
+                            ? "Berdasarkan hasil screening, berikut adalah gambaran kondisi psikologis kamu saat ini."
+                            : "Berikut adalah hasil rekaman kondisi emosional terakhir kamu."}
+                    </p>
+                </div>
 
-                {/* --- TAMBAHAN KETERANGAN DISINI --- */}
-                <p className="text-xs md:text-sm text-gray-400 mt-8 mb-4 flex items-center gap-2 animate-pulse">
-                    Klik kartu untuk melihat afirmasi positif
-                </p>
-
-                {/* Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 w-full max-w-5xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
                     {cards.map((card, i) => (
-                        <DassCard key={i} card={card} colorFn={getRiskColor} bgFn={getRiskBackground} />
+                        <DassSliderCard
+                            key={i}
+                            card={card}
+                            category={getCategory(card.type, card.score)}
+                        />
                     ))}
                 </div>
 
-                {/* SECTION RETEST */}
-                <div className="mt-20 p-10 bg-[#F8FBFF] border-2 border-dashed border-[#ADC7EA] rounded-[40px] text-center max-w-3xl w-full">
-                    <h3 className="text-2xl font-bold text-[#0a1d48] mb-3">Ingin cek kondisi terbaru?</h3>
-                    <p className="text-gray-600 mb-8 max-w-xl mx-auto text-sm md:text-base">
-                        Kondisi emosional bisa berubah setiap hari. Lakukan tes ulang secara berkala untuk pantau progres kesehatan mentalmu.
+                {/* Next Steps Section */}
+                <h2 className="text-2xl md:text-3xl font-bold mt-32 mb-10 text-[#0a1d48]">What You Can Do Next?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-20">
+                    <div onClick={() => navigate("/meditation")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
+                        <img src="/src/assets/headphone.svg" className="w-20 mb-6" alt="Meditation" />
+                        <p className="font-bold text-[#0a1d48] text-center">Explore {topRecommendation.label} Meditation</p>
+                    </div>
+
+                    <div onClick={() => navigate("/education")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
+                        <img src="/src/assets/video.svg" className="w-20 mb-6" alt="Education" />
+                        <p className="font-bold text-[#0a1d48] text-center">Open Learn & Grow</p>
+                    </div>
+
+                    <div onClick={() => window.open("https://wa.me/6281335492303", "_blank")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
+                        <img src="/src/assets/call.svg" className="w-20 mb-6" alt="Counselor" />
+                        <p className="font-bold text-[#0a1d48] text-center">Contact Counselor</p>
+                    </div>
+                </div>
+
+                <div className="mt-10 p-12 bg-linear-to-br from-[#F8FBFF] to-[#f0f7ff] border border-[#d0e1f9] rounded-[48px] text-center max-w-4xl w-full shadow-sm mb-20">
+                    <h3 className="text-2xl font-bold text-[#0a1d48] mb-4">Ingin pantau progresmu?</h3>
+                    <p className="text-gray-600 mb-8 max-w-l mx-auto">
+                        Hasil ini bukan diagnosis medis, hanya screening awal. Lakukan pengecekan rutin untuk melihat perkembangan kesehatan mentalmu.
                     </p>
                     <button
                         onClick={() => navigate("/dass-question")}
-                        className="px-10 py-4 bg-[#0a1d48] text-white rounded-full font-bold active:scale-95 transition-all"
+                        className="px-12 py-4 bg-[#0a1d48] text-white rounded-full font-bold shadow-md hover:bg-[#0c275f] transition duration-300 cursor-pointer"
                     >
-                        Ambil Tes Ulang Sekarang
+                        Ambil Tes Ulang
                     </button>
-                </div>
-
-                <h2 className="text-2xl md:text-3xl font-bold mt-24 mb-8">What You Can Do Next?</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-10">
-                    <div onClick={() => navigate("/meditation")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer transition">
-                        <img src="/src/assets/headphone.svg" className="w-20 mb-6" alt="Meditation" />
-                        <p className="font-semibold text-center">Explore Meditation</p>
-                    </div>
-                    <div onClick={() => navigate("/education")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer transition">
-                        <img src="/src/assets/video.svg" className="w-20 mb-6" alt="Education" />
-                        <p className="font-semibold text-center">Open Learn & Grow</p>
-                    </div>
-                    <div onClick={() => window.open("https://wa.me/6281335492303", "_blank")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer transition">
-                        <img src="/src/assets/call.svg" className="w-20 mb-6" alt="Counselor" />
-                        <p className="font-semibold text-center">Contact Counselor</p>
-                    </div>
                 </div>
             </div>
             <Footer />
@@ -174,24 +175,97 @@ export default function DassResult() {
     );
 }
 
-// Sub-component agar kode lebih bersih
-function DassCard({ card, colorFn, bgFn }) {
-    const [isFlipped, setIsFlipped] = useState(false);
+// Sub-komponen tetap sama
+function DassSliderCard({ card, category }) {
+    const [flipped, setFlipped] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
+    const percentage = Math.min((card.score / card.max) * 100, 100);
+
+    const ranges = {
+        depression: [
+            { label: "Normal", range: "0-9", color: "bg-[#75b9e4]" },
+            { label: "Ringan", range: "10-13", color: "bg-[#7aef92]" },
+            { label: "Sedang", range: "14-20", color: "bg-[#fff771]" },
+            { label: "Parah", range: "21-27", color: "bg-[#ffba58]" },
+            { label: "Sangat Parah", range: "28+", color: "bg-[#f94e67]" },
+        ],
+        anxiety: [
+            { label: "Normal", range: "0-7", color: "bg-[#75b9e4]" },
+            { label: "Ringan", range: "8-9", color: "bg-[#7aef92]" },
+            { label: "Sedang", range: "10-14", color: "bg-[#fff771]" },
+            { label: "Parah", range: "15-19", color: "bg-[#ffba58]" },
+            { label: "Sangat Parah", range: "20+", color: "bg-[#f94e67]" },
+        ],
+        stress: [
+            { label: "Normal", range: "0-14", color: "bg-[#75b9e4]" },
+            { label: "Ringan", range: "15-18", color: "bg-[#7aef92]" },
+            { label: "Sedang", range: "19-25", color: "bg-[#fff771]" },
+            { label: "Parah", range: "26-33", color: "bg-[#ffba58]" },
+            { label: "Sangat Parah", range: "34+", color: "bg-[#f94e67]" },
+        ]
+    };
+
     return (
-        <div onClick={() => setIsFlipped(!isFlipped)} className="relative w-full h-48 cursor-pointer perspective">
-            <div className={`transition-transform duration-500 relative w-full h-full transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}>
-                <div className="absolute inset-0 rounded-3xl border-2 flex flex-col items-center justify-center"
-                    style={{ borderColor: colorFn(card.risk), backgroundColor: bgFn(card.risk) }}>
-                    <h2 className="text-xl font-bold">{card.title}</h2>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: colorFn(card.risk) }}></span>
-                        <p className="text-gray-700">{card.risk} ({card.score})</p>
+        <div className="relative w-full h-80">
+            <div onClick={() => setFlipped(!flipped)} className="group perspective w-full h-full cursor-pointer">
+                <div className={`relative w-full h-full transition-all duration-700 transform-style-preserve-3d ${flipped ? "rotate-y-180" : ""}`}>
+                    {/* DEPAN */}
+                    <div className="absolute inset-0 backface-hidden bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm flex flex-col justify-between">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-xl font-bold text-gray-800">{card.title}</h3>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setShowInfo(true); }}
+                                className="w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-[#636363] hover:bg-[#0a1d48] cursor-pointer hover:text-white transition-all shadow-sm"
+                            >
+                                <span className="font-serif">i</span>
+                            </button>
+                        </div>
+                        <div className="relative py-10">
+                            <div className="absolute top-0 -translate-x-1/2 flex flex-col items-center transition-all duration-1000 ease-out" style={{ left: `${percentage}%` }}>
+                                <div className="bg-[#f0f7ff] text-[#0a1d48] text-sm font-bold px-4 py-2 rounded-2xl border border-blue-100 shadow-sm mb-1 whitespace-nowrap">
+                                    {category} <span className="ml-1 opacity-50">| {card.score}</span>
+                                </div>
+                                <div className="w-0.5 h-3 bg-blue-200"></div>
+                            </div>
+                            <div className="w-full h-4 rounded-full bg-gradient-to-r from-[#75b9e4] via-[#7aef92] via-[#fff771] via-[#ffba58] to-[#f94e67]"></div>
+                            <div className="flex justify-between mt-3 text-[12px] font-semibold text-gray-600 uppercase tracking-widest">
+                                <span>0</span>
+                                <span>42</span>
+                            </div>
+                        </div>
+                        <div className="text-center text-xs text-gray-400 font-medium italic">Klik kartu untuk afirmasi</div>
+                    </div>
+                    {/* BELAKANG */}
+                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a1d48] rounded-[40px] p-10 flex flex-col items-center justify-center text-center shadow-xl">
+                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white text-2xl font-serif italic">"</div>
+                        <p className="text-white text-lg font-medium leading-relaxed italic">{card.affirmation}</p>
                     </div>
                 </div>
-                <div className="absolute inset-0 rounded-3xl bg-white flex items-center justify-center p-6 text-center rotate-y-180 backface-hidden shadow-sm border border-gray-100">
-                    <p className="text-gray-800 font-medium">{card.affirmation}</p>
-                </div>
             </div>
+            {showInfo && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-[#0a1d48]/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
+                    <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h4 className="text-xl font-bold text-[#0a1d48]">{card.title} Scale</h4>
+                            <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+                        </div>
+                        <div className="space-y-3">
+                            {ranges[card.type].map((item, index) => (
+                                <div key={index} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
+                                        <span className="font-bold text-gray-700">{item.label}</span>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-500">{item.range}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <button onClick={() => setShowInfo(false)} className="w-full mt-6 py-4 bg-[#0a1d48] text-white rounded-2xl font-bold hover:shadow-lg transition-all">
+                            Saya Mengerti
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

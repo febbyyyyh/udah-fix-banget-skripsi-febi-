@@ -71,7 +71,7 @@ export default function Meditation() {
                                             className="w-24 h-24 mb-6 object-cover rounded-2xl"
                                             onError={(e) => { e.target.src = med1; }}
                                         />
-                                        <h3 className="text-xl font-bold text-[#0A245A] group-hover:text-[#1a3a7a] transition-colors">{item.name}</h3>
+                                        <h3 className="text-xl font-bold text-[#0A245A]">{item.name}</h3>
                                         {/* Deskripsi sudah dihapus */}
                                     </div>
                                 </Link>

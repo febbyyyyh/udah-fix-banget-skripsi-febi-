@@ -76,9 +76,18 @@ export default function KelolaIsiMeditasi() {
     };
 
     /* ================= LOGIC CRUD ================= */
+    // 1. Validasi untuk Simpan Audio (Tambah & Edit)
     const handleSaveAudio = async () => {
-        if (!title) return alert("Judul wajib diisi");
-        if (showAdd && !audioFile) return alert("File audio wajib diunggah");
+        // TRIGGER VALIDASI
+        if (!title.trim()) {
+            return alert("Gagal simpan. Semua kolom wajib diisi.");
+        }
+
+        // Jika sedang mode "Tambah", file audio wajib ada. 
+        // Jika "Edit", file audio boleh kosong (artinya tidak ingin ganti file).
+        if (showAdd && !audioFile) {
+            return alert("Gagal simpan. Semua kolom wajib diisi.");
+        }
 
         const formData = new FormData();
         formData.append("title", title);
@@ -100,23 +109,16 @@ export default function KelolaIsiMeditasi() {
             }
 
             if (response.status === 200 || response.status === 201) {
-                // Tutup semua modal dulu
                 setShowAdd(false);
                 setShowEdit(false);
-
-                // Reset form
                 setTitle("");
                 setAudioFile(null);
-
-                // Tampilkan sukses
-                showSuccess("Data berhasil disimpan!");
-
-                // AMBIL DATA TERBARU
-                console.log("Fetching ulang data audio...");
+                showSuccess("Audio berhasil disimpan!");
                 await fetchAudios();
             }
         } catch (err) {
             console.error("Gagal simpan:", err.response?.data || err.message);
+            alert(err.response?.data?.message || "Terjadi kesalahan saat menyimpan audio");
         }
     };
 
@@ -131,7 +133,13 @@ export default function KelolaIsiMeditasi() {
         } catch (err) { console.error(err); }
     };
 
+    // 2. Validasi untuk Update Informasi Kategori (Header)
     const handleUpdateCategory = async () => {
+        // TRIGGER VALIDASI
+        if (!catName.trim() || !catDesc.trim()) {
+            return alert("Gagal simpan. Semua kolom wajib diisi.");
+        }
+
         const formData = new FormData();
         formData.append("name", catName);
         formData.append("description", catDesc);
@@ -152,16 +160,11 @@ export default function KelolaIsiMeditasi() {
                 }
             );
 
-            // --- PERBAIKAN DI SINI ---
-            // Daripada ribet manipulasi state manual yang rawan error, 
-            // lebih aman panggil ulang fungsi fetch data-nya
             await fetchCategory();
-
             setShowEditCategory(false);
             setPreviewCategoryCover(null);
             setCatImageFile(null);
-
-            showSuccess("Kategori berhasil diperbarui");
+            showSuccess("Informasi kategori berhasil diperbarui");
         } catch (err) {
             console.error("Error detail:", err.response?.data || err.message);
             alert("Gagal update kategori: " + (err.response?.data?.message || "Terjadi kesalahan"));

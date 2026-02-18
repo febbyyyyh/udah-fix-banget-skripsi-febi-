@@ -1,5 +1,30 @@
 import db from "../config/db.js";
 
+const getSeverityWeight = (type, score) => {
+    if (type === "depression") {
+        if (score <= 9) return 1; // Normal
+        if (score <= 13) return 2; // Ringan
+        if (score <= 20) return 3; // Sedang
+        if (score <= 27) return 4; // Parah
+        return 5; // Sangat Parah
+    }
+    if (type === "anxiety") {
+        if (score <= 7) return 1;
+        if (score <= 9) return 2;
+        if (score <= 14) return 3;
+        if (score <= 19) return 4;
+        return 5;
+    }
+    if (type === "stress") {
+        if (score <= 14) return 1;
+        if (score <= 18) return 2;
+        if (score <= 25) return 3;
+        if (score <= 33) return 4;
+        return 5;
+    }
+    return 1;
+};
+
 export const saveDassResult = async (req, res) => {
     try {
         const sessionId = req.cookies.session_id;
@@ -7,33 +32,37 @@ export const saveDassResult = async (req, res) => {
 
         if (!sessionId) return res.status(401).json({ message: "Session tidak ditemukan" });
 
-        const scores = [
-            { category: 'depression', score: depression_score },
-            { category: 'anxiety', score: anxiety_score },
-            { category: 'stress', score: stress_score }
+        // LOGIKA BARU: Tentukan prioritas berdasarkan Bobot Keparahan, bukan Skor Mentah
+        const categories = [
+            { name: 'depression', weight: getSeverityWeight('depression', depression_score), raw: depression_score },
+            { name: 'anxiety', weight: getSeverityWeight('anxiety', anxiety_score), raw: anxiety_score },
+            { name: 'stress', weight: getSeverityWeight('stress', stress_score), raw: stress_score }
         ];
-        const highest = scores.sort((a, b) => b.score - a.score)[0];
 
-        // 1. Cek apakah user ini sudah punya hasil tes
+        // Urutkan berdasarkan weight terbesar (Severity). 
+        // Jika weight sama (misal sama-sama Parah), baru urutkan berdasarkan skor mentah (raw).
+        const highest = categories.sort((a, b) => {
+            if (b.weight !== a.weight) return b.weight - a.weight;
+            return b.raw - a.raw;
+        })[0];
+
         const [existing] = await db.query(
-            "SELECT id FROM dass_results WHERE session_id = ? LIMIT 1", // Tambahkan LIMIT 1
+            "SELECT id FROM dass_results WHERE session_id = ? LIMIT 1",
             [sessionId]
         );
 
         if (existing.length > 0) {
-            // 2. Jika ada, UPDATE saja data yang lama
             await db.query(
                 "UPDATE dass_results SET depression_score=?, anxiety_score=?, stress_score=?, result_category=?, created_at=NOW() WHERE session_id=?",
-                [depression_score, anxiety_score, stress_score, highest.category, sessionId]
+                [depression_score, anxiety_score, stress_score, highest.name, sessionId]
             );
-            return res.json({ message: "Hasil diperbarui", recommendation: highest.category });
+            return res.json({ message: "Hasil diperbarui", recommendation: highest.name });
         } else {
-            // 3. Jika belum ada, baru INSERT baru
             await db.query(
                 "INSERT INTO dass_results (session_id, depression_score, anxiety_score, stress_score, result_category) VALUES (?, ?, ?, ?, ?)",
-                [sessionId, depression_score, anxiety_score, stress_score, highest.category]
+                [sessionId, depression_score, anxiety_score, stress_score, highest.name]
             );
-            return res.status(201).json({ message: "Hasil disimpan", recommendation: highest.category });
+            return res.status(201).json({ message: "Hasil disimpan", recommendation: highest.name });
         }
     } catch (error) {
         console.error("❌ Error save DASS:", error);

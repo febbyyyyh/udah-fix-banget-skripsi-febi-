@@ -33,11 +33,11 @@ export default function Sidebar() {
             {/* SIDEBAR */}
             <aside
                 className={`
-                    fixed md:static top-0 left-0 z-50
-                    w-64 min-h-screen bg-white font-poppins
+                    fixed md:relative top-0 left-0 z-50
+                    w-64 h-full bg-white font-poppins
                     transform transition-transform duration-300
                     ${open ? "translate-x-0" : "-translate-x-full"}
-                    md:translate-x-0
+                    md:translate-x-0 flex flex-col shrink-0
                 `}
             >
                 {/* LOGO */}

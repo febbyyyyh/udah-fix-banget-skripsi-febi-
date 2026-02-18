@@ -175,11 +175,11 @@ export default function BreathingExercise({
 
                     <div className="flex gap-3 mt-2">
                         {!running ? (
-                            <button onClick={start} className="px-4 py-2 bg-[#0a1d48] text-white rounded-lg shadow">Start</button>
+                            <button onClick={start} className="px-4 py-2 bg-[#0a1d48] text-white rounded-lg shadow cursor-pointer">Start</button>
                         ) : (
-                            <button onClick={pause} className="px-4 py-2 bg-amber-500 text-white rounded-lg shadow">Pause</button>
+                            <button onClick={pause} className="px-4 py-2 bg-amber-500 text-white rounded-lg shadow cursor-pointer">Pause</button>
                         )}
-                        <button onClick={reset} className="px-4 py-2 border rounded-lg">Reset</button>
+                        <button onClick={reset} className="px-4 py-2 border rounded-lg cursor-pointer">Reset</button>
                     </div>
                 </div>
             </div>

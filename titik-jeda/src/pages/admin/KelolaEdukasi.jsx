@@ -50,19 +50,21 @@ export default function KelolaEdukasi() {
     };
 
     /* ======================
-        CREATE PLAYLIST
-    ====================== */
+    CREATE PLAYLIST (DENGAN VALIDASI)
+====================== */
     const handleCreatePlaylist = async () => {
-        if (!title || !description) return alert("Isi nama dan deskripsi!");
+        // TRIGGER: Cek semua field harus diisi
+        if (!title || !description || !file) {
+            return alert("Gagal simpan. Semua kolom wajib diisi.");
+        }
 
         const formData = new FormData();
         formData.append("name", title);
         formData.append("description", description);
-        if (file) formData.append("cover_image", file);
+        formData.append("cover_image", file); // Pastikan file terlampir
 
         try {
             const token = localStorage.getItem("admin_token");
-
             await axios.post(
                 `${API_URL}/playlists`,
                 formData,
@@ -142,10 +144,13 @@ export default function KelolaEdukasi() {
                     >
                         <div>
                             <img
-                                src={cat.cover_image ? `${UPLOAD_URL}/${cat.cover_image}` : cd1}
+                                src={cat.cover_image ? `${UPLOAD_URL}/${cat.cover_image}` : placeholderImg}
                                 alt={cat.name}
                                 className="w-14 h-14 mb-4 object-cover rounded-lg"
-                                onError={(e) => { e.target.src = cd1; }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = placeholderImg;
+                                }}
                             />
                             <h3 className="text-lg font-semibold text-[#0A1D48] mb-2">
                                 {cat.name}

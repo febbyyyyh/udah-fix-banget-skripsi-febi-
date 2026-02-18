@@ -30,6 +30,17 @@ export const createPlaylist = async (req, res) => {
     try {
         const { name, description } = req.body;
         const coverImage = req.file ? req.file.filename : null;
+
+        // Validasi Backend: Pastikan semua field ada
+        if (!name || !description || !coverImage) {
+            // Jika admin lupa upload gambar tapi file terlanjur masuk folder temp (jika ada), hapus saja
+            if (req.file) {
+                const filePath = path.join(process.cwd(), "uploads/learngrow/covers", req.file.filename);
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+            }
+            return res.status(400).json({ message: "Semua field termasuk cover harus diisi!" });
+        }
+
         await db.query(
             "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, ?)",
             [name, description, coverImage]
