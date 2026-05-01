@@ -101,19 +101,36 @@ export default function DashboardAdmin() {
                                     nameKey="result_category"
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60} // Membuatnya jadi Doughnut Chart agar lebih elegan
-                                    outerRadius={100}
+                                    innerRadius={70}
+                                    outerRadius={105}
                                     paddingAngle={5}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    stroke="none"
+                                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                                 >
-                                    {stats.dassAnalysis.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
+                                    {stats.dassAnalysis.map((entry, index) => {
+                                        // Logika penentuan warna agar sinkron dengan tabel
+                                        const category = entry.result_category.toLowerCase();
+                                        let sliceColor = "#CBD5E1"; // Default Gray
+
+                                        if (category.includes('depression')) sliceColor = "#1A62C2"; // Biru
+                                        else if (category.includes('anxiety')) sliceColor = "#FF8042"; // Orange
+                                        else if (category.includes('stress')) sliceColor = "#FFBB28"; // Kuning
+                                        else if (category === 'normal') sliceColor = "#00C49F"; // Hijau
+
+                                        return (
+                                            <Cell key={`cell-${index}`} fill={sliceColor} />
+                                        );
+                                    })}
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 />
-                                <Legend verticalAlign="bottom" height={36} />
+                                <Legend
+                                    verticalAlign="bottom"
+                                    height={36}
+                                    iconType="circle"
+                                    formatter={(value) => <span className="text-xs font-bold text-gray-500 uppercase">{value}</span>}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     ) : (
