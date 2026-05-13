@@ -243,7 +243,7 @@ function DassSliderCard({ card, category }) {
                 </div>
             </div>
             {showInfo && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-[#0a1d48]/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
+                <div className="fixed inset-0 z-[400] flex items-center justify-center px-4 bg-[#0a1d48]/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
                     <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <h4 className="text-xl font-bold text-[#0a1d48]">{card.title} Scale</h4>

@@ -115,7 +115,8 @@ export default function EducationDetail() {
             {/* VIDEO PREVIEW MODAL */}
             {preview && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    /* UBAH z-50 MENJADI z-[500] */
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[500] p-4"
                     onClick={() => setPreview(null)}
                 >
                     <div

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import axios from "axios";
 import {
   BrowserRouter,
@@ -36,18 +36,22 @@ import Topbar from "./components/admin/Topbar";
 /* ================= USER LAYOUT ================= */
 function UserLayout() {
   const location = useLocation();
+  const initialized = useRef(false); // Ref untuk mengunci inisialisasi
 
-  // 1. Logic Inisialisasi Cookie Anonymous
   useEffect(() => {
+    // Jika sudah pernah dijalankan, jangan jalankan lagi
+    if (initialized.current) return;
+
     const initAnonymousSession = async () => {
       try {
-        // Mengirim request ke backend untuk cek/buat cookie session_id
+        initialized.current = true; // Set true segera sebelum/saat memanggil API
         await axios.get("http://localhost:5000/api/user/init", {
-          withCredentials: true, // WAJIB agar browser menerima & menyimpan cookie
+          withCredentials: true,
         });
         console.log("✅ Anonymous session ready.");
       } catch (err) {
         console.error("❌ Failed to initialize session:", err);
+        initialized.current = false; // Reset jika gagal agar bisa coba lagi
       }
     };
 

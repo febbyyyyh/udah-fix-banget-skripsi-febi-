@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import multer from "multer";
+import fs from "fs";
 
 // Import Controllers
 import {
@@ -25,23 +26,31 @@ import { adminOnly } from "../middlewares/adminOnly.js";
 const router = express.Router();
 
 /* ==============================
-   MULTER CONFIGURATION
+   MULTER CONFIGURATION (PERBAIKAN)
    ============================== */
 
-// Konfigurasi penyimpanan untuk Cover Playlist
 const coverStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/learngrow/covers");
+        const dest = "uploads/learngrow/covers";
+        // Tambahkan pengecekan ini:
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+        cb(null, dest);
     },
     filename: (req, file, cb) => {
         cb(null, "cover-" + Date.now() + path.extname(file.originalname));
     },
 });
 
-// Konfigurasi penyimpanan untuk File Video
 const videoStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/learngrow/videos");
+        const dest = "uploads/learngrow/videos";
+        // Tambahkan pengecekan ini:
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+        cb(null, dest);
     },
     filename: (req, file, cb) => {
         cb(null, "video-" + Date.now() + path.extname(file.originalname));

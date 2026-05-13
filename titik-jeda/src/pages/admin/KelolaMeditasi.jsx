@@ -52,7 +52,7 @@ export default function KelolaMeditasi() {
                 <div
                     key={item.id}
                     className="bg-white rounded-2xl p-6 shadow-sm border border-gray-50
-                     flex flex-col justify-between hover:shadow-md transition-shadow"
+                     flex flex-col justify-between"
                 >
                     <div>
                         {/* COVER */}

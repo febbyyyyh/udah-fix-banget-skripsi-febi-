@@ -15,67 +15,80 @@ export default function KelolaEdukasi() {
     const [previewIcon, setPreviewIcon] = useState(null);
     const [successMessage, setSuccessMessage] = useState("");
 
-    // State Input Form
+    // FORM INPUT
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [file, setFile] = useState(null);
 
-    // Fungsi pembantu untuk handle gambar kosong
     const placeholderImg = "https://via.placeholder.com/150?text=No+Cover";
 
+    /* ======================
+            SUCCESS TOAST
+        ====================== */
     const showSuccess = (msg) => {
         setSuccessMessage(msg);
-        setTimeout(() => setSuccessMessage(""), 2000);
+
+        setTimeout(() => {
+            setSuccessMessage("");
+        }, 2000);
     };
 
     /* ======================
-        LOAD PLAYLIST
-    ====================== */
-    useEffect(() => {
-        fetchPlaylists();
-    }, []);
-
-    const fetchPlaylists = async () => {
+            FETCH PLAYLIST
+        ====================== */
+    async function fetchPlaylists() {
         try {
             const token = localStorage.getItem("admin_token");
+
             const res = await axios.get(`${API_URL}/playlists`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
+
             setCategories(res.data);
         } catch (error) {
             console.error("Gagal load playlist:", error);
         }
-    };
+    }
 
     /* ======================
-    CREATE PLAYLIST (DENGAN VALIDASI)
-====================== */
-    const handleCreatePlaylist = async () => {
-        // TRIGGER: Cek semua field harus diisi
-        if (!title || !description || !file) {
-            return alert("Gagal simpan. Semua kolom wajib diisi.");
-        }
+            LOAD AWAL
+        ====================== */
+    useEffect(() => {
+        fetchPlaylists();
+    }, []);
 
-        const formData = new FormData();
-        formData.append("name", title);
-        formData.append("description", description);
-        formData.append("cover_image", file); // Pastikan file terlampir
+    /* ======================
+            CREATE PLAYLIST
+        ====================== */
+    const handleCreatePlaylist = async () => {
+        if (!title.trim() || !description.trim() || !file) {
+            alert("Semua kolom wajib diisi.");
+            return;
+        }
 
         try {
             const token = localStorage.getItem("admin_token");
-            await axios.post(
-                `${API_URL}/playlists`,
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
 
+            const formData = new FormData();
+
+            formData.append("name", title);
+            formData.append("description", description);
+            formData.append("cover_image", file);
+
+            console.log("FORM DATA:");
+            console.log("name:", title);
+            console.log("description:", description);
+            console.log("file:", file);
+
+            await axios.post(`${API_URL}/playlists`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            // RESET
             setShowAdd(false);
             setTitle("");
             setDescription("");
@@ -83,36 +96,40 @@ export default function KelolaEdukasi() {
             setPreviewIcon(null);
 
             showSuccess("Playlist berhasil ditambahkan");
+
             fetchPlaylists();
         } catch (error) {
-            console.error("Gagal tambah playlist:", error);
-            alert(error.response?.data?.message || "Terjadi kesalahan pada server");
+            console.error("ERROR TAMBAH PLAYLIST:");
+            console.error(error);
+
+            if (error.response) {
+                console.error("Response:", error.response.data);
+
+                alert(error.response.data?.message || "Terjadi kesalahan pada server");
+            } else {
+                alert("Server tidak merespon");
+            }
         }
     };
 
     /* ======================
-        DELETE PLAYLIST
-    ====================== */
+            DELETE PLAYLIST
+        ====================== */
     const handleDeletePlaylist = async () => {
         try {
             const token = localStorage.getItem("admin_token");
 
-            await axios.delete(
-                `${API_URL}/playlists/${selectedPlaylist.id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            await axios.delete(`${API_URL}/playlists/${selectedPlaylist.id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setCategories(categories.filter((c) => c.id !== selectedPlaylist.id));
 
             setShowDelete(false);
+
             showSuccess("Playlist berhasil dihapus");
-            setCategories(
-                categories.filter(
-                    (c) => c.id !== selectedPlaylist.id
-                )
-            );
         } catch (error) {
             console.error("Gagal hapus playlist:", error);
         }
@@ -120,31 +137,36 @@ export default function KelolaEdukasi() {
 
     return (
         <>
-            {/* TOMBOL TAMBAH PLAYLIST */}
+            {/* BUTTON TAMBAH */}
             <div className="mb-6">
                 <button
                     onClick={() => {
                         setPreviewIcon(null);
                         setTitle("");
                         setDescription("");
+                        setFile(null);
                         setShowAdd(true);
                     }}
-                    className="bg-[#1A62C2] text-white text-sm px-5 py-2 rounded-lg hover:bg-[#1551a3] transition-colors"
+                    className="bg-[#1A62C2] text-white text-sm px-5 py-2 rounded-lg hover:bg-[#1551a3]"
                 >
                     + Tambah Playlist
                 </button>
             </div>
 
-            {/* GRID CARD LIST */}
+            {/* GRID PLAYLIST */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {categories.map((cat) => (
                     <div
                         key={cat.id}
-                        className="bg-white rounded-2xl p-6 shadow-sm flex flex-col justify-between border border-gray-50"
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between"
                     >
                         <div>
                             <img
-                                src={cat.cover_image ? `${UPLOAD_URL}/${cat.cover_image}` : placeholderImg}
+                                src={
+                                    cat.cover_image
+                                        ? `${UPLOAD_URL}/${cat.cover_image}`
+                                        : placeholderImg
+                                }
                                 alt={cat.name}
                                 className="w-14 h-14 mb-4 object-cover rounded-lg"
                                 onError={(e) => {
@@ -152,9 +174,11 @@ export default function KelolaEdukasi() {
                                     e.target.src = placeholderImg;
                                 }}
                             />
+
                             <h3 className="text-lg font-semibold text-[#0A1D48] mb-2">
                                 {cat.name}
                             </h3>
+
                             <p className="text-sm text-gray-500 leading-relaxed">
                                 {cat.description}
                             </p>
@@ -167,6 +191,7 @@ export default function KelolaEdukasi() {
                             >
                                 Edit
                             </button>
+
                             <button
                                 onClick={() => {
                                     setSelectedPlaylist(cat);
@@ -181,31 +206,38 @@ export default function KelolaEdukasi() {
                 ))}
             </div>
 
-            {/* ======================
-                MODAL TAMBAH (UI BARU)
-            ====================== */}
+            {/* ================= MODAL: TAMBAH PLAYLIST (SINKRON) ================= */}
             {showAdd && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-xl mb-6 text-[#0A1D48]">
+                    <h3 className="font-bold text-lg mb-6 text-[#0A1D48]">
                         Tambah Playlist Baru
                     </h3>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                         {/* Area Upload & Preview */}
-                        <div className="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                            <div className="w-16 h-16 rounded-xl bg-white shadow-sm overflow-hidden flex items-center justify-center border border-gray-100 shrink-0">
+                        <div className="flex items-center gap-6 p-4 bg-blue-50/50 rounded-2xl border border-blue-50">
+                            <div className="w-20 h-20 rounded-xl bg-white shadow-sm overflow-hidden border border-blue-100 flex items-center justify-center shrink-0">
                                 {previewIcon ? (
-                                    <img src={previewIcon} className="w-full h-full object-cover" alt="Preview" />
+                                    <img
+                                        src={previewIcon}
+                                        className="w-full h-full object-cover"
+                                        alt="Preview"
+                                    />
                                 ) : (
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase text-center">No Cover</span>
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase text-center px-2">
+                                        No Cover
+                                    </span>
                                 )}
                             </div>
+
                             <div className="flex-1">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">Cover Playlist</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                                    Cover Playlist
+                                </label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#1A62C2] file:text-white hover:file:bg-[#1551a3] cursor-pointer"
+                                    className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#1551a3] file:text-white cursor-pointer"
                                     onChange={(e) => {
                                         const fileObj = e.target.files[0];
                                         if (fileObj) {
@@ -219,7 +251,9 @@ export default function KelolaEdukasi() {
 
                         {/* Input Nama */}
                         <div>
-                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Nama Playlist</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">
+                                Nama Playlist
+                            </label>
                             <input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
@@ -230,7 +264,9 @@ export default function KelolaEdukasi() {
 
                         {/* Input Deskripsi */}
                         <div>
-                            <label className="text-xs font-bold text-gray-400 uppercase ml-1">Deskripsi Playlist</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">
+                                Deskripsi Playlist
+                            </label>
                             <textarea
                                 rows="3"
                                 value={description}
@@ -241,16 +277,20 @@ export default function KelolaEdukasi() {
                         </div>
                     </div>
 
+                    {/* Action Buttons */}
                     <div className="flex justify-end gap-3 mt-8">
                         <button
-                            onClick={() => setShowAdd(false)}
-                            className="px-6 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+                            onClick={() => {
+                                setShowAdd(false);
+                                setPreviewIcon(null);
+                            }}
+                            className="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-colors"
                         >
                             Batal
                         </button>
                         <button
                             onClick={handleCreatePlaylist}
-                            className="bg-[#1A62C2] text-white px-8 py-2.5 rounded-xl text-sm font-semibold shadow-md hover:bg-[#1551a3] transition-all"
+                            className="bg-[#1551a3] text-white px-8 py-2.5 rounded-xl text-sm font-semibold shadow-lg hover:bg-[#123f86] transition-all"
                         >
                             Simpan Playlist
                         </button>
@@ -258,29 +298,26 @@ export default function KelolaEdukasi() {
                 </ModalWrapper>
             )}
 
-            {/* ======================
-                MODAL DELETE (UI LAMA)
-            ====================== */}
+            {/* MODAL DELETE */}
             {showDelete && (
                 <ModalWrapper>
                     <p className="mb-4 text-gray-700">
                         Yakin ingin menghapus playlist{" "}
-                        <strong className="text-red-600">
-                            "{selectedPlaylist?.name}"
-                        </strong>
+                        <strong className="text-red-600">"{selectedPlaylist?.name}"</strong>
                         ?
                     </p>
 
                     <div className="flex justify-end gap-2">
                         <button
                             onClick={() => setShowDelete(false)}
-                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm"
                         >
                             Batal
                         </button>
+
                         <button
                             onClick={handleDeletePlaylist}
-                            className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 shadow-sm"
+                            className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm"
                         >
                             Hapus
                         </button>
@@ -288,20 +325,15 @@ export default function KelolaEdukasi() {
                 </ModalWrapper>
             )}
 
-            {
-
-            /* ======================
-                SUCCESS TOAST (UI LAMA)
-            ====================== */}
+            {/* SUCCESS TOAST */}
             {successMessage && (
-                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
-                    <div className="bg-white rounded-2xl px-8 py-6 w-[320px] text-center shadow-2xl animate-in fade-in zoom-in duration-300">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                    <div className="bg-white rounded-2xl px-8 py-6 w-[320px] text-center shadow-2xl">
                         <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl font-bold">
                             ✓
                         </div>
-                        <p className="text-sm font-bold text-gray-800 tracking-wide">
-                            {successMessage}
-                        </p>
+
+                        <p className="text-sm font-bold text-gray-800">{successMessage}</p>
                     </div>
                 </div>
             )}

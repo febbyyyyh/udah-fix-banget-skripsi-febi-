@@ -10,12 +10,13 @@ export default function Navbar() {
         { to: "/", label: "Home" },
         { to: "/meditation", label: "Meditation" },
         { to: "/education", label: "Learn & Grow" },
-        { to: "/dass/result", label: "DASS-21" }, // Ubah dari /dass ke /dass/result
+        { to: "/dass/result", label: "Screening" },
     ];
 
     return (
-        <nav className="w-full flex justify-center py-6">
-            <div className="w-[90%] max-w-6xl bg-white rounded-full px-8 py-4 shadow-sm flex items-center justify-between">
+        // Tambahkan relative dan z-[200] di tag nav agar posisinya selalu di atas halaman
+        <nav className="w-full flex justify-center py-6 relative z-[200]">
+            <div className="w-[90%] max-w-6xl bg-white rounded-full px-8 py-4 shadow-sm flex items-center justify-between relative z-[200]">
 
                 {/* Logo */}
                 <NavLink to="/" className="flex items-center active:scale-95 transition">
@@ -70,7 +71,8 @@ export default function Navbar() {
 
             {/* Mobile Dropdown Menu */}
             {open && (
-                <div className="absolute top-[88px] w-[90%] max-w-6xl bg-white shadow-md rounded-xl py-6 px-6 md:hidden animate-slideDown">
+                // Tambahkan z-[200] di dropdown ini
+                <div className="absolute top-[88px] w-[90%] max-w-6xl bg-white shadow-md rounded-xl py-6 px-6 md:hidden animate-slideDown z-[200]">
                     <div className="flex flex-col gap-6 text-gray-700 text-[16px]">
                         {menuItems.map((item) => (
                             <NavLink

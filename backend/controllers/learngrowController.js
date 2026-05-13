@@ -28,17 +28,22 @@ export const getPlaylistById = async (req, res) => {
 // Buat playlist baru
 export const createPlaylist = async (req, res) => {
     try {
+        // DEBUG: Cek apakah data masuk atau tidak
+        console.log("Body:", req.body);
+        console.log("File:", req.file);
+
         const { name, description } = req.body;
         const coverImage = req.file ? req.file.filename : null;
 
-        // Validasi Backend: Pastikan semua field ada
         if (!name || !description || !coverImage) {
-            // Jika admin lupa upload gambar tapi file terlanjur masuk folder temp (jika ada), hapus saja
             if (req.file) {
                 const filePath = path.join(process.cwd(), "uploads/learngrow/covers", req.file.filename);
                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
             }
-            return res.status(400).json({ message: "Semua field termasuk cover harus diisi!" });
+            return res.status(400).json({ 
+                message: "Semua field termasuk cover harus diisi!",
+                received: { name, description, hasFile: !!req.file } 
+            });
         }
 
         await db.query(
@@ -46,7 +51,8 @@ export const createPlaylist = async (req, res) => {
             [name, description, coverImage]
         );
         res.status(201).json({ message: "Playlist berhasil dibuat" });
-    } catch (error) {
+   } catch (error) {
+        console.error("Error Create Playlist:", error);
         res.status(500).json({ message: error.message });
     }
 };

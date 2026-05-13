@@ -116,7 +116,7 @@ export default function KelolaIsiEdukasi() {
             setVideoTitle("");
             setTempVideoFile(null);
             fetchData();
-        } catch (error) {
+        } catch {
             alert("Gagal simpan. Semua kolom wajib diisi.");
         }
     };
@@ -127,7 +127,7 @@ export default function KelolaIsiEdukasi() {
             showSuccess("Video berhasil dihapus");
             setShowDelete(false);
             fetchData();
-        } catch (error) {
+        } catch {
             alert("Gagal menghapus video");
         }
     };
@@ -136,7 +136,7 @@ export default function KelolaIsiEdukasi() {
     const getCoverDisplay = () => {
         if (previewCover) return previewCover; // Jika user baru pilih file
         if (category?.cover_image) return `${UPLOAD_URL}/${category.cover_image}`; // Dari server
-        return cd1; // Default
+        return; // Default
     };
 
     const getVideoUrl = (path) => {
@@ -177,7 +177,6 @@ export default function KelolaIsiEdukasi() {
                             src={getCoverDisplay()}
                             className="w-full h-full object-cover"
                             alt="Cover"
-                            onError={(e) => { e.target.src = cd1; }}
                         />
                     </div>
                     <div>
@@ -261,7 +260,6 @@ export default function KelolaIsiEdukasi() {
                                     src={getCoverDisplay()}
                                     className="w-full h-full object-cover"
                                     alt="Cover"
-                                    onError={(e) => { e.target.src = cd1; }}
                                 />
                             </div>
                             <div className="flex-1">

@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(cookieParser()); // boleh ada, tapi admin TIDAK pakai cookie
 
 /* ================= STATIC FOLDER ================= */
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/uploads', express.static('uploads'));
 
 /* ================= ROUTES ================= */
 

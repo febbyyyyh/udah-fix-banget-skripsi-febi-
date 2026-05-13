@@ -1,12 +1,15 @@
-import { Link, useNavigate } from "react-router-dom"; // Tambahkan useNavigate
-import axios from "axios"; // Tambahkan axios
-import inhaleVideo from "../../assets/inhale-exhale.mp4";
-import meditationIcon from "../../assets/self-help.svg";
-import learnIcon from "../../assets/self-grow.svg";
-import dassIcon from "../../assets/self-check.svg";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useState } from "react";
 import Footer from "../../components/user/Footer";
 import BreathingExercise from "../../components/user/BreathingExercise";
+import VentingCanvas from "../../components/user/VentingCanvas";
+import MusicPlayer from "../../components/user/MusicPlayer"; // Pastikan path benar
+
+// Assets Utama
+import meditationIcon from "../../assets/self-help.svg";
+import learnIcon from "../../assets/self-grow.svg";
+import dassIcon from "../../assets/self-check.svg";
 
 function FlipCard() {
     const messages = [
@@ -42,29 +45,10 @@ function FlipCard() {
             <div
                 className={`relative w-full h-full transition-transform duration-700 transform-3d ${isFlipped ? "transform-[rotateY(180deg)]" : ""}`}
             >
-                {/* Kartu Depan */}
-                <div
-                    className="
-                        absolute inset-0
-                        bg-[linear-gradient(135deg,#E9F2FF_0%,#D3E4FF_50%,#C4DAFF_100%)]
-                        rounded-3xl flex items-center justify-center px-12
-                        text-center text-[#0a1d48] text-lg md:text-xl font-semibold leading-relaxed
-                        backface-hidden
-                    "
-                >
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,#E9F2FF_0%,#D3E4FF_50%,#C4DAFF_100%)] rounded-3xl flex items-center justify-center px-12 text-center text-[#0a1d48] text-lg md:text-xl font-semibold leading-relaxed backface-hidden">
                     “{message}”
                 </div>
-
-                {/* Kartu Belakang */}
-                <div
-                    className="
-                        absolute inset-0
-                        bg-[linear-gradient(135deg,#E9F2FF_0%,#D3E4FF_50%,#C4DAFF_100%)]
-                        rounded-3xl flex items-center justify-center px-12
-                        text-center text-[#0a1d48] text-lg md:text-xl font-semibold leading-relaxed
-                        transform-[rotateY(180deg)] backface-hidden
-                    "
-                >
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,#E9F2FF_0%,#D3E4FF_50%,#C4DAFF_100%)] rounded-3xl flex items-center justify-center px-12 text-center text-[#0a1d48] text-lg md:text-xl font-semibold leading-relaxed transform-[rotateY(180deg)] backface-hidden">
                     “{message}”
                 </div>
             </div>
@@ -75,23 +59,22 @@ function FlipCard() {
 export default function Home() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
-    // FUNGSI GATEKEEPER
+    // State bos untuk mengontrol visibilitas tombol musik
+    const [isCanvasOpen, setIsCanvasOpen] = useState(false);
+
     const handleCheckIn = async (e) => {
-        e.preventDefault(); // Mencegah navigasi default Link
+        e.preventDefault();
         setLoading(true);
         try {
-            // Cek ke endpoint yang kita buat sebelumnya
             const res = await axios.get("http://localhost:5000/api/user/dass/last-result", {
                 withCredentials: true
             });
-
             if (res.data) {
-                // Jika ada data riwayat, lempar ke halaman hasil
                 navigate("/dass/result");
             }
         } catch (err) {
-            // Jika error 404 (tidak ada data) atau error lainnya, lempar ke halaman intro DASS
             navigate("/dass");
         } finally {
             setLoading(false);
@@ -99,15 +82,21 @@ export default function Home() {
     };
 
     return (
-        <div className="w-full flex flex-col">
+        <div className="w-full flex flex-col relative">
             {/* Section 1 */}
             <section className="min-h-screen w-full bg-linear-to-b from-white to-[#d9e6ff] flex flex-col items-center pt-40 px-4 text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-[#0a1d48] leading-tight">
                     It's okay to feel tired. <br /> You’ve been trying.
                 </h1>
 
-                <p className="text-lg text-gray-700 max-w-xl mt-4">
-                    Merasa lelah adalah hal yang manusiawi. Luangkan waktu sejenak untuk mengecek kondisi emosionalmu melalui DASS-21.
+                <p className="text-base text-gray-700 max-w-xl mt-4 leading-relaxed">
+                    Merasa lelah adalah hal yang manusiawi. Luangkan waktu sejenak untuk mengecek kondisi emosionalmu melalui{" "}
+                    <span
+                        onClick={() => setShowModal(true)}
+                        className="text-[#0a1d48] font-bold underline decoration-blue-400 underline-offset-4 cursor-pointer hover:text-blue-700 transition-colors"
+                    >
+                        DASS-21
+                    </span>.
                 </p>
 
                 <button
@@ -119,6 +108,59 @@ export default function Home() {
                 </button>
             </section>
 
+            {/* MODAL PENJELASAN DASS-21 */}
+            {showModal && (
+                <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-md rounded-[32px] p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setShowModal(false)}
+                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <span className="text-2xl">📊</span>
+                            </div>
+                            <h2 className="text-2xl font-bold text-[#0a1d48] mb-4">Apa itu DASS-21?</h2>
+
+                            <div className="text-gray-600 text-sm space-y-4 text-justify leading-relaxed">
+                                <p>
+                                    <span className="font-bold text-[#0a1d48]">DASS-21</span> adalah instrumen laporan diri yang dikembangkan untuk mengukur tiga kondisi emosional:
+                                </p>
+                                <ul className="space-y-3 text-left">
+                                    <li className="flex gap-3">
+                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
+                                        <span><strong>Depresi:</strong> Mengukur tingkat kesedihan, keputusasaan, dan hilangnya minat.</span>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
+                                        <span><strong>Kecemasan:</strong> Mengukur respon rasa takut, panik, dan ketegangan fisik.</span>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
+                                        <span><strong>Stres:</strong> Mengukur tingkat iritabilitas, ketegangan saraf, dan kesulitan untuk rileks.</span>
+                                    </li>
+                                </ul>
+                                <p className="text-[12px] italic text-gray-400 mt-4 border-t pt-4 text-center">
+                                    DASS-21 adalah instrumen screening, bukan diagnosis medis.
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="w-full mt-8 bg-[#0a1d48] text-white py-3.5 rounded-2xl font-bold hover:opacity-90 transition-opacity"
+                            >
+                                Oke, Saya Mengerti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Section 2: Breathing Exercise */}
             <section className="w-full bg-white py-16 flex flex-col items-center px-4">
                 <h2 className="text-2xl md:text-3xl font-semibold text-[#0a1d48] text-center mb-3">
@@ -127,62 +169,49 @@ export default function Home() {
                 <BreathingExercise />
             </section>
 
-            {/* Section 3: Card Fitur */}
+            {/* Section 3: Fitur */}
             <section className="w-full bg-white flex flex-col items-center text-center pt-8 md:pt-24 pb-6 md:pb-10 px-4 md:px-6">
                 <h2 className="text-2xl md:text-3xl font-semibold text-[#0a1d48] mb-6 md:mb-8">
                     Self-check, self-help, self-love — semua ada di sini.
                 </h2>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl w-full">
-
-                    {/* Card 1: DASS-21 juga pakai logic yang sama */}
-                    <div onClick={handleCheckIn} className="block group">
-                        <div className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl cursor-pointer text-left transition-all group-active:scale-95">
-                            <img src={dassIcon} alt="DASS Icon" className="w-14 h-14 mb-4" />
-                            <h3 className="text-xl font-semibold text-[#0a1d48]">DASS-21</h3>
-                            <p className="italic text-gray-500 text-sm mt-1">Self-check begins with awareness.</p>
-                            <p className="text-gray-700 text-sm mt-4">
-                                Isi kuisioner DASS-21 buat tahu kondisi emosimu hari ini.
-                            </p>
-                        </div>
+                    <div onClick={handleCheckIn} className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl cursor-pointer text-left transition-all active:scale-95">
+                        <img src={dassIcon} alt="DASS" className="w-14 h-14 mb-4" />
+                        <h3 className="text-xl font-semibold text-[#0a1d48]">Screening</h3>
+                        <p className="italic text-gray-500 text-sm mt-1">Self-check begins with awareness.</p>
+                        <p className="text-gray-700 text-sm mt-4">Isi kuisioner DASS-21 buat tahu kondisi emosimu hari ini.</p>
                     </div>
 
-                    {/* Card 2 & 3 tetap pakai Link biasa */}
-                    <Link to="/Meditation" className="block">
-                        <div className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl cursor-pointer text-left transition-all active:scale-95">
-                            <img src={meditationIcon} alt="Meditation Icon" className="w-14 h-14 mb-4" />
-                            <h3 className="text-xl font-semibold text-[#0a1d48]">Meditation</h3>
-                            <p className="italic text-gray-500 text-sm mt-1">Self-help starts with a pause.</p>
-                            <p className="text-gray-700 text-sm mt-4">
-                                Ambil jeda sejenak, tenangkan pikiran lewat meditasi singkat.
-                            </p>
-                        </div>
+                    <Link to="/Meditation" className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl text-left transition-all active:scale-95">
+                        <img src={meditationIcon} alt="Meditation" className="w-14 h-14 mb-4" />
+                        <h3 className="text-xl font-semibold text-[#0a1d48]">Meditation</h3>
+                        <p className="italic text-gray-500 text-sm mt-1">Self-help starts with a pause.</p>
+                        <p className="text-gray-700 text-sm mt-4">Ambil jeda sejenak, tenangkan pikiran lewat meditasi singkat.</p>
                     </Link>
 
-                    <Link to="/education" className="block">
-                        <div className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl cursor-pointer text-left transition-all active:scale-95">
-                            <img src={learnIcon} alt="Learn Icon" className="w-14 h-14 mb-4" />
-                            <h3 className="text-xl font-semibold text-[#0a1d48]">Learn & Grow</h3>
-                            <p className="italic text-gray-500 text-sm mt-1">Self-love grows with understanding.</p>
-                            <p className="text-gray-700 text-sm mt-4">
-                                Belajar soal mental health lewat konten visual yang ringan & relate.
-                            </p>
-                        </div>
+                    <Link to="/education" className="p-8 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl text-left transition-all active:scale-95">
+                        <img src={learnIcon} alt="Learn" className="w-14 h-14 mb-4" />
+                        <h3 className="text-xl font-semibold text-[#0a1d48]">Learn & Grow</h3>
+                        <p className="italic text-gray-500 text-sm mt-1">Self-love grows with understanding.</p>
+                        <p className="text-gray-700 text-sm mt-4">Belajar soal mental health lewat konten visual yang ringan & relate.</p>
                     </Link>
-
                 </div>
             </section>
 
-            {/* Section 4: Afirmasi Positif */}
+            {/* Section 4: Affirmation */}
             <section className="w-full bg-white flex flex-col items-center text-center pt-8 md:pt-24 pb-12 md:pb-20 px-4 md:px-6">
-                <h2 className="text-2xl md:text-3xl font-semibold text-[#0a1d48]">
-                    Need a lil’ reminder today?
-                </h2>
-                <p className="text-gray-600 mt-1">
-                    Klik kartunya — siapa tahu kata-kata di baliknya bisa bikin kamu senyum lagi
-                </p>
+                <h2 className="text-2xl md:text-3xl font-semibold text-[#0a1d48]">Need a lil’ reminder today?</h2>
+                <p className="text-gray-600 mt-1">Klik kartunya — siapa tahu kata-kata di baliknya bisa bikin kamu senyum lagi</p>
                 <FlipCard />
             </section>
+
+            {/* --- FITUR INTERAKTIF (Floating Buttons) --- */}
+
+            {/* Tombol Musik (Kiri Bawah) hanya muncul jika Canvas Curhat TUTUP */}
+            {!isCanvasOpen && <MusicPlayer />}
+
+            {/* Tombol Canvas (Kanan Bawah) yang bisa melapor statusnya */}
+            <VentingCanvas isOpen={isCanvasOpen} setIsOpen={setIsCanvasOpen} />
 
             <Footer />
         </div>

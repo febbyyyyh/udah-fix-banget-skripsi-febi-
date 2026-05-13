@@ -32,38 +32,37 @@ export const saveDassResult = async (req, res) => {
 
         if (!sessionId) return res.status(401).json({ message: "Session tidak ditemukan" });
 
-        // LOGIKA BARU: Tentukan prioritas berdasarkan Bobot Keparahan, bukan Skor Mentah
+        // Tentukan prioritas kategori
         const categories = [
             { name: 'depression', weight: getSeverityWeight('depression', depression_score), raw: depression_score },
             { name: 'anxiety', weight: getSeverityWeight('anxiety', anxiety_score), raw: anxiety_score },
             { name: 'stress', weight: getSeverityWeight('stress', stress_score), raw: stress_score }
         ];
 
-        // Urutkan berdasarkan weight terbesar (Severity). 
-        // Jika weight sama (misal sama-sama Parah), baru urutkan berdasarkan skor mentah (raw).
         const highest = categories.sort((a, b) => {
             if (b.weight !== a.weight) return b.weight - a.weight;
             return b.raw - a.raw;
         })[0];
 
-        const [existing] = await db.query(
-            "SELECT id FROM dass_results WHERE session_id = ? LIMIT 1",
-            [sessionId]
-        );
+        // QUERY TUNGGAL: Insert jika baru, Update jika sudah ada session_id yang sama
+        const query = `
+            INSERT INTO dass_results (session_id, depression_score, anxiety_score, stress_score, result_category) 
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+            depression_score = VALUES(depression_score),
+            anxiety_score = VALUES(anxiety_score),
+            stress_score = VALUES(stress_score),
+            result_category = VALUES(result_category),
+            created_at = NOW()
+        `;
 
-        if (existing.length > 0) {
-            await db.query(
-                "UPDATE dass_results SET depression_score=?, anxiety_score=?, stress_score=?, result_category=?, created_at=NOW() WHERE session_id=?",
-                [depression_score, anxiety_score, stress_score, highest.name, sessionId]
-            );
-            return res.json({ message: "Hasil diperbarui", recommendation: highest.name });
-        } else {
-            await db.query(
-                "INSERT INTO dass_results (session_id, depression_score, anxiety_score, stress_score, result_category) VALUES (?, ?, ?, ?, ?)",
-                [sessionId, depression_score, anxiety_score, stress_score, highest.name]
-            );
-            return res.status(201).json({ message: "Hasil disimpan", recommendation: highest.name });
-        }
+        await db.query(query, [sessionId, depression_score, anxiety_score, stress_score, highest.name]);
+
+        return res.status(200).json({
+            message: "Hasil berhasil diproses",
+            recommendation: highest.name
+        });
+
     } catch (error) {
         console.error("❌ Error save DASS:", error);
         res.status(500).json({ message: error.message });
