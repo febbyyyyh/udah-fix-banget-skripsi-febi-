@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Footer from "../../components/user/Footer";
 
 // Asset internal
-import med1 from "../../assets/med-1.svg";
+const med1 = "/assets/med-1.svg";
 
 export default function Meditation() {
     const [meditations, setMeditations] = useState([]);
@@ -15,13 +15,13 @@ export default function Meditation() {
         const fetchData = async () => {
             try {
                 // 1. Ambil data tipe meditasi umum
-                const resMed = await axios.get("http://localhost:5000/api/user/meditations", {
+                const resMed = await axios.get("/api/user/meditations", {
                     withCredentials: true
                 });
                 setMeditations(resMed.data);
 
                 // 2. Ambil data rekomendasi berdasarkan hasil DASS-21
-                const resRec = await axios.get("http://localhost:5000/api/user/meditation/recommendation", {
+                const resRec = await axios.get("/api/user/meditation/recommendation", {
                     withCredentials: true
                 });
 
@@ -66,13 +66,12 @@ export default function Meditation() {
                                 <Link key={item.id} to={`/meditation/${item.id}`} className="group">
                                     <div className="p-10 bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl flex flex-col items-center text-center cursor-pointer h-full">
                                         <img
-                                            src={`http://localhost:5000/${item.cover_image}`}
+                                            src={'/' + String(item.cover_image || '').replace(/^\/+/, '')}
                                             alt={item.name}
                                             className="w-24 h-24 mb-6 object-cover rounded-2xl"
                                             onError={(e) => { e.target.src = med1; }}
                                         />
                                         <h3 className="text-xl font-bold text-[#0A245A]">{item.name}</h3>
-                                        {/* Deskripsi sudah dihapus */}
                                     </div>
                                 </Link>
                             ))
@@ -82,7 +81,7 @@ export default function Meditation() {
                     </div>
                 )}
 
-                {/* Section 2 - Recommendations (Tetap ada audionya) */}
+                {/* Section 2 - Recommendations */}
                 <div className="w-full max-w-5xl mt-28 mb-20">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-[#0a1d48] mb-10 text-center md:text-left">
                         Meditation picks based on your DASS-21 results
@@ -109,8 +108,9 @@ export default function Meditation() {
                                         </div>
                                         <audio
                                             controls
-                                            src={`http://localhost:5000/${audio.audio_file}`.replace(/([^:]\/)\/+/g, "$1")}
+                                            src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
                                             className="w-full bg-[#F5F7FA] rounded-xl"
+                                            onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
                                         />
                                     </div>
                                 ))}

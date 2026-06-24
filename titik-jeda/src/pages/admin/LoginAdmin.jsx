@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosAdmin from "../../utils/axiosAdmin";
-import logo from "../../assets/logo.svg";
+const logo = "/assets/logo.svg";
 
 export default function LoginAdmin() {
     const [email, setEmail] = useState("");
@@ -82,7 +82,7 @@ export default function LoginAdmin() {
                         </label>
                         <input
                             type="email"
-                            placeholder="admin@titikjeda.com"
+                            placeholder=""
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-transparent focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-100 outline-none transition-all text-sm text-[#0a1d48]"
@@ -97,7 +97,7 @@ export default function LoginAdmin() {
                         <div className="relative group">
                             <input
                                 type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
+                                placeholder=""
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-transparent focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-100 outline-none transition-all text-sm text-[#0a1d48]"

@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/admin/learngrow";
-const UPLOAD_URL = "http://localhost:5000/uploads/learngrow/covers";
+const API_URL = "/api/admin/learngrow";
+const UPLOAD_URL = "/uploads/learngrow/covers";
 
 export default function KelolaEdukasi() {
     const navigate = useNavigate();

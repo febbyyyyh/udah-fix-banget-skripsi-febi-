@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosAdmin from "../../utils/axiosAdmin";
-import vector from "../../assets/vector-admin.svg";
+const vector = "/assets/vector-admin.svg";
 // Import Recharts untuk grafik
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 

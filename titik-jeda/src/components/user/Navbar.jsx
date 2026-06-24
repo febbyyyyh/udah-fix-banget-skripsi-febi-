@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import logo from "../../assets/logo.svg";
+const logo = "/assets/logo.svg";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);

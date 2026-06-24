@@ -8,7 +8,7 @@ export default function KelolaMeditasi() {
     const [loading, setLoading] = useState(true);
 
     const token = localStorage.getItem("admin_token");
-    const API_URL = "http://localhost:5000";
+    const API_URL = "";
 
     useEffect(() => {
         fetchMeditations();
@@ -16,7 +16,7 @@ export default function KelolaMeditasi() {
 
     const fetchMeditations = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/admin/meditations`, {
+            const res = await axios.get(`/api/admin/meditations`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setMeditations(res.data);
@@ -33,7 +33,7 @@ export default function KelolaMeditasi() {
 
         // Pastikan tidak ada double slash jika path diawali '/'
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `http://localhost:5000${cleanPath}`;
+        return `${cleanPath}`;
     };
 
     if (loading) {

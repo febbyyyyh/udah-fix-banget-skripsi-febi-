@@ -11,7 +11,7 @@ export default function MeditationDetail() {
     useEffect(() => {
         const fetchAudios = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/user/meditations/${id}/audios`, {
+                const response = await axios.get(`/api/user/meditations/${id}/audios`, {
                     withCredentials: true
                 });
                 setData(response.data);
@@ -37,7 +37,7 @@ export default function MeditationDetail() {
                     {/* COVER IMAGE */}
                     <div className="bg-[#F8FBFF] rounded-3xl p-4 flex items-center justify-center">
                         <img
-                            src={`http://localhost:5000/${data.category.cover_image}`}
+                            src={'/' + String(data.category.cover_image || '').replace(/^\/+/, '')}
                             alt={data.category.name}
                             className="w-40 h-40 md:w-36 md:h-36 object-cover rounded-2xl"
                         />
@@ -68,8 +68,9 @@ export default function MeditationDetail() {
                                 </div>
                                 <audio
                                     controls
-                                    src={`http://localhost:5000/${audio.audio_file}`.replace(/([^:]\/)\/+/g, "$1")}
+                                    src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
                                     className="w-full bg-[#F5F7FA] rounded-xl"
+                                    onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
                                 />
                             </div>
                         ))

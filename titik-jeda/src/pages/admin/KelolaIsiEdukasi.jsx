@@ -3,15 +3,15 @@ import { useState, useEffect, useCallback } from "react";
 import axiosAdmin from "../../utils/axiosAdmin";
 
 /* assets */
-import editIcon from "../../assets/edit-ikon.svg";
+const editIcon = "/assets/edit-ikon.svg";
 
 export default function KelolaIsiEdukasi() {
     const { id } = useParams();
     const navigate = useNavigate();
 
     // URL Constants
-    const API_BASE = "http://localhost:5000";
-    const UPLOAD_URL = "http://localhost:5000/uploads/learngrow/covers";
+    const API_BASE = "";
+    const UPLOAD_URL = "/uploads/learngrow/covers";
     const PLACEHOLDER_IMG = "https://via.placeholder.com/150?text=No+Cover";
 
     /* ================= STATE ================= */
@@ -135,14 +135,14 @@ export default function KelolaIsiEdukasi() {
     // Helper untuk menampilkan gambar yang sinkron dengan backend
     const getCoverDisplay = () => {
         if (previewCover) return previewCover; // Jika user baru pilih file
-        if (category?.cover_image) return `${UPLOAD_URL}/${category.cover_image}`; // Dari server
+        if (category?.cover_image) return `/uploads/learngrow/covers/${category.cover_image}`; // Dari server
         return; // Default
     };
 
     const getVideoUrl = (path) => {
         if (!path) return "";
         if (path.startsWith("http")) return path;
-        return `${API_BASE}/uploads/learngrow/videos/${path}`;
+        return `/uploads/learngrow/videos/${path}`;
     };
 
     if (loading || !category) return <div className="p-8 text-center text-gray-500">Memuat data...</div>;

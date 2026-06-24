@@ -1,4 +1,4 @@
-import logo from "../../assets/logo.svg";
+const logo = "/assets/logo.svg";
 
 export default function Footer() {
     return (
@@ -25,6 +25,11 @@ export default function Footer() {
                         Titik Jeda adalah ruang kecil untuk berhenti sejenak, mendengar diri sendiri,
                         dan menemukan ketenangan di tengah rutinitas yang padat.
                     </p>
+
+                    <p className="text-gray-500 mt-3 leading-relaxed text-xs sm:text-sm max-w-sm">
+                        Disclaimer: Fitur yang tersedia dalam aplikasi ini hanya ditujukan sebagai
+                        bantuan awal non-klinis.
+                    </p>
                 </div>
 
                 {/* 2. Kolom Tengah: Layanan Kampus */}
@@ -40,7 +45,7 @@ export default function Footer() {
                             Depan Gedung Rektorat Universitas Sam Ratulangi
                         </p>
                         <a
-                            href="https://wa.me/6281335492303"
+                            href="https://wa.me/6281953027359"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 font-semibold text-sm hover:underline flex items-center gap-1"

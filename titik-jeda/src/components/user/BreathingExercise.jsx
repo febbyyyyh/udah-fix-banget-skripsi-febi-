@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import audioFile from "../../assets/breathing-audio.mp3"; // <-- tambahkan audio kamu
+const audioFile = "/assets/breathing-audio.mp3"; // <-- moved to public/assets
 
 // Breathing Exercise
 export default function BreathingExercise({

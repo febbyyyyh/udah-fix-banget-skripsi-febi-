@@ -1,79 +1,153 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
+// =========================================================================
+// AUDIO MANAGER (MODULE SCOPE)
+// Membungkus objek Audio agar aman dari deteksi linter/kompiler ketat.
+// =========================================================================
+const audioManager = {
+    instance: typeof window !== "undefined" ? new Audio() : null,
+    track: null,
+
+    init() {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("relaxation_current_track");
+            if (saved) this.track = JSON.parse(saved);
+        }
+    },
+
+    play(track) {
+        if (!this.instance) return Promise.resolve();
+        this.instance.pause();
+        this.instance.src = track.path;
+        this.instance.loop = true;
+        this.instance.volume = 0.4;
+        this.track = track;
+        localStorage.setItem("relaxation_current_track", JSON.stringify(track));
+        return this.instance.play();
+    },
+
+    togglePlay() {
+        if (!this.instance) return;
+        if (this.instance.paused) {
+            this.instance.play().catch(err => console.error(err));
+        } else {
+            this.instance.pause();
+        }
+    },
+
+    stop() {
+        if (this.instance) {
+            this.instance.pause();
+            this.instance.currentTime = 0;
+        }
+        this.track = null;
+        localStorage.removeItem("relaxation_current_track");
+    },
+
+    getStatus() {
+        return {
+            isPlaying: this.instance ? !this.instance.paused : false,
+            track: this.track
+        };
+    }
+};
+
+// Jalankan inisialisasi awal saat file dimuat browser
+audioManager.init();
+
+// Standby mendengarkan sinyal stop dari halaman Meditation/Education
+if (typeof window !== "undefined") {
+    window.addEventListener("stop-relaxation-music", () => {
+        audioManager.stop();
+        window.dispatchEvent(new Event("relaxation-state-changed"));
+    });
+}
+
+// =========================================================================
+// KOMPONEN UTAMA REACT
+// =========================================================================
 const MusicPlayer = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [currentTrack, setCurrentTrack] = useState(null);
 
-    // Ref audio tunggal untuk mengontrol pemutaran
-    const audioRef = useRef(new Audio());
-
     const playlist = [
-        { id: 1, name: "Lofi Rain", path: "/music/rain.mp3", icon: "🌧️" },
-        { id: 2, name: "Deep Piano", path: "/music/piano.mp3", icon: "🎹" },
-        { id: 3, name: "Forest Night", path: "/music/forest.mp3", icon: "🌲" },
+        { id: 1, name: "Rain", path: "/music/rain.mp3", icon: "🌧️" },
+        { id: 2, name: "Piano", path: "/music/piano.mp3", icon: "🎹" },
+        { id: 3, name: "Forest", path: "/music/forest.mp3", icon: "🌲" },
     ];
 
-    const handleSelectMusic = (track) => {
-        if (currentTrack?.id === track.id) {
-            // Toggle play/pause jika klik lagu yang sama
-            if (isPlaying) {
-                audioRef.current.pause();
-                setIsPlaying(false);
-            } else {
-                audioRef.current.play();
-                setIsPlaying(true);
-            }
-        } else {
-            // Putar lagu baru
-            audioRef.current.pause();
-            audioRef.current.src = track.path;
-            audioRef.current.loop = true;
-            audioRef.current.volume = 0.4;
+    // Sinkronisasi status UI dengan kondisi Audio yang nyata
+    const syncUIWithGlobal = () => {
+        const status = audioManager.getStatus();
+        setIsPlaying(status.isPlaying);
+        setCurrentTrack(status.isPlaying ? status.track : null);
+    };
 
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise
-                    .then(() => {
-                        setIsPlaying(true);
-                        setCurrentTrack(track);
-                    })
-                    .catch((error) => {
-                        console.error("Gagal putar musik:", error);
-                        setIsPlaying(false);
-                    });
+    useEffect(() => {
+        syncUIWithGlobal();
+
+        const handleStateChange = () => {
+            syncUIWithGlobal();
+        };
+
+        // Dengarkan perubahan status internal dan eksternal audio
+        window.addEventListener("relaxation-state-changed", handleStateChange);
+
+        const audioEl = audioManager.instance;
+        if (audioEl) {
+            audioEl.addEventListener("play", handleStateChange);
+            audioEl.addEventListener("pause", handleStateChange);
+        }
+
+        return () => {
+            window.removeEventListener("relaxation-state-changed", handleStateChange);
+            if (audioEl) {
+                audioEl.removeEventListener("play", handleStateChange);
+                audioEl.removeEventListener("pause", handleStateChange);
             }
+        };
+    }, []);
+
+    const handleSelectMusic = (track) => {
+        const status = audioManager.getStatus();
+
+        if (status.track?.id === track.id) {
+            // Jika klik lagu yang sama, toggle play/pause
+            audioManager.togglePlay();
+        } else {
+            // Putar lagu baru lewat manager
+            audioManager.play(track)
+                .then(() => syncUIWithGlobal())
+                .catch((error) => {
+                    console.error("Gagal putar musik:", error);
+                    setIsPlaying(false);
+                });
         }
         setShowMenu(false);
     };
 
-    // Fungsi baru untuk Stop total
     const handleStopMusic = () => {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0; // Reset ke awal
-        setIsPlaying(false);
-        setCurrentTrack(null);
+        audioManager.stop();
+        syncUIWithGlobal();
         setShowMenu(false);
     };
 
     return (
-        // Gunakan items-start agar posisi button tetap di koordinat left-8
         <div className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[310] flex flex-col items-start">
-
             {/* --- Mini Popup Menu --- */}
             {showMenu && (
-                // Ubah mb-4 menjadi absolute bottom-16 agar tidak menggeser button di bawahnya
                 <div className="absolute bottom-16 left-0 bg-white border-2 border-[#0a1d48] rounded-2xl p-2.5 shadow-2xl animate-in slide-in-from-bottom-5 duration-300 w-48">
-                    <p className="text-xs text-gray-400 font-medium px-3 mb-2 tracking-wide">PILIH MUSIK RELAX</p>
+                    <p className="text-xs text-gray-400 font-medium px-3 mb-2 tracking-wide">PILIH MUSIK RELAKSASI</p>
 
                     <div className="flex flex-col gap-1.5">
                         {playlist.map((track) => (
                             <button
                                 key={track.id}
                                 onClick={() => handleSelectMusic(track)}
-                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-semibold active:scale-95 ${currentTrack?.id === track.id
-                                    ? "bg-blue-100 text-[#0a1d48]"
-                                    : "hover:bg-gray-100 text-gray-700"
+                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-semibold active:scale-95 ${currentTrack?.id === track.id && isPlaying
+                                        ? "bg-blue-100 text-[#0a1d48]"
+                                        : "hover:bg-gray-100 text-gray-700"
                                     }`}
                             >
                                 <span className="text-base">{track.icon}</span>
@@ -84,7 +158,7 @@ const MusicPlayer = () => {
                             </button>
                         ))}
 
-                        {currentTrack && (
+                        {isPlaying && currentTrack && (
                             <div className="mt-2 pt-2 border-t border-gray-100">
                                 <button
                                     onClick={handleStopMusic}
@@ -102,9 +176,8 @@ const MusicPlayer = () => {
             {/* --- Tombol Utama --- */}
             <button
                 onClick={() => setShowMenu(!showMenu)}
-                // Ukuran sedikit mengecil di mobile (w-12 h-12) agar tidak terlalu memenuhi layar
                 className="w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-[#0a1d48] text-[#0a1d48] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
-                title={showMenu ? "Tutup Menu" : "Pilih Musik Relax"}
+                title={showMenu ? "Tutup Menu" : "Pilih Musik Relaksasi"}
             >
                 {isPlaying ? (
                     <span className="text-xl md:text-2xl animate-spin-slow">💿</span>

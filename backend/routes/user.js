@@ -6,6 +6,7 @@ import { getPlaylists, getPlaylistDetailWithVideos } from "../controllers/learng
 import { saveDassResult, getLastResult } from "../controllers/dassController.js";
 
 const router = express.Router();
+const isProd = process.env.NODE_ENV === "production";
 
 router.get("/init", async (req, res) => {
     let sessionId = req.cookies.session_id;
@@ -24,7 +25,7 @@ router.get("/init", async (req, res) => {
 
             res.cookie("session_id", newSessionId, {
                 httpOnly: true,
-                secure: false,
+                secure: isProd,
                 sameSite: "lax",
                 maxAge: 72 * 60 * 60 * 1000
             });
@@ -46,7 +47,7 @@ router.get("/init", async (req, res) => {
                     `INSERT INTO user_session (session_id, first_access, last_access) VALUES (?, ?, ?)`,
                     [fallbackId, now, now]
                 );
-                res.cookie("session_id", fallbackId, { httpOnly: true, maxAge: 72 * 60 * 60 * 1000 });
+                res.cookie("session_id", fallbackId, { httpOnly: true, secure: isProd, sameSite: "lax", maxAge: 72 * 60 * 60 * 1000 });
                 return res.json({ message: "Session restored", sessionId: fallbackId });
             }
 

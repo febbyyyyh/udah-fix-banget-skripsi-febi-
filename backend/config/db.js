@@ -1,25 +1,42 @@
-import mysql from "mysql2/promise"; // Tambahkan /promise di sini
+import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 dotenv.config();
 
-const db = mysql.createPool({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
 });
 
-// Karena sekarang promise, kita tes koneksinya begini:
-db.getConnection()
-  .then(conn => {
-    console.log("✅ Database Connected (Promise Mode)");
-    conn.release();
-  })
-  .catch(err => {
-    console.error("❌ DB Connection Error:", err);
-  });
+async function testDBConnection(options = {}) {
+  const { retries = 3, delay = 2000 } = options;
 
-export default db;
+  if (!process.env.DB_HOST) {
+    console.warn("⚠️ DB_HOST not set. Skipping DB connectivity test.");
+    return false;
+  }
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const conn = await pool.getConnection();
+      console.log("✅ Database Connected (Promise Mode)");
+      conn.release();
+      return true;
+    } catch (err) {
+      console.error("❌ DB Connection Error:", err.message || err);
+      if (attempt < retries) {
+        console.log(`Retrying DB connection in ${delay}ms... (${attempt + 1}/${retries})`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+
+  return false;
+}
+
+export default pool;
+export { testDBConnection };

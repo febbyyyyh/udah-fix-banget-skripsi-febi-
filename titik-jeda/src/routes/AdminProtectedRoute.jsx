@@ -18,7 +18,7 @@ export default function AdminProtectedRoute({ children }) {
         // ✅ Validasi token ke backend
         const verifyAdmin = async () => {
             try {
-                await axios.get("http://localhost:5000/api/admin/dashboard", {
+                await axios.get("/api/admin/dashboard", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

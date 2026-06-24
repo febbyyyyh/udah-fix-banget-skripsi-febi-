@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.js";
 import meditationRoutes from "./routes/meditation.js";
 import meditationAudioRoutes from "./routes/meditationAudio.js";
 import learngrowRoutes from "./routes/learngrow.js";
+import db, { testDBConnection } from "./config/db.js";
 
 dotenv.config();
 
@@ -19,6 +20,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Jika berjalan di produksi di balik reverse proxy, beri tahu Express untuk mempercayai proxy.
+// Ini diperlukan agar cookie yang diset dengan `secure: true` tetap dikirim ketika TLS
+// di-terminate oleh proxy (mis. nginx, Heroku).
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 /* ================= MIDDLEWARE GLOBAL ================= */
 app.use(cors({
@@ -60,4 +67,10 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  (async () => {
+    const ok = await testDBConnection({ retries: 3, delay: 2000 });
+    if (!ok) {
+      console.warn("⚠️ Unable to connect to DB after retries. Check your .env and network settings.");
+    }
+  })();
 });

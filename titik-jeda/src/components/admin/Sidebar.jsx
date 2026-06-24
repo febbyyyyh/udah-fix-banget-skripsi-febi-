@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-import logo from "../../assets/logo.svg";
-import dashboardIcon from "../../assets/icon-dashboard.svg";
-import meditasiIcon from "../../assets/icon-meditasi.svg";
-import edukasiIcon from "../../assets/icon-edukasi.svg";
-import statistikIcon from "../../assets/icon-statistik.svg";
+const logo = "/assets/logo.svg";
+const dashboardIcon = "/assets/icon-dashboard.svg";
+const meditasiIcon = "/assets/icon-meditasi.svg";
+const edukasiIcon = "/assets/icon-edukasi.svg";
+const statistikIcon = "/assets/icon-statistik.svg";
 
 export default function Sidebar() {
     const [open, setOpen] = useState(false);

@@ -14,6 +14,7 @@ import Home from "./pages/user/Home";
 import DASS21 from "./pages/user/DASS21";
 import DassQuestion from "./pages/user/DassQuestion";
 import DassResult from "./pages/user/DassResult";
+import DassInfo from "./pages/user/DassInfo";
 import Meditation from "./pages/user/Meditation";
 import MeditationDetail from "./pages/user/MeditationDetail";
 import Education from "./pages/user/Education";
@@ -36,29 +37,28 @@ import Topbar from "./components/admin/Topbar";
 /* ================= USER LAYOUT ================= */
 function UserLayout() {
   const location = useLocation();
-  const initialized = useRef(false); // Ref untuk mengunci inisialisasi
+  const initialized = useRef(false);
 
   useEffect(() => {
-    // Jika sudah pernah dijalankan, jangan jalankan lagi
     if (initialized.current) return;
 
     const initAnonymousSession = async () => {
       try {
-        initialized.current = true; // Set true segera sebelum/saat memanggil API
-        await axios.get("http://localhost:5000/api/user/init", {
+        initialized.current = true;
+        await axios.get("/api/user/init", {
           withCredentials: true,
         });
         console.log("✅ Anonymous session ready.");
       } catch (err) {
         console.error("❌ Failed to initialize session:", err);
-        initialized.current = false; // Reset jika gagal agar bisa coba lagi
+        initialized.current = false;
       }
     };
 
     initAnonymousSession();
   }, []);
 
-  const hideNavbarRoutes = ["/dass-question", "/dass/result"];
+  const hideNavbarRoutes = ["/dass-question", "/dass/result", "/dass-info"];
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
 
   return (
@@ -74,6 +74,7 @@ function UserLayout() {
         <Route path="/education/:id" element={<EducationDetail />} />
 
         <Route path="/dass" element={<DASS21 />} />
+        <Route path="/dass-info" element={<DassInfo />} />
         <Route path="/dass-question" element={<DassQuestion />} />
         <Route path="/dass/result" element={<DassResult />} />
       </Routes>
@@ -84,15 +85,12 @@ function UserLayout() {
 /* ================= ADMIN LAYOUT ================= */
 function AdminLayout() {
   return (
-    // Tambahkan h-screen dan overflow-hidden agar halaman utama tidak scroll
     <div className="flex h-screen overflow-hidden bg-[#F7F9FC]">
       <Sidebar />
 
-      {/* Bagian kanan: Topbar + Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar />
 
-        {/* Tambahkan overflow-y-auto di sini agar hanya konten ini yang bisa scroll */}
         <main className="flex-1 overflow-y-auto p-6">
           <Routes>
             <Route path="dashboard" element={<DashboardAdmin />} />
@@ -107,6 +105,7 @@ function AdminLayout() {
     </div>
   );
 }
+
 /* ================= ROOT APP ================= */
 export default function App() {
   return (

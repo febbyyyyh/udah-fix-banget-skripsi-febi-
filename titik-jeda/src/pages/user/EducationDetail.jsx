@@ -9,11 +9,17 @@ export default function EducationDetail() {
     const [loading, setLoading] = useState(true);
     const [preview, setPreview] = useState(null);
 
+    // Otomatis matikan musik relaksasi ketika modal preview video dibuka (karena autoPlay)
+    useEffect(() => {
+        if (preview) {
+            window.dispatchEvent(new Event("stop-relaxation-music"));
+        }
+    }, [preview]);
+
     useEffect(() => {
         const fetchDetail = async () => {
             try {
-                // Mengambil data playlist + videos dari endpoint yang kita buat tadi
-                const response = await axios.get(`http://localhost:5000/api/user/education/${id}`, {
+                const response = await axios.get(`/api/user/education/${id}`, {
                     withCredentials: true
                 });
                 setData(response.data);
@@ -51,7 +57,7 @@ export default function EducationDetail() {
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
                         <div className="rounded-xl p-6 bg-[#F8FBFF] border-[#DDE9F8]">
                             <img
-                                src={`http://localhost:5000/uploads/learngrow/covers/${playlist.cover_image}`}
+                                src={`/uploads/learngrow/covers/${playlist.cover_image}`}
                                 alt={playlist.name}
                                 className="w-56 h-56 object-cover rounded-lg"
                             />
@@ -77,10 +83,10 @@ export default function EducationDetail() {
                                         onClick={() => setPreview(video)}
                                         className="relative bg-[#F8FBFF] rounded-2xl overflow-hidden border border-[#DDE9F8] cursor-pointer transition hover:border-[#C7DBF4]"
                                     >
-                                        {/* VIDEO THUMBNAIL (SNEAK PEEK) */}
+                                        {/* VIDEO THUMBNAIL */}
                                         <div className="w-full h-48 bg-slate-200 overflow-hidden">
                                             <video
-                                                src={`http://localhost:5000/uploads/learngrow/videos/${video.video_file}#t=0.1`}
+                                                src={`/uploads/learngrow/videos/${video.video_file}#t=0.1`}
                                                 className="w-full h-full object-cover pointer-events-none"
                                             />
                                         </div>
@@ -115,7 +121,6 @@ export default function EducationDetail() {
             {/* VIDEO PREVIEW MODAL */}
             {preview && (
                 <div
-                    /* UBAH z-50 MENJADI z-[500] */
                     className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[500] p-4"
                     onClick={() => setPreview(null)}
                 >
@@ -135,10 +140,11 @@ export default function EducationDetail() {
                         </div>
 
                         <video
-                            src={`http://localhost:5000/uploads/learngrow/videos/${preview.video_file}`}
+                            src={`/uploads/learngrow/videos/${preview.video_file}`}
                             controls
                             autoPlay
                             className="w-full max-h-[75vh] object-contain"
+                            onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
                         />
                     </div>
                 </div>

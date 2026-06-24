@@ -10,7 +10,7 @@ export default function Education() {
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/user/education", {
+                const response = await axios.get("/api/user/education", {
                     withCredentials: true
                 });
                 setPlaylists(response.data);
@@ -45,7 +45,7 @@ export default function Education() {
                                 className="flex flex-col items-center rounded-2xl p-6 bg-[#F8FBFF] border border-[#ADC7EA]"
                             >
                                 <img
-                                    src={`http://localhost:5000/uploads/learngrow/covers/${item.cover_image}`}
+                                    src={`/uploads/learngrow/covers/${item.cover_image}`}
                                     alt={item.name}
                                     className="w-48 h-48 object-cover rounded-xl"
                                 />

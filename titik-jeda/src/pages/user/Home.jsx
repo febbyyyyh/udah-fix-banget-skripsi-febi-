@@ -3,13 +3,13 @@ import axios from "axios";
 import { useState } from "react";
 import Footer from "../../components/user/Footer";
 import BreathingExercise from "../../components/user/BreathingExercise";
-import VentingCanvas from "../../components/user/VentingCanvas";
-import MusicPlayer from "../../components/user/MusicPlayer"; // Pastikan path benar
+import WritingTherapy from "../../components/user/WritingTherapy";
+import MusicPlayer from "../../components/user/MusicPlayer";
 
 // Assets Utama
-import meditationIcon from "../../assets/self-help.svg";
-import learnIcon from "../../assets/self-grow.svg";
-import dassIcon from "../../assets/self-check.svg";
+const meditationIcon = "/assets/self-help.svg";
+const learnIcon = "/assets/self-grow.svg";
+const dassIcon = "/assets/self-check.svg";
 
 function FlipCard() {
     const messages = [
@@ -59,7 +59,6 @@ function FlipCard() {
 export default function Home() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [showModal, setShowModal] = useState(false);
 
     // State bos untuk mengontrol visibilitas tombol musik
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
@@ -68,7 +67,7 @@ export default function Home() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await axios.get("http://localhost:5000/api/user/dass/last-result", {
+            const res = await axios.get("/api/user/dass/last-result", {
                 withCredentials: true
             });
             if (res.data) {
@@ -92,7 +91,7 @@ export default function Home() {
                 <p className="text-base text-gray-700 max-w-xl mt-4 leading-relaxed">
                     Merasa lelah adalah hal yang manusiawi. Luangkan waktu sejenak untuk mengecek kondisi emosionalmu melalui{" "}
                     <span
-                        onClick={() => setShowModal(true)}
+                        onClick={() => navigate("/dass-info")}
                         className="text-[#0a1d48] font-bold underline decoration-blue-400 underline-offset-4 cursor-pointer hover:text-blue-700 transition-colors"
                     >
                         DASS-21
@@ -107,59 +106,6 @@ export default function Home() {
                     {loading ? "Checking..." : "Start Screening"}
                 </button>
             </section>
-
-            {/* MODAL PENJELASAN DASS-21 */}
-            {showModal && (
-                <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-md rounded-[32px] p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <button
-                            onClick={() => setShowModal(false)}
-                            className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl">📊</span>
-                            </div>
-                            <h2 className="text-2xl font-bold text-[#0a1d48] mb-4">Apa itu DASS-21?</h2>
-
-                            <div className="text-gray-600 text-sm space-y-4 text-justify leading-relaxed">
-                                <p>
-                                    <span className="font-bold text-[#0a1d48]">DASS-21</span> adalah instrumen laporan diri yang dikembangkan untuk mengukur tiga kondisi emosional:
-                                </p>
-                                <ul className="space-y-3 text-left">
-                                    <li className="flex gap-3">
-                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
-                                        <span><strong>Depresi:</strong> Mengukur tingkat kesedihan, keputusasaan, dan hilangnya minat.</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
-                                        <span><strong>Kecemasan:</strong> Mengukur respon rasa takut, panik, dan ketegangan fisik.</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <div className="min-w-2 h-2 rounded-full bg-blue-400 mt-1.5" />
-                                        <span><strong>Stres:</strong> Mengukur tingkat iritabilitas, ketegangan saraf, dan kesulitan untuk rileks.</span>
-                                    </li>
-                                </ul>
-                                <p className="text-[12px] italic text-gray-400 mt-4 border-t pt-4 text-center">
-                                    DASS-21 adalah instrumen screening, bukan diagnosis medis.
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="w-full mt-8 bg-[#0a1d48] text-white py-3.5 rounded-2xl font-bold hover:opacity-90 transition-opacity"
-                            >
-                                Oke, Saya Mengerti
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Section 2: Breathing Exercise */}
             <section className="w-full bg-white py-16 flex flex-col items-center px-4">
@@ -210,8 +156,8 @@ export default function Home() {
             {/* Tombol Musik (Kiri Bawah) hanya muncul jika Canvas Curhat TUTUP */}
             {!isCanvasOpen && <MusicPlayer />}
 
-            {/* Tombol Canvas (Kanan Bawah) yang bisa melapor statusnya */}
-            <VentingCanvas isOpen={isCanvasOpen} setIsOpen={setIsCanvasOpen} />
+            {/* Tombol Writing Therapy (Kanan Bawah) */}
+            <WritingTherapy isOpen={isCanvasOpen} setIsOpen={setIsCanvasOpen} />
 
             <Footer />
         </div>

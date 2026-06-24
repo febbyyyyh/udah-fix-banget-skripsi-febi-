@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 /* assets */
-import editIcon from "../../assets/edit-ikon.svg";
+const editIcon = "/assets/edit-ikon.svg";
 
 export default function KelolaIsiMeditasi() {
     const { id } = useParams();
@@ -45,9 +45,9 @@ export default function KelolaIsiMeditasi() {
     const fetchCategory = async () => {
         try {
             const res = await axios.get(
-                `http://localhost:5000/api/admin/meditations/${id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+                    `/api/admin/meditations/${id}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
 
             // Simpan data apa adanya dari database
             setCategory(res.data);
@@ -61,7 +61,7 @@ export default function KelolaIsiMeditasi() {
     const fetchAudios = async () => {
         try {
             // Tambahkan timestamp agar browser tidak mengambil dari cache
-            const res = await axios.get(`http://localhost:5000/api/admin/meditations/${id}/audios?t=${Date.now()}`, {
+            const res = await axios.get(`/api/admin/meditations/${id}/audios?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -103,9 +103,9 @@ export default function KelolaIsiMeditasi() {
 
             let response;
             if (showAdd) {
-                response = await axios.post(`http://localhost:5000/api/admin/meditations/${id}/audios`, formData, config);
+                response = await axios.post(`/api/admin/meditations/${id}/audios`, formData, config);
             } else {
-                response = await axios.put(`http://localhost:5000/api/admin/meditations/${id}/audios/${selectedAudio.id}`, formData, config);
+                response = await axios.put(`/api/admin/meditations/${id}/audios/${selectedAudio.id}`, formData, config);
             }
 
             if (response.status === 200 || response.status === 201) {
@@ -124,7 +124,7 @@ export default function KelolaIsiMeditasi() {
 
     const handleDeleteAudio = async () => {
         try {
-            await axios.delete(`http://localhost:5000/api/admin/meditations/${id}/audios/${selectedAudio.id}`, {
+            await axios.delete(`/api/admin/meditations/${id}/audios/${selectedAudio.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setShowDelete(false);
@@ -150,7 +150,7 @@ export default function KelolaIsiMeditasi() {
 
         try {
             const res = await axios.put(
-                `http://localhost:5000/api/admin/meditations/${id}`,
+                `/api/admin/meditations/${id}`,
                 formData,
                 {
                     headers: {
@@ -173,15 +173,12 @@ export default function KelolaIsiMeditasi() {
 
     if (!category) return null;
 
-    const API_BASE = "http://localhost:5000";
-
     const getCoverUrl = (path) => {
         if (!path) return null;
         if (path.startsWith("http")) return path;
 
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${API_BASE}${cleanPath}`;
-        // Pastikan API_BASE bernilai "http://localhost:5000"
+        return `${cleanPath}`;
     };
 
     return (

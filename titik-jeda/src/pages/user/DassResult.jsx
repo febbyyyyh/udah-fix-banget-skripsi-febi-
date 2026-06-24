@@ -16,7 +16,7 @@ export default function DassResult() {
             try {
                 // Skenario 1: Baru selesai tes (Simpan ke DB)
                 if (state?.depression !== undefined) {
-                    await axios.post("http://localhost:5000/api/user/dass/save", {
+                    await axios.post("/api/user/dass/save", {
                         depression_score: state.depression,
                         anxiety_score: state.anxiety,
                         stress_score: state.stress
@@ -25,7 +25,7 @@ export default function DassResult() {
                 }
                 // Skenario 2: Mengakses hasil terakhir dari database
                 else {
-                    const res = await axios.get("http://localhost:5000/api/user/dass/last-result", {
+                    const res = await axios.get("/api/user/dass/last-result", {
                         withCredentials: true
                     });
                     setScores({
@@ -121,10 +121,10 @@ export default function DassResult() {
                     <h1 className="text-3xl md:text-5xl font-bold text-[#0a1d48] tracking-tight">
                         {state ? "Your Results Are Ready" : "Your Last Results"}
                     </h1>
-                    <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
+                    <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
                         {state
-                            ? "Berdasarkan hasil screening, berikut adalah gambaran kondisi psikologis kamu saat ini."
-                            : "Berikut adalah hasil rekaman kondisi emosional terakhir kamu."}
+                            ? "Hasil skrining DASS-21 kamu sudah siap. Hasil ini hanya menjadi gambaran awal kondisi emosionalmu, bukan diagnosis medis atau label untuk dirimu. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional."
+                            : "Berikut adalah riwayat hasil skrining DASS-21 terbarumu. Hasil ini hanya membantu kamu melihat gambaran awal kondisi emosional yang pernah kamu rekam, bukan diagnosis medis atau pengganti konsultasi profesional. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional."}
                     </p>
                 </div>
 
@@ -142,17 +142,17 @@ export default function DassResult() {
                 <h2 className="text-2xl md:text-3xl font-bold mt-32 mb-10 text-[#0a1d48]">What You Can Do Next?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-20">
                     <div onClick={() => navigate("/meditation")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/src/assets/headphone.svg" className="w-20 mb-6" alt="Meditation" />
+                        <img src="/assets/headphone.svg" className="w-20 mb-6" alt="Meditation" />
                         <p className="font-bold text-[#0a1d48] text-center">Explore {topRecommendation.label} Meditation</p>
                     </div>
 
                     <div onClick={() => navigate("/education")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/src/assets/video.svg" className="w-20 mb-6" alt="Education" />
+                        <img src="/assets/video.svg" className="w-20 mb-6" alt="Education" />
                         <p className="font-bold text-[#0a1d48] text-center">Open Learn & Grow</p>
                     </div>
 
-                    <div onClick={() => window.open("https://wa.me/6281335492303", "_blank")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/src/assets/call.svg" className="w-20 mb-6" alt="Counselor" />
+                    <div onClick={() => window.open("https://wa.me/6281953027359", "_blank")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
+                        <img src="/assets/call.svg" className="w-20 mb-6" alt="Counselor" />
                         <p className="font-bold text-[#0a1d48] text-center">Contact Counselor</p>
                     </div>
                 </div>
