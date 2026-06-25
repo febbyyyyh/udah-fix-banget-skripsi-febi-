@@ -2,17 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import axiosAdmin from "../../utils/axiosAdmin";
 
-/* assets */
-const editIcon = "/assets/edit-ikon.svg";
-
 export default function KelolaIsiEdukasi() {
     const { id } = useParams();
     const navigate = useNavigate();
-
-    // URL Constants
-    const API_BASE = "";
-    const UPLOAD_URL = "/uploads/learngrow/covers";
-    const PLACEHOLDER_IMG = "https://via.placeholder.com/150?text=No+Cover";
 
     /* ================= STATE ================= */
     const [category, setCategory] = useState(null);
@@ -26,11 +18,9 @@ export default function KelolaIsiEdukasi() {
     const [showPreview, setShowPreview] = useState(false);
     const [showEditCategory, setShowEditCategory] = useState(false);
 
-    // Form States (Playlist Info)
+    // Form States (Playlist Info - Murni Teks)
     const [playlistName, setPlaylistName] = useState("");
     const [playlistDesc, setPlaylistDesc] = useState("");
-    const [tempCoverFile, setTempCoverFile] = useState(null);
-    const [previewCover, setPreviewCover] = useState(null);
 
     // Form States (Video)
     const [videoTitle, setVideoTitle] = useState("");
@@ -41,17 +31,15 @@ export default function KelolaIsiEdukasi() {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            // 1. Ambil Detail Playlist
+            // 1. Detail Playlist
             const playlistRes = await axiosAdmin.get(`/admin/learngrow/playlists/${id}`);
             const data = playlistRes.data;
 
             setCategory(data);
-            // Sinkronkan form state dengan data terbaru dari database
             setPlaylistName(data.name);
             setPlaylistDesc(data.description);
-            setPreviewCover(null); // Reset preview saat data baru di-fetch
 
-            // 2. Ambil Daftar Video
+            // 2. Daftar Video
             const videoRes = await axiosAdmin.get(`/admin/learngrow/playlists/${id}/videos`);
             setVideos(videoRes.data);
         } catch (error) {
@@ -70,23 +58,20 @@ export default function KelolaIsiEdukasi() {
         setTimeout(() => setSuccessMessage(""), 2000);
     };
 
-    /* ================= LOGIC UPDATE PLAYLIST (Sinkron dengan KelolaEdukasi) ================= */
+    /* ================= LOGIC UPDATE PLAYLIST (MURNI JSON TANPA FORMDATA FILE) ================= */
     const handleUpdateCategory = async () => {
         if (!playlistName || !playlistDesc) return alert("Gagal simpan. Semua kolom wajib diisi.");
 
-        const formData = new FormData();
-        formData.append("name", playlistName);
-        formData.append("description", playlistDesc);
-        if (tempCoverFile) formData.append("cover_image", tempCoverFile);
-
         try {
-            await axiosAdmin.put(`/admin/learngrow/playlists/${id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }
+            await axiosAdmin.put(`/admin/learngrow/playlists/${id}`, {
+                name: playlistName,
+                description: playlistDesc
+            }, {
+                headers: { "Content-Type": "application/json" }
             });
 
             setShowEditCategory(false);
-            setTempCoverFile(null);
-            fetchData(); // Refresh data biar UI sinkron
+            fetchData();
             showSuccess("Playlist berhasil diperbarui");
         } catch (error) {
             console.error("Gagal update playlist:", error);
@@ -132,97 +117,88 @@ export default function KelolaIsiEdukasi() {
         }
     };
 
-    // Helper untuk menampilkan gambar yang sinkron dengan backend
-    const getCoverDisplay = () => {
-        if (previewCover) return previewCover; // Jika user baru pilih file
-        if (category?.cover_image) return `/uploads/learngrow/covers/${category.cover_image}`; // Dari server
-        return; // Default
-    };
-
     const getVideoUrl = (path) => {
         if (!path) return "";
         if (path.startsWith("http")) return path;
         return `/uploads/learngrow/videos/${path}`;
     };
 
-    if (loading || !category) return <div className="p-8 text-center text-gray-500">Memuat data...</div>;
+    if (loading || !category) {
+        return (
+            <div className="flex flex-col justify-center items-center h-64 text-[#292929]">
+                <div className="rounded-full h-10 w-10 border-4 border-[#F2F2F2] border-b-[#00BFFF] animate-spin"></div>
+                <p className="mt-4 text-xs font-bold text-[#292929]/40 uppercase tracking-widest">Memuat data...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-4">
-            {/* Tombol Kembali ke KelolaEdukasi */}
+        <div className="p-4 bg-[#FFFFFF] text-[#292929] min-h-screen">
+            {/* Tombol Kembali */}
             <button
                 onClick={() => navigate("/admin/kelola-edukasi")}
-                className="mb-4 text-sm text-[#1A62C2] font-semibold hover:underline flex items-center gap-2"
+                className="mb-6 text-sm text-[#00BFFF] font-black uppercase tracking-wider hover:opacity-80 flex items-center gap-2 cursor-pointer transition-opacity"
             >
                 ← Kembali ke Kelola Learn & Grow
             </button>
 
-            {/* ================= INFO PLAYLIST (HEADER) ================= */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 max-w-5xl relative border border-gray-100">
+            {/* ================= INFO PLAYLIST (SUDAH DI-AKALI TANPA COVER & IKON GAMBAR) ================= */}
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 mb-8 max-w-5xl relative shadow-sm">
                 <button
                     onClick={() => {
-                        // Reset form state ke data category saat ini sebelum buka modal
                         setPlaylistName(category.name);
                         setPlaylistDesc(category.description);
                         setShowEditCategory(true);
                     }}
-                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="absolute top-5 right-5 px-3 py-1.5 rounded-xl bg-[#F2F2F2] text-[#292929]/60 hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all text-xs font-black uppercase tracking-wider cursor-pointer"
                 >
-                    <img src={editIcon} className="w-5 h-5" alt="Edit" />
+                    Edit Info
                 </button>
 
-                <div className="flex gap-6 items-center">
-                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                        <img
-                            src={getCoverDisplay()}
-                            className="w-full h-full object-cover"
-                            alt="Cover"
-                        />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-xl text-[#0A1D48]">{category.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1 max-w-2xl">{category.description}</p>
-                    </div>
+                <div className="flex flex-col items-start">
+                    <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-3" />
+                    <h3 className="font-black text-2xl tracking-tight">{category.name}</h3>
+                    <p className="text-sm text-[#292929]/70 mt-2 max-w-3xl font-normal leading-relaxed">{category.description}</p>
                 </div>
             </div>
 
-            {/* ... Bagian Table Video Tetap Sama ... */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm max-w-5xl border border-gray-100">
+            {/* ================= TABLE VIDEO ================= */}
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 max-w-5xl shadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-bold text-lg text-[#0A1D48]">Daftar Video Edukasi</h2>
+                    <h2 className="font-black text-lg tracking-tight">Daftar Video Edukasi</h2>
                     <button
                         onClick={() => { setVideoTitle(""); setTempVideoFile(null); setShowAdd(true); }}
-                        className="bg-[#1551a3] hover:bg-[#123f86] text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+                        className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Video
                     </button>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-gray-100">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600">
+                <div className="overflow-hidden rounded-2xl border-2 border-[#F2F2F2]">
+                    <table className="w-full text-sm border-collapse text-left">
+                        <thead className="bg-[#F2F2F2]/60 text-[#292929]/50 text-xs uppercase font-black tracking-wider">
                             <tr>
-                                <th className="px-6 py-4 text-left font-semibold w-16">No</th>
-                                <th className="px-6 py-4 text-left font-semibold">Judul Video</th>
-                                <th className="px-6 py-4 text-left font-semibold">Konten</th>
-                                <th className="px-6 py-4 text-center font-semibold w-48">Aksi</th>
+                                <th className="px-6 py-4 w-16">No</th>
+                                <th className="px-6 py-4">Judul Video</th>
+                                <th className="px-6 py-4">Konten</th>
+                                <th className="px-6 py-4 text-center w-48">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y-2 divide-[#F2F2F2]">
                             {videos.map((video, i) => (
-                                <tr key={video.id} className="hover:bg-blue-50/30 transition-colors">
-                                    <td className="px-6 py-4 text-gray-500">{i + 1}</td>
-                                    <td className="px-6 py-4 font-semibold text-[#0A1D48]">{video.title}</td>
+                                <tr key={video.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
+                                    <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
+                                    <td className="px-6 py-4 font-bold text-[#292929]">{video.title}</td>
                                     <td className="px-6 py-4">
                                         <button
                                             onClick={() => { setSelectedVideo(video); setShowPreview(true); }}
-                                            className="text-[#1551a3] font-medium hover:underline"
+                                            className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
                                         >
                                             Preview Video
                                         </button>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex justify-center gap-3">
+                                        <div className="flex justify-center gap-2">
                                             <button
                                                 onClick={() => {
                                                     setSelectedVideo(video);
@@ -230,13 +206,13 @@ export default function KelolaIsiEdukasi() {
                                                     setTempVideoFile(null);
                                                     setShowEdit(true);
                                                 }}
-                                                className="bg-blue-100 text-[#1551a3] px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-200"
+                                                className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => { setSelectedVideo(video); setShowDelete(true); }}
-                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-100"
+                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
                                             >
                                                 Hapus
                                             </button>
@@ -249,56 +225,32 @@ export default function KelolaIsiEdukasi() {
                 </div>
             </div>
 
-            {/* ================= MODAL: EDIT PLAYLIST (SINKRON) ================= */}
+            {/* ================= MODAL: EDIT PLAYLIST ================= */}
             {showEditCategory && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-lg mb-6 text-[#0A1D48]">Edit Informasi Playlist Edukasi</h3>
+                    <h3 className="font-black text-xl mb-6 tracking-tight">Edit Informasi Playlist Edukasi</h3>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-6 p-4 bg-blue-50/50 rounded-2xl border border-blue-50">
-                            <div className="w-20 h-20 rounded-xl bg-white shadow-sm overflow-hidden border border-blue-100">
-                                <img
-                                    src={getCoverDisplay()}
-                                    className="w-full h-full object-cover"
-                                    alt="Cover"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Ganti Cover</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#1551a3] file:text-white cursor-pointer"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            setTempCoverFile(file);
-                                            setPreviewCover(URL.createObjectURL(file));
-                                        }
-                                    }}
-                                />
-                            </div>
-                        </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Nama Playlist</label>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Nama Playlist</label>
                             <input
                                 value={playlistName}
                                 onChange={(e) => setPlaylistName(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Deskripsi</label>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Deskripsi</label>
                             <textarea
                                 rows="3"
                                 value={playlistDesc}
                                 onChange={(e) => setPlaylistDesc(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                             />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
-                        <button onClick={() => { setShowEditCategory(false); setPreviewCover(null); }} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100">Batal</button>
-                        <button onClick={handleUpdateCategory} className="bg-[#1551a3] text-white px-8 py-2.5 rounded-xl text-sm font-semibold shadow-lg hover:bg-[#123f86]">Simpan Perubahan</button>
+                        <button onClick={() => setShowEditCategory(false)} className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer">Batal</button>
+                        <button onClick={handleUpdateCategory} className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm hover:opacity-90 transition-all cursor-pointer active:scale-95">Simpan</button>
                     </div>
                 </ModalWrapper>
             )}
@@ -306,33 +258,33 @@ export default function KelolaIsiEdukasi() {
             {/* ================= MODAL: ADD / EDIT VIDEO ================= */}
             {(showAdd || showEdit) && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-lg mb-4 text-[#0A1D48]">
+                    <h3 className="font-black text-xl mb-6 tracking-tight">
                         {showAdd ? "Tambah Video Baru" : "Edit Detail Video"}
                     </h3>
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Judul Video</label>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Judul Video</label>
                             <input
                                 value={videoTitle}
                                 onChange={(e) => setVideoTitle(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-[#1551a3] outline-none"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none text-sm font-medium"
                                 placeholder="Masukkan judul video..."
                             />
                         </div>
-                        <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">File Video (.mp4)</label>
+                        <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
+                            <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">File Video (.mp4)</label>
                             <input
                                 type="file"
                                 accept="video/mp4"
                                 onChange={(e) => setTempVideoFile(e.target.files[0])}
-                                className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#1551a3] file:text-white hover:file:bg-[#123f86] cursor-pointer"
+                                className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
                             />
-                            {showEdit && <p className="text-[10px] text-gray-400 mt-2 italic">*Biarkan kosong jika tidak ingin mengubah video</p>}
+                            {showEdit && <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">*Biarkan kosong jika tidak ingin mengubah video</p>}
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
-                        <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="px-6 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700">Batal</button>
-                        <button onClick={handleSaveVideo} className="bg-[#1551a3] hover:bg-[#123f86] text-white px-8 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-200 transition-all">Simpan Video</button>
+                        <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer">Batal</button>
+                        <button onClick={handleSaveVideo} className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90">Simpan Video</button>
                     </div>
                 </ModalWrapper>
             )}
@@ -341,23 +293,18 @@ export default function KelolaIsiEdukasi() {
             {showPreview && selectedVideo && (
                 <ModalWrapper>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-[#0A1D48] leading-tight">{selectedVideo.title}</h3>
-                        <button
-                            onClick={() => setShowPreview(false)}
-                            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-                        >
-                            ✕
-                        </button>
+                        <h3 className="font-bold text-lg text-[#292929]">{selectedVideo.title}</h3>
+                        <button onClick={() => setShowPreview(false)} className="text-[#292929]/40 hover:text-[#292929] cursor-pointer">✕</button>
                     </div>
 
                     <div className="rounded-2xl overflow-hidden bg-black aspect-video mt-4 shadow-inner">
                         <video
-                            key={selectedVideo.id} // Memaksa refresh player
+                            key={selectedVideo.id}
                             controls
-                            autoPlay // Opsional: video langsung jalan saat modal buka
+                            autoPlay
                             preload="auto"
                             className="w-full h-full"
-                            src={getVideoUrl(selectedVideo.video_file)} // Taruh src di sini
+                            src={getVideoUrl(selectedVideo.video_file)}
                         >
                             Browser kamu tidak mendukung pemutaran video.
                         </video>
@@ -365,9 +312,9 @@ export default function KelolaIsiEdukasi() {
 
                     <button
                         onClick={() => setShowPreview(false)}
-                        className="w-full mt-6 bg-gray-100 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+                        className="w-full mt-6 bg-[#F2F2F2] text-[#292929] py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-80 cursor-pointer"
                     >
-                        Tutup
+                        Tutup Preview
                     </button>
                 </ModalWrapper>
             )}
@@ -375,28 +322,24 @@ export default function KelolaIsiEdukasi() {
             {/* ================= MODAL: DELETE CONFIRMATION ================= */}
             {showDelete && (
                 <ModalWrapper>
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </div>
-                        <h3 className="font-bold text-xl text-[#0A1D48]">Hapus Video?</h3>
-                        <p className="text-sm text-gray-500 mt-2 px-4">Video <span className="font-bold">"{selectedVideo?.title}"</span> akan dihapus permanen dan tidak bisa dikembalikan.</p>
-                        <div className="flex gap-3 mt-8">
-                            <button onClick={() => setShowDelete(false)} className="flex-1 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors">Batal</button>
-                            <button onClick={handleDeleteVideo} className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl text-sm font-semibold shadow-lg shadow-red-200 transition-all">Ya, Hapus Video</button>
-                        </div>
+                    <div className="text-center p-4">
+                        <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-black">!</div>
+                        <h3 className="font-black text-xl text-gray-800 tracking-tight">Hapus Video?</h3>
+                        <p className="text-sm text-[#292929]/60 mt-2 leading-relaxed">Video <span className="font-bold text-[#292929]">"{selectedVideo?.title}"</span> akan dihapus permanen dan tidak bisa dikembalikan.</p>
+                    </div>
+                    <div className="flex gap-3 mt-6">
+                        <button onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] cursor-pointer">Batal</button>
+                        <button onClick={handleDeleteVideo} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:opacity-90 cursor-pointer">Ya, Hapus Video</button>
                     </div>
                 </ModalWrapper>
             )}
 
             {/* ================= TOAST SUCCESS ================= */}
             {successMessage && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-100 animate-bounce">
-                    <div className="bg-green-600 text-white rounded-full px-8 py-3 shadow-2xl flex items-center gap-3">
-                        <span className="bg-white text-green-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                        <p className="text-sm font-bold tracking-wide">{successMessage}</p>
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[800]">
+                    <div className="bg-[#292929] text-[#FFFFFF] rounded-xl px-6 py-3 shadow-md flex items-center gap-3">
+                        <span className="bg-[#ADFF2F] text-[#292929] w-5 h-5 rounded-full flex items-center justify-center text-xs font-black">✓</span>
+                        <p className="text-xs font-bold uppercase tracking-wider">{successMessage}</p>
                     </div>
                 </div>
             )}
@@ -406,8 +349,10 @@ export default function KelolaIsiEdukasi() {
 
 function ModalWrapper({ children }) {
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 backdrop-blur-[2px]">
-            <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">{children}</div>
+        <div className="fixed inset-0 bg-[#292929]/50 flex items-center justify-center z-[700] px-4 backdrop-blur-sm transition-all">
+            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl">
+                {children}
+            </div>
         </div>
     );
 }

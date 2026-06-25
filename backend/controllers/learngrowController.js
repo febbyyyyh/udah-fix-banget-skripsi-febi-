@@ -25,55 +25,50 @@ export const getPlaylistById = async (req, res) => {
     }
 };
 
-// Buat playlist baru
+// Buat playlist baru (MODIFIKASI: Tanpa Cover Image)
 export const createPlaylist = async (req, res) => {
     try {
-        // DEBUG: Cek apakah data masuk atau tidak
+        // DEBUG: Cek data teks yang masuk
         console.log("Body:", req.body);
-        console.log("File:", req.file);
 
         const { name, description } = req.body;
-        const coverImage = req.file ? req.file.filename : null;
 
-        if (!name || !description || !coverImage) {
-            if (req.file) {
-                const filePath = path.join(process.cwd(), "uploads/learngrow/covers", req.file.filename);
-                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            }
-            return res.status(400).json({ 
-                message: "Semua field termasuk cover harus diisi!",
-                received: { name, description, hasFile: !!req.file } 
+        // Validasi hanya mengecek nama dan deskripsi teks saja
+        if (!name || !description) {
+            return res.status(400).json({
+                message: "Semua field teks wajib diisi!"
             });
         }
 
+        // Simpan ke database tanpa mengisi kolom cover_image (diisi NULL atau kosong sesuai skema DB)
         await db.query(
-            "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, ?)",
-            [name, description, coverImage]
+            "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, NULL)",
+            [name, description]
         );
+
         res.status(201).json({ message: "Playlist berhasil dibuat" });
-   } catch (error) {
+    } catch (error) {
         console.error("Error Create Playlist:", error);
         res.status(500).json({ message: error.message });
     }
 };
 
-// Update playlist
+// Update playlist (MODIFIKASI: Tanpa Memproses Cover Image)
 export const updatePlaylist = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
-        const newCover = req.file ? req.file.filename : null;
 
-        if (newCover) {
-            const [old] = await db.query("SELECT cover_image FROM learngrow_playlists WHERE id = ?", [id]);
-            if (old[0]?.cover_image) {
-                const oldPath = path.join(process.cwd(), "uploads/learngrow/covers", old[0].cover_image);
-                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-            }
-            await db.query("UPDATE learngrow_playlists SET name=?, description=?, cover_image=? WHERE id=?", [name, description, newCover, id]);
-        } else {
-            await db.query("UPDATE learngrow_playlists SET name=?, description=? WHERE id=?", [name, description, id]);
+        if (!name || !description) {
+            return res.status(400).json({ message: "Semua field teks wajib diisi!" });
         }
+
+        // Murni hanya mengupdate teks informasi saja
+        await db.query(
+            "UPDATE learngrow_playlists SET name=?, description=? WHERE id=?",
+            [name, description, id]
+        );
+
         res.json({ message: "Playlist berhasil diperbarui" });
     } catch (error) {
         res.status(500).json({ message: error.message });

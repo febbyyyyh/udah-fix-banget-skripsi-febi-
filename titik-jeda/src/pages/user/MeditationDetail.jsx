@@ -3,6 +3,25 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Footer from "../../components/user/Footer";
 
+// FIX: ELEMEN BERWARNA CERAH (Biru Elektrik)
+const TinySparkle = ({ className }) => (
+    <svg className={`w-8 h-8 text-[#00BFFF]/40 absolute z-0 pointer-events-none ${className}`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" />
+    </svg>
+);
+
+// FIX: ELEMEN BERWARNA CERAH (Hijau Limau)
+const TinyCircle = ({ className }) => (
+    <div className={`w-6 h-6 rounded-full border-4 border-[#ADFF2F]/60 absolute z-0 pointer-events-none ${className}`} />
+);
+
+// FIX: ELEMEN BERWARNA CERAH (Oranye)
+const TinyTriangle = ({ className }) => (
+    <svg className={`w-6 h-6 text-[#FF8C00]/40 absolute z-0 pointer-events-none ${className} transform rotate-45`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L22 22H2L12 2Z" />
+    </svg>
+);
+
 export default function MeditationDetail() {
     const { id } = useParams(); // Mengambil ID dari URL
     const [data, setData] = useState(null);
@@ -24,64 +43,111 @@ export default function MeditationDetail() {
         fetchAudios();
     }, [id]);
 
-    if (loading) return <div className="text-center mt-20 font-medium text-gray-500">Menyiapkan ketenangan...</div>;
-    if (!data) return <div className="text-center mt-20 text-red-500">Konten tidak ditemukan.</div>;
+    // Loading State dengan warna spinner cerah berlatar putih bersih
+    if (loading) {
+        return (
+            <div className="w-full min-h-screen bg-[#FFFFFF] flex items-center justify-center text-[#292929] relative overflow-hidden">
+                <div className="absolute inset-x-0 top-0 h-[70vh] pointer-events-none z-0">
+                    <TinySparkle className="top-36 left-8 animate-pulse" />
+                    <TinyTriangle className="top-40 right-12" />
+                </div>
+                <div className="flex flex-col items-center relative z-10">
+                    <div className="rounded-full h-12 w-12 border-4 border-[#ADFF2F] border-b-[#00BFFF] animate-spin"></div>
+                    <p className="mt-4 text-sm font-black uppercase tracking-wide text-[#292929]/60">Menyiapkan ketenangan...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <div className="w-full min-h-screen bg-[#FFFFFF] flex items-center justify-center text-[#292929] relative overflow-hidden">
+                <p className="font-black text-lg text-slate-400 relative z-10 uppercase tracking-wider">Konten tidak ditemukan.</p>
+            </div>
+        );
+    }
 
     return (
-        <>
-            <div className="w-full flex flex-col items-center pt-14 px-4 min-h-screen">
+        /* Dikunci penuh menggunakan warna dasar putih bersih murni (#FFFFFF) tanpa gradasi warna */
+        <div className="w-full min-h-screen bg-[#FFFFFF] text-[#292929] flex flex-col justify-between relative overflow-hidden">
+
+            {/* SEBARAN ELEMEN ORNAMEN ABSTRAK BERWARNA (Dibatasi ketat di area atas/tengah agar footer aman polos) */}
+            <div className="absolute inset-x-0 top-0 h-[70vh] pointer-events-none z-0">
+                {/* Cluster Atas Kiri & Kanan */}
+                <TinySparkle className="top-36 left-8 md:left-16 animate-pulse" />
+                <TinyCircle className="top-56 left-20 md:left-32 animate-bounce duration-[1500ms]" />
+                <TinyTriangle className="top-40 right-12 md:right-24" />
+                <TinySparkle className="top-64 right-24 md:right-40" />
+
+                {/* Cluster Tengah Kiri & Kanan */}
+                <TinyTriangle className="top-[420px] left-10 md:left-24" />
+                <TinySparkle className="top-[520px] left-28 md:left-48" />
+                <TinyCircle className="top-[450px] right-14 md:right-28 animate-bounce duration-[1800ms]" />
+                <TinyTriangle className="top-[560px] right-28 md:right-52" />
+            </div>
+
+            <div className="w-full flex flex-col items-center pt-48 px-4 relative z-10">
 
                 {/* HEADER AREA */}
-                <div className="w-full max-w-5xl flex flex-col md:flex-row items-center gap-10">
+                <div className="w-full max-w-4xl bg-[#FFFFFF] border-4 border-[#292929] p-6 sm:p-8 rounded-3xl flex flex-col items-center md:items-start text-center md:text-left shadow-[4px_4px_0px_0px_#292929]">
+                    <div className="w-12 h-1.5 bg-[#ADFF2F] rounded-full mb-4" />
 
-                    {/* COVER IMAGE */}
-                    <div className="bg-[#F8FBFF] rounded-3xl p-4 flex items-center justify-center">
-                        <img
-                            src={'/' + String(data.category.cover_image || '').replace(/^\/+/, '')}
-                            alt={data.category.name}
-                            className="w-40 h-40 md:w-36 md:h-36 object-cover rounded-2xl"
-                        />
-                    </div>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight uppercase">
+                        {data.category.name}
+                    </h1>
 
-                    <div className="text-center md:text-left">
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-[#0a1d48]">
-                            {data.category.name}
-                        </h1>
-                        <p className="text-gray-600 text-lg mt-4 leading-relaxed max-w-xl">
-                            {data.category.description}
-                        </p>
-                    </div>
+                    <p className="text-[#292929]/80 text-sm sm:text-base mt-4 leading-relaxed font-normal max-w-2xl">
+                        {data.category.description}
+                    </p>
                 </div>
 
-                {/* AUDIO LIST */}
-                <div className="w-full max-w-5xl mt-16 mb-20 flex flex-col gap-6">
+                {/* AUDIO LIST AREA */}
+                <div className="w-full max-w-4xl mt-12 mb-20 flex flex-col gap-6">
                     {data.audios.length > 0 ? (
-                        data.audios.map((audio, i) => (
-                            <div
-                                key={audio.id}
-                                className="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 flex flex-col transition-colors"
-                            >
-                                <div className="flex justify-between items-center mb-4">
-                                    <p className="font-bold text-[#0a1d48]">
-                                        {audio.title}
-                                    </p>
+                        data.audios.map((audio) => (
+                            <div key={audio.id} className="relative group">
+                                {/* Efek Bayangan Solid Hitam di Belakang Card */}
+                                <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-1.5 translate-y-1.5" />
+
+                                {/* Kontainer Pemutar Audio Utama dengan Border Tebal */}
+                                <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl p-6 flex flex-col transition-all">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <p className="font-black text-lg text-[#292929] uppercase tracking-tight">
+                                            {audio.title}
+                                        </p>
+                                    </div>
+                                    <audio
+                                        controls
+                                        src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
+                                        className="w-full bg-[#F2F2F2] rounded-xl border border-[#292929]/10"
+                                        onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
+                                    />
                                 </div>
-                                <audio
-                                    controls
-                                    src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
-                                    className="w-full bg-[#F5F7FA] rounded-xl"
-                                    onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
-                                />
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                            <p className="text-gray-400">Belum ada audio meditasi di kategori ini.</p>
+                        /* Kosong State Box */
+                        <div className="relative group w-full">
+                            <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2" />
+                            <div className="relative bg-[#FFFFFF]/40 backdrop-blur-md border-4 border-[#292929] rounded-3xl p-12 text-center">
+                                <p className="text-[#292929] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
+                                    Belum ada audio meditasi di kategori ini.
+                                </p>
+                                <Link to="/meditation" className="inline-block mt-6 relative group/btn">
+                                    <div className="absolute inset-0 bg-[#292929] rounded-xl translate-x-1 translate-y-1 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:translate-y-0.5" />
+                                    <button className="relative px-8 py-3.5 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer">
+                                        Kembali ke Meditasi
+                                    </button>
+                                </Link>
+                            </div>
                         </div>
                     )}
                 </div>
+
             </div>
+
+            {/* Bagian Footer - Mengalir alami nempel putih murni tanpa sekat abu-abu penggantung */}
             <Footer />
-        </>
+        </div>
     );
 }

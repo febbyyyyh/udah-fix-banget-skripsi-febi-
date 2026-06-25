@@ -52,10 +52,8 @@ const audioManager = {
     }
 };
 
-// Jalankan inisialisasi awal saat file dimuat browser
 audioManager.init();
 
-// Standby mendengarkan sinyal stop dari halaman Meditation/Education
 if (typeof window !== "undefined") {
     window.addEventListener("stop-relaxation-music", () => {
         audioManager.stop();
@@ -77,7 +75,6 @@ const MusicPlayer = () => {
         { id: 3, name: "Forest", path: "/music/forest.mp3", icon: "🌲" },
     ];
 
-    // Sinkronisasi status UI dengan kondisi Audio yang nyata
     const syncUIWithGlobal = () => {
         const status = audioManager.getStatus();
         setIsPlaying(status.isPlaying);
@@ -91,7 +88,6 @@ const MusicPlayer = () => {
             syncUIWithGlobal();
         };
 
-        // Dengarkan perubahan status internal dan eksternal audio
         window.addEventListener("relaxation-state-changed", handleStateChange);
 
         const audioEl = audioManager.instance;
@@ -113,10 +109,8 @@ const MusicPlayer = () => {
         const status = audioManager.getStatus();
 
         if (status.track?.id === track.id) {
-            // Jika klik lagu yang sama, toggle play/pause
             audioManager.togglePlay();
         } else {
-            // Putar lagu baru lewat manager
             audioManager.play(track)
                 .then(() => syncUIWithGlobal())
                 .catch((error) => {
@@ -134,37 +128,41 @@ const MusicPlayer = () => {
     };
 
     return (
-        <div className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[310] flex flex-col items-start">
+        <div className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[400] flex flex-col items-start text-[#292929]">
             {/* --- Mini Popup Menu --- */}
             {showMenu && (
-                <div className="absolute bottom-16 left-0 bg-white border-2 border-[#0a1d48] rounded-2xl p-2.5 shadow-2xl animate-in slide-in-from-bottom-5 duration-300 w-48">
-                    <p className="text-xs text-gray-400 font-medium px-3 mb-2 tracking-wide">PILIH MUSIK RELAKSASI</p>
+                // Mengubah border lama menjadi border kustom #00BFFF
+                <div className="absolute bottom-16 left-0 bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-2xl p-2.5 shadow-xl animate-in slide-in-from-bottom-5 duration-300 w-52">
+                    <p className="text-[10px] text-[#292929]/50 font-black px-3 mb-2 tracking-widest uppercase">PILIH MUSIK RELAKSASI</p>
 
                     <div className="flex flex-col gap-1.5">
                         {playlist.map((track) => (
                             <button
                                 key={track.id}
                                 onClick={() => handleSelectMusic(track)}
-                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-semibold active:scale-95 ${currentTrack?.id === track.id && isPlaying
-                                        ? "bg-blue-100 text-[#0a1d48]"
-                                        : "hover:bg-gray-100 text-gray-700"
+                                // Aktif menggunakan kombinasi warna kustom #00BFFF, tidak aktif menggunakan hover #F2F2F2
+                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-bold active:scale-95 ${currentTrack?.id === track.id && isPlaying
+                                        ? "bg-[#00BFFF] text-[#FFFFFF]"
+                                        : "hover:bg-[#F2F2F2] text-[#292929]"
                                     }`}
                             >
-                                <span className="text-base">{track.icon}</span>
+                                <span className="text-base select-none">{track.icon}</span>
                                 <span className="flex-1 text-left">{track.name}</span>
                                 {currentTrack?.id === track.id && isPlaying && (
-                                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                    // Pulse indicator diganti warna kontras #ADFF2F
+                                    <span className="w-2.5 h-2.5 bg-[#ADFF2F] rounded-full animate-pulse"></span>
                                 )}
                             </button>
                         ))}
 
                         {isPlaying && currentTrack && (
-                            <div className="mt-2 pt-2 border-t border-gray-100">
+                            <div className="mt-2 pt-2 border-t border-[#F2F2F2]">
                                 <button
                                     onClick={handleStopMusic}
-                                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-bold text-red-500 hover:bg-red-50 active:scale-95"
+                                    // Button stop musik dibersihkan warna merahnya, dialihkan ke tombol abu-abu netral font hitam tebal
+                                    className="flex items-center gap-3 w-full px-4 py-2.5 bg-[#F2F2F2] rounded-xl transition-all text-sm font-black text-[#292929] hover:opacity-90 active:scale-95"
                                 >
-                                    <span className="text-base">⏹️</span>
+                                    <span className="text-sm select-none">⏹️</span>
                                     <span className="flex-1 text-left">Stop Music</span>
                                 </button>
                             </div>
@@ -173,14 +171,16 @@ const MusicPlayer = () => {
                 </div>
             )}
 
-            {/* --- Tombol Utama --- */}
+            {/* --- Tombol Floating Utama --- */}
             <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-[#0a1d48] text-[#0a1d48] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
+                // Border diubah menjadi #00BFFF dan teks isi memakai font gelap baru #292929
+                className="w-12 h-12 md:w-14 md:h-14 bg-[#FFFFFF] border-2 border-[#00BFFF] text-[#292929] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
                 title={showMenu ? "Tutup Menu" : "Pilih Musik Relaksasi"}
             >
                 {isPlaying ? (
-                    <span className="text-xl md:text-2xl animate-spin-slow">💿</span>
+                    // Ikon disc berputar jika lagu menyala
+                    <span className="text-xl md:text-2xl animate-spin" style={{ animationDuration: '4s' }}>💿</span>
                 ) : (
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -188,13 +188,15 @@ const MusicPlayer = () => {
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
+                        strokeWidth={2.5}
                     >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                 )}
 
                 {isPlaying && (
-                    <span className="absolute inset-0 rounded-full bg-[#0a1d48]/20 animate-ping"></span>
+                    // Efek radar gelombang luar diubah warnanya mengikuti aksen biru #00BFFF
+                    <span className="absolute inset-0 rounded-full bg-[#00BFFF]/20 animate-ping"></span>
                 )}
             </button>
         </div>

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import axiosAdmin from "../../utils/axiosAdmin";
-const vector = "/assets/vector-admin.svg";
-// Import Recharts untuk grafik
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 export default function DashboardAdmin() {
@@ -30,52 +28,44 @@ export default function DashboardAdmin() {
         fetchStats();
     }, []);
 
-    // Warna untuk Pie Chart agar terlihat modern dan kontras
-    const COLORS = ["#1A62C2", "#FF8042", "#FFBB28", "#00C49F", "#FF4560"];
+    // MENYINGKRONKAN WARNA INDIKATOR DENGAN HALAMAN HASIL USER (Biru, Hijau, Kuning, Jingga, Merah)
+    const getCategoryColors = (categoryName) => {
+        const cat = categoryName.toLowerCase();
+        if (cat.includes('depression')) return { bg: "bg-[#75b9e4]/20", text: "text-[#75b9e4]", hex: "#75b9e4" };
+        if (cat.includes('anxiety')) return { bg: "bg-[#7aef92]/20", text: "text-[#7aef92]", hex: "#7aef92" };
+        if (cat.includes('stress')) return { bg: "bg-[#fff771]/30", text: "text-[#bfae00]", hex: "#fff771" };
+        if (cat.includes('sangat berat')) return { bg: "bg-[#f94e67]/20", text: "text-[#f94e67]", hex: "#f94e67" };
+        if (cat.includes('berat')) return { bg: "bg-[#ffba58]/20", text: "text-[#ffba58]", hex: "#ffba58" };
+        return { bg: "bg-[#75b9e4]/20", text: "text-[#75b9e4]", hex: "#75b9e4" }; // Default Normal
+    };
 
     return (
-        <div className="p-4 md:p-6">
-            {/* HERO CARD */}
-            <div
-                className="
-                    bg-[#1A62C2]
-                    rounded-2xl
-                    px-6 py-6
-                    flex flex-col md:flex-row
-                    items-start md:items-center
-                    justify-between
-                    text-white
-                    gap-6
-                "
-            >
-                <div className="max-w-xl text-center md:text-left">
-                    <h2 className="text-xl md:text-2xl font-semibold mb-2">
-                        Halo, Admin!
-                    </h2>
-                    <p className="text-white/90 leading-relaxed text-sm md:text-base">
-                        Kelola konten meditasi, edukasi, dan pantau data
-                        pengguna melalui dashboard ini.
-                    </p>
-                </div>
+        <div className="p-4 md:p-6 bg-[#FFFFFF] min-h-screen text-[#292929]">
 
-                <img
-                    src={vector}
-                    alt="Admin Illustration"
-                    className="hidden md:block md:w-56 lg:w-64 object-contain"
-                />
+            {/* HERO CARD - Dirombak Total Menjadi Flat Desain Eksklusif Tanpa Gambar Ilustrasi */}
+            <div className="w-full bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 relative overflow-hidden flex flex-col justify-center min-h-[160px] shadow-sm">
+                {/* Aksen ornamen garis minimalis hijau penyeimbang visual */}
+                <div className="w-12 h-1.5 bg-[#ADFF2F] rounded-full mb-3" />
+
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                    Halo, Admin!
+                </h2>
+                <p className="text-[#292929]/70 mt-2 max-w-xl text-sm md:text-base font-normal leading-relaxed">
+                    Kelola konten meditasi, edukasi, dan pantau data perkembangan psikologis pengguna secara berkala melalui panel kontrol ini.
+                </p>
             </div>
 
             {/* STAT CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
                 <StatCard
-                    title="Total meditasi"
+                    title="Total Meditasi"
                     value={loading ? "..." : stats.totalAudio}
-                    subtitle="audio meditasi"
+                    subtitle="audio terbitan"
                 />
                 <StatCard
-                    title="Total edukasi"
+                    title="Total Edukasi"
                     value={loading ? "..." : stats.totalVideo}
-                    subtitle="video edukasi"
+                    subtitle="materi video"
                 />
                 <StatCard
                     title="Total Pengunjung"
@@ -84,14 +74,14 @@ export default function DashboardAdmin() {
                 />
             </div>
 
-            {/* ANALISIS KONDISI MENTAL (DASS) */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-8">
+            {/* ANALISIS KONDISI MENTAL (DASS PIE CHART) */}
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-6 mt-8 shadow-sm">
                 <div className="mb-6">
-                    <h2 className="text-lg font-bold text-[#0A1D48]">Analisis Kondisi Mental</h2>
-                    <p className="text-sm text-gray-400">Distribusi hasil tes DASS pengguna dalam 1 minggu terakhir</p>
+                    <h2 className="text-lg font-bold tracking-tight">Analisis Kondisi Mental</h2>
+                    <p className="text-xs sm:text-sm text-[#292929]/50 font-medium">Distribusi hasil rekaman skrining DASS pengguna dalam 1 minggu terakhir</p>
                 </div>
 
-                <div className="h-[350px] w-full flex flex-col items-center justify-center">
+                <div className="h-[350px] w-full flex items-center justify-center">
                     {!loading && stats.dassAnalysis.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -101,42 +91,35 @@ export default function DashboardAdmin() {
                                     nameKey="result_category"
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={70}
+                                    innerRadius={75}
                                     outerRadius={105}
-                                    paddingAngle={5}
+                                    paddingAngle={4}
                                     stroke="none"
                                     label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
                                 >
                                     {stats.dassAnalysis.map((entry, index) => {
-                                        // Logika penentuan warna agar sinkron dengan tabel
-                                        const category = entry.result_category.toLowerCase();
-                                        let sliceColor = "#CBD5E1"; // Default Gray
-
-                                        if (category.includes('depression')) sliceColor = "#1A62C2"; // Biru
-                                        else if (category.includes('anxiety')) sliceColor = "#FF8042"; // Orange
-                                        else if (category.includes('stress')) sliceColor = "#FFBB28"; // Kuning
-                                        else if (category === 'normal') sliceColor = "#00C49F"; // Hijau
-
+                                        const colorConfig = getCategoryColors(entry.result_category);
                                         return (
-                                            <Cell key={`cell-${index}`} fill={sliceColor} />
+                                            <Cell key={`cell-${index}`} fill={colorConfig.hex} />
                                         );
                                     })}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '2px solid #F2F2F2', boxShadow: 'none' }}
+                                    itemStyle={{ color: '#292929', fontWeight: 'bold', fontSize: '13px' }}
                                 />
                                 <Legend
                                     verticalAlign="bottom"
                                     height={36}
                                     iconType="circle"
-                                    formatter={(value) => <span className="text-xs font-bold text-gray-500 uppercase">{value}</span>}
+                                    formatter={(value) => <span className="text-xs font-bold text-[#292929]/50 uppercase tracking-wider">{value}</span>}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="text-center">
-                            <p className="text-gray-400 italic">
-                                {loading ? "Memuat data..." : "Belum ada data tes DASS masuk dalam minggu ini."}
+                        <div className="text-center py-10">
+                            <p className="text-sm font-medium text-[#292929]/40 italic">
+                                {loading ? "Memuat visualisasi statistik..." : "Belum ada data rekaman masuk dalam minggu ini."}
                             </p>
                         </div>
                     )}
@@ -144,54 +127,43 @@ export default function DashboardAdmin() {
             </div>
 
             {/* TABEL HASIL DASS TERBARU */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-8 overflow-hidden">
-                <div className="p-6 border-b border-gray-50">
-                    <h2 className="text-lg font-bold text-[#0A1D48]">Hasil Tes DASS Terbaru</h2>
-                    <p className="text-sm text-gray-400">Menampilkan 10 riwayat pemeriksaan terakhir</p>
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl mt-8 overflow-hidden shadow-sm">
+                <div className="p-6 border-b-2 border-[#F2F2F2]">
+                    <h2 className="text-lg font-bold tracking-tight">Hasil Tes DASS Terbaru</h2>
+                    <p className="text-xs sm:text-sm text-[#292929]/50 font-medium">Menampilkan 10 riwayat pemeriksaan terakhir sistem pengguna</p>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-medium">
+                        <thead className="bg-[#F2F2F2]/60 text-[#292929]/50 text-xs uppercase font-black tracking-wider">
                             <tr>
                                 <th className="px-6 py-4">Sesi ID</th>
-                                <th className="px-6 py-4">Kategori</th>
+                                <th className="px-6 py-4">Kategori Keparahan</th>
                                 <th className="px-6 py-4 text-center">D</th>
                                 <th className="px-6 py-4 text-center">A</th>
                                 <th className="px-6 py-4 text-center">S</th>
                                 <th className="px-6 py-4">Waktu</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y-2 divide-[#F2F2F2]">
                             {stats.recentDass.length > 0 ? (
                                 stats.recentDass.map((item, index) => {
-                                    // Logika penentuan warna badge
-                                    let badgeColor = "bg-gray-100 text-gray-600"; // Default (Normal)
-
-                                    if (item.result_category.toLowerCase().includes('depression')) {
-                                        badgeColor = "bg-blue-100 text-[#1A62C2]"; // Biru Depresi
-                                    } else if (item.result_category.toLowerCase().includes('anxiety')) {
-                                        badgeColor = "bg-orange-100 text-[#FF8042]"; // Orange Cemas
-                                    } else if (item.result_category.toLowerCase().includes('stress')) {
-                                        badgeColor = "bg-yellow-100 text-[#FFBB28]"; // Kuning Stres
-                                    } else if (item.result_category.toLowerCase() === 'normal') {
-                                        badgeColor = "bg-green-100 text-[#00C49F]"; // Hijau Normal
-                                    }
+                                    const styles = getCategoryColors(item.result_category);
 
                                     return (
-                                        <tr key={index} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm font-mono text-gray-400">
+                                        <tr key={index} className="hover:bg-[#F2F2F2]/20 transition-colors">
+                                            <td className="px-6 py-4 text-sm font-mono font-bold text-[#292929]/40">
                                                 {item.session_id.substring(0, 8)}...
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${badgeColor}`}>
+                                                <span className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-black ${styles.bg} ${styles.text}`}>
                                                     {item.result_category}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center text-sm font-semibold text-blue-600">{item.depression_score}</td>
-                                            <td className="px-6 py-4 text-center text-sm font-semibold text-orange-400">{item.anxiety_score}</td>
-                                            <td className="px-6 py-4 text-center text-sm font-semibold text-yellow-400">{item.stress_score}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                            <td className="px-6 py-4 text-center text-sm font-black text-[#75b9e4]">{item.depression_score}</td>
+                                            <td className="px-6 py-4 text-center text-sm font-black text-[#7aef92]">{item.anxiety_score}</td>
+                                            <td className="px-6 py-4 text-center text-sm font-black text-[#ffba58]">{item.stress_score}</td>
+                                            <td className="px-6 py-4 text-sm text-[#292929]/60 font-medium">
                                                 {new Date(item.created_at).toLocaleString('id-ID', {
                                                     dateStyle: 'short',
                                                     timeStyle: 'short'
@@ -202,8 +174,8 @@ export default function DashboardAdmin() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-400">
-                                        Belum ada data tes tersedia.
+                                    <td colSpan="6" className="px-6 py-12 text-center text-sm font-medium text-[#292929]/40 italic">
+                                        Belum ada data transaksi tes yang terdaftar.
                                     </td>
                                 </tr>
                             )}
@@ -215,17 +187,17 @@ export default function DashboardAdmin() {
     );
 }
 
-/* ======================
-    Stat Card Component
-====================== */
+/* ==================================
+    STAT CARD SUB-COMPONENT KUSTOM
+================================== */
 function StatCard({ title, value, subtitle }) {
     return (
-        <div className="bg-white rounded-2xl px-6 py-5 shadow-sm border border-gray-50">
-            <h3 className="text-sm text-gray-500 mb-1 capitalize">{title}</h3>
-            <p className="text-3xl font-bold text-[#0a1d48]">
+        <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-2xl px-6 py-5 shadow-sm">
+            <h3 className="text-xs font-black text-[#292929]/40 uppercase tracking-wider mb-1">{title}</h3>
+            <p className="text-3xl font-extrabold tracking-tight">
                 {value}
             </p>
-            <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
+            <p className="text-xs font-medium text-[#292929]/50 mt-1">{subtitle}</p>
         </div>
     );
 }

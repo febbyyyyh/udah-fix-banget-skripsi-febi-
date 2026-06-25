@@ -2,12 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-/* assets */
-const editIcon = "/assets/edit-ikon.svg";
-
 export default function KelolaIsiMeditasi() {
     const { id } = useParams();
-    const navigate = useNavigate(); // Tambahkan ini
+    const navigate = useNavigate();
     const token = localStorage.getItem("admin_token");
 
     /* ================= STATE ================= */
@@ -23,11 +20,9 @@ export default function KelolaIsiMeditasi() {
 
     // Form States
     const [title, setTitle] = useState("");
-    const [audioFile, setAudioFile] = useState(null); // State untuk file audio
+    const [audioFile, setAudioFile] = useState(null);
     const [catName, setCatName] = useState("");
     const [catDesc, setCatDesc] = useState("");
-    const [catImageFile, setCatImageFile] = useState(null);
-    const [previewCategoryCover, setPreviewCategoryCover] = useState(null);
     const [successMessage, setSuccessMessage] = useState("");
 
     /* ================= EFFECT ================= */
@@ -45,11 +40,9 @@ export default function KelolaIsiMeditasi() {
     const fetchCategory = async () => {
         try {
             const res = await axios.get(
-                    `/api/admin/meditations/${id}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-
-            // Simpan data apa adanya dari database
+                `/api/admin/meditations/${id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setCategory(res.data);
             setCatName(res.data.name);
             setCatDesc(res.data.description);
@@ -60,14 +53,9 @@ export default function KelolaIsiMeditasi() {
 
     const fetchAudios = async () => {
         try {
-            // Tambahkan timestamp agar browser tidak mengambil dari cache
             const res = await axios.get(`/api/admin/meditations/${id}/audios?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
-            console.log("Data Audio Terbaru:", res.data);
-
-            // Gunakan spread operator untuk memastikan React mendeteksi perubahan state
             setAudios([...res.data]);
         } catch (err) {
             console.error("Gagal ambil audio:", err);
@@ -76,15 +64,11 @@ export default function KelolaIsiMeditasi() {
     };
 
     /* ================= LOGIC CRUD ================= */
-    // 1. Validasi untuk Simpan Audio (Tambah & Edit)
     const handleSaveAudio = async () => {
-        // TRIGGER VALIDASI
         if (!title.trim()) {
             return alert("Gagal simpan. Semua kolom wajib diisi.");
         }
 
-        // Jika sedang mode "Tambah", file audio wajib ada. 
-        // Jika "Edit", file audio boleh kosong (artinya tidak ingin ganti file).
         if (showAdd && !audioFile) {
             return alert("Gagal simpan. Semua kolom wajib diisi.");
         }
@@ -130,12 +114,12 @@ export default function KelolaIsiMeditasi() {
             setShowDelete(false);
             fetchAudios();
             showSuccess("Audio berhasil dihapus");
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    // 2. Validasi untuk Update Informasi Kategori (Header)
     const handleUpdateCategory = async () => {
-        // TRIGGER VALIDASI
         if (!catName.trim() || !catDesc.trim()) {
             return alert("Gagal simpan. Semua kolom wajib diisi.");
         }
@@ -144,12 +128,8 @@ export default function KelolaIsiMeditasi() {
         formData.append("name", catName);
         formData.append("description", catDesc);
 
-        if (catImageFile) {
-            formData.append("cover_image", catImageFile);
-        }
-
         try {
-            const res = await axios.put(
+            await axios.put(
                 `/api/admin/meditations/${id}`,
                 formData,
                 {
@@ -162,8 +142,6 @@ export default function KelolaIsiMeditasi() {
 
             await fetchCategory();
             setShowEditCategory(false);
-            setPreviewCategoryCover(null);
-            setCatImageFile(null);
             showSuccess("Informasi kategori berhasil diperbarui");
         } catch (err) {
             console.error("Error detail:", err.response?.data || err.message);
@@ -173,107 +151,91 @@ export default function KelolaIsiMeditasi() {
 
     if (!category) return null;
 
-    const getCoverUrl = (path) => {
+    const getAudioUrl = (path) => {
         if (!path) return null;
         if (path.startsWith("http")) return path;
-
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         return `${cleanPath}`;
     };
 
     return (
-        <div className="p-4">
-            {/* Tombol Kembali ke KelolaMeditasi */}
+        <div className="p-4 bg-[#FFFFFF] text-[#292929] min-h-screen">
+            {/* Tombol Kembali */}
             <button
                 onClick={() => navigate("/admin/kelola-meditasi")}
-                className="mb-4 text-sm text-[#1A62C2] font-semibold hover:underline flex items-center gap-2"
+                className="mb-6 text-sm text-[#00BFFF] font-black uppercase tracking-wider hover:opacity-80 flex items-center gap-2 cursor-pointer transition-opacity"
             >
                 ← Kembali ke Kelola Meditasi
             </button>
 
-            {/* ================= INFO PLAYLIST ================= */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 max-w-5xl relative border border-gray-100">
-                {/* TOMBOL EDIT - Tetap pakai editIcon dari Assets */}
+            {/* ================= INFO PLAYLIST (SUDAH DI-AKALI TANPA IKON GAMBAR) ================= */}
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 mb-8 max-w-5xl relative shadow-sm">
+                {/* Diakali memakai button text minimalis modern */}
                 <button
                     onClick={() => setShowEditCategory(true)}
-                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="absolute top-5 right-5 px-3 py-1.5 rounded-xl bg-[#F2F2F2] text-[#292929]/60 hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all text-xs font-black uppercase tracking-wider cursor-pointer"
                 >
-                    <img
-                        src={editIcon} // PAKAI ASSETS EDIT ICON
-                        className="w-5 h-5"
-                        alt="Edit Icon"
-                    />
+                    Edit Info
                 </button>
 
-                <div className="flex gap-6 items-center">
-                    {/* GAMBAR COVER - Ambil dari Database */}
-                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-blue-50">
-                        <img
-                            src={previewCategoryCover || getCoverUrl(category.cover_image)}
-                            className="w-full h-full object-cover"
-                            alt="Cover"
-                            onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=No+Cover"; }}
-                        />
-                    </div>
-
-                    <div>
-                        <h3 className="font-bold text-xl text-[#0A1D48]">{category.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1 max-w-2xl">{category.description}</p>
-                    </div>
+                <div className="flex flex-col items-start">
+                    <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-3" />
+                    <h3 className="font-black text-2xl tracking-tight">{category.name}</h3>
+                    <p className="text-sm text-[#292929]/70 mt-2 max-w-3xl font-normal leading-relaxed">{category.description}</p>
                 </div>
             </div>
 
             {/* ================= TABLE AUDIO ================= */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm max-w-5xl border border-gray-100">
+            <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 max-w-5xl shadow-sm">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-bold text-lg text-[#0A1D48]">Daftar Audio Meditasi</h2>
+                    <h2 className="font-black text-lg tracking-tight">Daftar Audio Meditasi</h2>
                     <button
                         onClick={() => { setTitle(""); setAudioFile(null); setShowAdd(true); }}
-                        className="bg-[#1A62C2] hover:bg-[#1551a3] text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+                        className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Audio
                     </button>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-gray-100">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 text-gray-600">
+                <div className="overflow-hidden rounded-2xl border-2 border-[#F2F2F2]">
+                    <table className="w-full text-sm border-collapse text-left">
+                        <thead className="bg-[#F2F2F2]/60 text-[#292929]/50 text-xs uppercase font-black tracking-wider">
                             <tr>
-                                <th className="px-6 py-4 text-left font-semibold w-16">No</th>
-                                <th className="px-6 py-4 text-left font-semibold">Judul Audio</th>
-                                <th className="px-6 py-4 text-left font-semibold">Konten</th>
-                                <th className="px-6 py-4 text-center font-semibold w-48">Aksi</th>
+                                <th className="px-6 py-4 w-16">No</th>
+                                <th className="px-6 py-4">Judul Audio</th>
+                                <th className="px-6 py-4">Konten</th>
+                                <th className="px-6 py-4 text-center w-48">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y-2 divide-[#F2F2F2]">
                             {audios.map((audio, i) => (
-                                <tr key={audio.id} className="hover:bg-blue-50/30 transition-colors">
-                                    <td className="px-6 py-4 text-gray-500">{i + 1}</td>
-                                    <td className="px-6 py-4 font-semibold text-[#0A1D48]">{audio.title}</td>
+                                <tr key={audio.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
+                                    <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
+                                    <td className="px-6 py-4 font-bold text-[#292929]">{audio.title}</td>
                                     <td className="px-6 py-4">
                                         <button
                                             onClick={() => { setSelectedAudio(audio); setShowPreview(true); }}
-                                            className="text-[#1A62C2] font-medium hover:underline"
+                                            className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
                                         >
                                             Preview Audio
                                         </button>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex justify-center gap-3">
+                                        <div className="flex justify-center gap-2">
                                             <button
                                                 onClick={() => {
                                                     setSelectedAudio(audio);
                                                     setTitle(audio.title);
-                                                    setAudioFile(null); // Reset file input saat edit
+                                                    setAudioFile(null);
                                                     setShowEdit(true);
                                                 }}
-                                                className="bg-blue-100 text-[#1551a3] px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors"
+                                                className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => { setSelectedAudio(audio); setShowDelete(true); }}
-                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
                                             >
                                                 Hapus
                                             </button>
@@ -289,81 +251,55 @@ export default function KelolaIsiMeditasi() {
             {/* ================= MODAL: EDIT CATEGORY ================= */}
             {showEditCategory && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-lg mb-6 text-[#0A1D48]">Edit Informasi Tipe Meditasi</h3>
+                    <h3 className="font-black text-xl mb-6 tracking-tight">Edit Informasi Tipe Meditasi</h3>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-6 p-4 bg-blue-50/50 rounded-2xl border border-blue-50">
-                            {/* Ganti baris ini di dalam Modal Edit Category */}
-                            <div className="w-20 h-20 rounded-xl bg-white shadow-sm overflow-hidden border border-blue-100">
-                                <img
-                                    src={previewCategoryCover || getCoverUrl(category.cover_image)}
-                                    className="w-full h-full object-cover"
-                                    alt="Preview"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Ganti Cover</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#1551a3] file:text-white hover:file:bg-[#1551a3] cursor-pointer"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            setCatImageFile(file);
-                                            setPreviewCategoryCover(URL.createObjectURL(file));
-                                        }
-                                    }}
-                                />
-
-                            </div>
-                        </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Nama Playlist</label>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Nama Tipe Meditasi</label>
                             <input
                                 value={catName}
                                 onChange={(e) => setCatName(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Deskripsi</label>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Deskripsi</label>
                             <textarea
                                 rows="3"
                                 value={catDesc}
                                 onChange={(e) => setCatDesc(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-blue-500 outline-none resize-none transition-all"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                             />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
-                        <button onClick={() => { setShowEditCategory(false); setPreviewCategoryCover(null); }} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-colors">Batal</button>
-                        <button onClick={handleUpdateCategory} className="bg-[#1551a3] text-white px-8 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-200 hover:bg-[#1551a3] transition-all">Simpan Perubahan</button>
+                        <button onClick={() => setShowEditCategory(false)} className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer">Batal</button>
+                        <button onClick={handleUpdateCategory} className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm hover:opacity-90 transition-all cursor-pointer active:scale-95">Simpan</button>
                     </div>
                 </ModalWrapper>
             )}
 
-            {/* ================= MODAL: ADD / EDIT AUDIO (DIPERBARUI DENGAN FILE UPLOAD) ================= */}
+            {/* ================= MODAL: ADD / EDIT AUDIO ================= */}
             {(showAdd || showEdit) && (
                 <ModalWrapper>
-                    <h3 className="font-bold text-lg mb-4 text-[#0A1D48]">
+                    <h3 className="font-black text-xl mb-6 tracking-tight">
                         {showAdd ? "Tambah Audio Baru" : "Edit Detail Audio"}
                     </h3>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">
                                 Judul Audio
                             </label>
                             <input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full border border-gray-200 px-4 py-3 rounded-xl mt-1 focus:ring-2 focus:ring-[#1551a3] outline-none"
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none text-sm font-medium"
                                 placeholder="Masukkan judul audio..."
                             />
                         </div>
 
-                        <div className="p-5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                        <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
+                            <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">
                                 File Audio (.mp3, .wav)
                             </label>
 
@@ -371,17 +307,11 @@ export default function KelolaIsiMeditasi() {
                                 type="file"
                                 accept="audio/*"
                                 onChange={(e) => setAudioFile(e.target.files[0])}
-                                className="text-sm text-gray-500 
-                           file:mr-4 file:py-2 file:px-4 
-                           file:rounded-full file:border-0 
-                           file:text-xs file:font-semibold 
-                           file:bg-[#1551a3] file:text-white 
-                           hover:file:bg-[#123f86] 
-                           cursor-pointer"
+                                className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
                             />
 
                             {showEdit && (
-                                <p className="text-[10px] text-gray-400 mt-2 italic">
+                                <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">
                                     *Biarkan kosong jika tidak ingin mengubah file audio
                                 </p>
                             )}
@@ -390,45 +320,37 @@ export default function KelolaIsiMeditasi() {
 
                     <div className="flex justify-end gap-3 mt-8">
                         <button
-                            onClick={() => {
-                                setShowAdd(false);
-                                setShowEdit(false);
-                            }}
-                            className="px-6 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700"
+                            onClick={() => { setShowAdd(false); setShowEdit(false); }}
+                            className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer"
                         >
                             Batal
                         </button>
 
                         <button
                             onClick={handleSaveAudio}
-                            className="bg-[#1551a3] hover:bg-[#123f86] 
-                       text-white px-8 py-2.5 rounded-xl 
-                       text-sm font-semibold shadow-lg 
-                       transition-all active:scale-95"
+                            className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90"
                         >
-                            Simpan
+                            Simpan Audio
                         </button>
                     </div>
                 </ModalWrapper>
-
             )}
 
             {/* ================= MODAL: PREVIEW ================= */}
             {showPreview && (
                 <ModalWrapper>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-[#0A1D48]">{selectedAudio.title}</h3>
-                        <button onClick={() => setShowPreview(false)} className="text-gray-400">✕</button>
+                        <h3 className="font-bold text-lg text-[#292929]">{selectedAudio.title}</h3>
+                        <button onClick={() => setShowPreview(false)} className="text-[#292929]/40 hover:text-[#292929] cursor-pointer">✕</button>
                     </div>
 
-                    {/* PERBAIKAN: Gunakan getCoverUrl agar path-nya benar (http://localhost:5000/uploads/...) */}
-                    <audio controls key={selectedAudio.id} className="w-full mt-4">
-                        <source src={getCoverUrl(selectedAudio.audio_file)} type="audio/mpeg" />
+                    <audio controls key={selectedAudio.id} className="w-full mt-4 bg-[#F2F2F2] rounded-xl">
+                        <source src={getAudioUrl(selectedAudio.audio_file)} type="audio/mpeg" />
                         Browser kamu tidak mendukung pemutar audio.
                     </audio>
 
-                    <button onClick={() => setShowPreview(false)} className="w-full mt-6 bg-gray-100 py-3 rounded-xl font-semibold text-gray-600">
-                        Tutup
+                    <button onClick={() => setShowPreview(false)} className="w-full mt-6 bg-[#F2F2F2] text-[#292929] py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-80 cursor-pointer">
+                        Tutup Preview
                     </button>
                 </ModalWrapper>
             )}
@@ -437,23 +359,23 @@ export default function KelolaIsiMeditasi() {
             {showDelete && (
                 <ModalWrapper>
                     <div className="text-center p-4">
-                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
-                        <h3 className="font-bold text-lg text-gray-800">Hapus Audio?</h3>
-                        <p className="text-sm text-gray-500 mt-2">Audio <span className="font-bold">"{selectedAudio?.title}"</span> akan dihapus permanen.</p>
+                        <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-black">!</div>
+                        <h3 className="font-black text-xl text-gray-800 tracking-tight">Hapus Audio?</h3>
+                        <p className="text-sm text-[#292929]/60 mt-2 leading-relaxed">Audio <span className="font-bold text-[#292929]">"{selectedAudio?.title}"</span> akan dihapus secara permanen dari server.</p>
                     </div>
                     <div className="flex gap-3 mt-6">
-                        <button onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-xl font-semibold text-gray-500">Batal</button>
-                        <button onClick={handleDeleteAudio} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold shadow-lg shadow-red-100">Ya, Hapus</button>
+                        <button onClick={() => setShowDelete(false)} className="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] cursor-pointer">Batal</button>
+                        <button onClick={handleDeleteAudio} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:opacity-90 cursor-pointer">Ya, Hapus</button>
                     </div>
                 </ModalWrapper>
             )}
 
             {/* ================= TOAST SUCCESS ================= */}
             {successMessage && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-100 animate-bounce">
-                    <div className="bg-green-600 text-white rounded-full px-8 py-3 shadow-2xl flex items-center gap-3">
-                        <span className="bg-white text-green-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
-                        <p className="text-sm font-bold tracking-wide">{successMessage}</p>
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[800]">
+                    <div className="bg-[#292929] text-[#FFFFFF] rounded-xl px-6 py-3 shadow-md flex items-center gap-3">
+                        <span className="bg-[#ADFF2F] text-[#292929] w-5 h-5 rounded-full flex items-center justify-center text-xs font-black">✓</span>
+                        <p className="text-xs font-bold uppercase tracking-wider">{successMessage}</p>
                     </div>
                 </div>
             )}
@@ -464,8 +386,8 @@ export default function KelolaIsiMeditasi() {
 /* ================= MODAL WRAPPER COMPONENT ================= */
 function ModalWrapper({ children }) {
     return (
-        <div className="fixed inset-0 bg-[#0A1D48]/60 backdrop-blur-sm flex items-center justify-center z-50 px-4 transition-all">
-            <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-[#292929]/50 backdrop-blur-sm flex items-center justify-center z-[700] px-4 transition-all">
+            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl">
                 {children}
             </div>
         </div>

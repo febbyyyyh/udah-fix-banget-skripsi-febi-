@@ -141,6 +141,7 @@ const WritingTherapy = ({ isOpen, setIsOpen, counselorUrl = "" }) => {
 
     return (
         <>
+            {/* FLOATING ACTION BUTTON (FAB) UTAMA */}
             <button
                 type="button"
                 onClick={handleOpenToggle}
@@ -149,207 +150,140 @@ const WritingTherapy = ({ isOpen, setIsOpen, counselorUrl = "" }) => {
                     right: "calc(var(--writing-fab-right) + var(--writing-fab-offset, 0px))",
                     bottom: "var(--writing-fab-bottom)",
                 }}
-                className="fixed [--writing-fab-right:1.5rem] [--writing-fab-bottom:1.5rem] md:[--writing-fab-right:2rem] md:[--writing-fab-bottom:2rem] z-[310] w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-[#0a1d48] text-[#0a1d48] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300"
+                className="fixed [--writing-fab-right:1.5rem] [--writing-fab-bottom:1.5rem] md:[--writing-fab-right:2rem] md:[--writing-fab-bottom:2rem] z-[600] w-12 h-12 md:w-14 md:h-14 bg-[#FFFFFF] border-2 border-[#00BFFF] text-[#292929] rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300"
             >
                 {isOpen ? (
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 md:h-6 md:w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                        />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 ) : (
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 md:h-6 md:w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                        />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                 )}
             </button>
 
+            {/* MODAL OVERLAY FULL SCREEN */}
             {isOpen && (
-                <div className="fixed inset-0 z-[300] bg-white/70 backdrop-blur-md overflow-y-auto">
-                    <div className="min-h-screen flex items-center justify-center px-4 py-20 md:py-24">
-                        <div className="w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl border border-blue-100 overflow-hidden">
-                            <div className="px-6 md:px-10 py-7 border-b border-blue-100 bg-gradient-to-br from-[#eef4ff] to-white">
+                // Mengubah bg-white/70 menjadi bg-[#FFFFFF] full solid ber-z-index tinggi agar navbar tertutup total
+                <div className="fixed inset-0 z-[550] bg-[#FFFFFF] overflow-y-auto text-[#292929]">
+                    <div className="min-h-screen flex items-center justify-center px-4 py-16 md:py-20">
+                        <div className="w-full max-w-4xl bg-[#FFFFFF] rounded-[2rem] border-2 border-[#00BFFF] overflow-hidden shadow-sm">
+
+                            {/* Header Panel */}
+                            <div className="px-6 md:px-10 py-7 border-b border-[#F2F2F2] bg-[#FFFFFF]">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <p className="text-xs md:text-sm font-semibold text-[#4A90E2] tracking-wide">
+                                        <p className="text-xs md:text-sm font-black text-[#00BFFF] tracking-wide uppercase">
                                             Writing Expression Therapy
                                         </p>
-
-                                        <h2 className="mt-2 text-2xl md:text-4xl font-bold text-[#0a1d48] tracking-tight">
+                                        <h2 className="mt-2 text-2xl md:text-4xl font-black text-[#292929] tracking-tight">
                                             Ruang Tulis
                                         </h2>
-
-                                        <p className="mt-3 text-sm md:text-base text-slate-600 max-w-2xl leading-relaxed">
-                                            Tempat singkat untuk menuliskan pikiran dan
-                                            perasaan terdalam tanpa perlu terlihat rapi.
+                                        <p className="mt-3 text-sm md:text-base text-[#292929]/80 max-w-2xl leading-relaxed">
+                                            Tempat singkat untuk menuliskan pikiran dan perasaan terdalam tanpa perlu terlihat rapi.
                                         </p>
-
-                                        <p className="mt-2 text-xs md:text-sm text-[#4A90E2] font-medium">
+                                        <p className="mt-2 text-xs md:text-sm text-[#00BFFF] font-bold">
                                             Berbasis metode expressive writing yang dikembangkan oleh psikolog James W. Pennebaker.
                                         </p>
                                     </div>
 
+                                    {/* Tombol Close Internal */}
                                     <button
                                         type="button"
                                         onClick={handleClose}
-                                        className="shrink-0 w-10 h-10 rounded-full bg-white text-[#0a1d48] border border-blue-100 shadow-sm flex items-center justify-center hover:bg-blue-50 transition"
+                                        className="shrink-0 w-10 h-10 rounded-full bg-[#F2F2F2] text-[#292929] flex items-center justify-center hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition shadow-sm"
                                         aria-label="Tutup"
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-5 w-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="px-6 md:px-10 py-7 md:py-9">
+                            {/* Main Body View */}
+                            <div className="px-6 md:px-10 py-8">
+
+                                {/* VIEW 1: Belum Mulai Menulis */}
                                 {!hasStarted && !isCompleted && (
-                                    <div>
-                                        <div>
-                                            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-[#4A90E2] text-xs font-semibold">
-                                                15 menit menulis bebas
+                                    <div className="flex flex-col items-start">
+                                        <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#F2F2F2] text-[#292929] text-xs font-bold">
+                                            15 menit menulis bebas
+                                        </div>
+
+                                        <h3 className="mt-4 text-xl md:text-2xl font-black leading-snug">
+                                            Tulis tentang hal yang sedang terasa berat.
+                                        </h3>
+
+                                        <p className="mt-3 text-sm md:text-base text-[#292929]/80 leading-relaxed">
+                                            Pilih satu pengalaman, pikiran, atau perasaan yang akhir-akhir ini sering muncul. Tuliskan apa yang benar-benar kamu rasakan, bukan apa yang menurutmu seharusnya kamu rasakan.
+                                        </p>
+
+                                        <div className="mt-6 space-y-3.5 w-full">
+                                            <div className="flex gap-4 items-center">
+                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00BFFF] text-[#FFFFFF] text-xs font-black">1</span>
+                                                <p className="text-sm font-bold text-[#292929]/90">Tulis pikiran dan perasaan terdalam.</p>
                                             </div>
-
-                                            <h3 className="mt-4 text-xl md:text-2xl font-bold text-[#0a1d48] leading-snug">
-                                                Tulis tentang hal yang sedang terasa berat.
-                                            </h3>
-
-                                            <p className="mt-3 text-sm md:text-base text-slate-600 leading-relaxed">
-                                                Pilih satu pengalaman, pikiran, atau perasaan
-                                                yang akhir-akhir ini sering muncul. Tuliskan apa
-                                                yang benar-benar kamu rasakan, bukan apa yang
-                                                menurutmu seharusnya kamu rasakan.
-                                            </p>
-
-                                            <div className="mt-6 space-y-3">
-                                                <div className="flex gap-3">
-                                                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0a1d48] text-white text-xs font-semibold">
-                                                        1
-                                                    </span>
-                                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                                        Tulis pikiran dan perasaan terdalam.
-                                                    </p>
-                                                </div>
-
-                                                <div className="flex gap-3">
-                                                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0a1d48] text-white text-xs font-semibold">
-                                                        2
-                                                    </span>
-                                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                                        Jangan berhenti untuk mengedit atau
-                                                        memperbaiki kalimat.
-                                                    </p>
-                                                </div>
-
-                                                <div className="flex gap-3">
-                                                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0a1d48] text-white text-xs font-semibold">
-                                                        3
-                                                    </span>
-                                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                                        Tulisan ini tidak perlu dibagikan kepada
-                                                        siapa pun.
-                                                    </p>
-                                                </div>
+                                            <div className="flex gap-4 items-center">
+                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00BFFF] text-[#FFFFFF] text-xs font-black">2</span>
+                                                <p className="text-sm font-bold text-[#292929]/90">Jangan berhenti untuk mengedit atau memperbaiki kalimat.</p>
                                             </div>
-
-                                            <div className="mt-7 flex flex-col sm:flex-row gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={handleStartWriting}
-                                                    className="px-6 py-3 rounded-full bg-[#0a1d48] text-white font-semibold text-sm hover:scale-105 transition shadow-md"
-                                                >
-                                                    Mulai Menulis
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={handleClose}
-                                                    className="px-6 py-3 rounded-full bg-white border border-blue-100 text-[#0a1d48] font-semibold text-sm hover:bg-blue-50 transition"
-                                                >
-                                                    Nanti Saja
-                                                </button>
+                                            <div className="flex gap-4 items-center">
+                                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00BFFF] text-[#FFFFFF] text-xs font-black">3</span>
+                                                <p className="text-sm font-bold text-[#292929]/90">Tulisan ini tidak perlu dibagikan kepada siapa pun.</p>
                                             </div>
                                         </div>
 
-                                        
+                                        <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                            <button
+                                                type="button"
+                                                onClick={handleStartWriting}
+                                                className="px-6 py-3 rounded-xl bg-[#00BFFF] text-[#FFFFFF] font-black text-sm hover:opacity-90 transition shadow-sm"
+                                            >
+                                                Mulai Menulis
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleClose}
+                                                className="px-6 py-3 rounded-xl bg-[#F2F2F2] text-[#292929] font-black text-sm hover:opacity-80 transition"
+                                            >
+                                                Nanti Saja
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 
+                                {/* VIEW 2: Sedang dalam Sesi Tulis */}
                                 {hasStarted && !isCompleted && (
                                     <div>
-                                        <div className="mb-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                                        <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                                             <div>
-                                                <p className="text-xs font-semibold text-[#4A90E2] tracking-wide">
-                                                    Pennebaker Writing Session
-                                                </p>
-
-                                                <h3 className="mt-2 text-xl md:text-2xl font-bold text-[#0a1d48]">
+                                                <h3 className="text-xl md:text-2xl font-black">
                                                     Biarkan tulisanmu mengalir.
                                                 </h3>
-
-                                                <p className="mt-1 text-sm text-slate-500">
+                                                <p className="mt-1 text-sm text-[#292929]/60 font-medium">
                                                     Tidak perlu diedit. Tidak perlu terlihat sempurna.
                                                 </p>
                                             </div>
 
-                                            <div className="min-w-[150px]">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-xs text-slate-500">
-                                                        Waktu
-                                                    </span>
-                                                    <span className="text-sm font-bold text-[#0a1d48]">
-                                                        {formatTime(timeLeft)}
-                                                    </span>
+                                            {/* Timer Progress */}
+                                            <div className="min-w-[160px] bg-[#F2F2F2] p-3 rounded-xl">
+                                                <div className="flex items-center justify-between mb-1.5 text-xs font-black">
+                                                    <span>Waktu Sisa</span>
+                                                    <span className="text-[#00BFFF]">{formatTime(timeLeft)}</span>
                                                 </div>
-
-                                                <div className="h-2 rounded-full bg-blue-100 overflow-hidden">
+                                                <div className="h-2 rounded-full bg-[#FFFFFF] overflow-hidden">
                                                     <div
-                                                        className="h-full rounded-full bg-[#0a1d48] transition-all duration-500"
+                                                        className="h-full bg-[#00BFFF] transition-all duration-500"
                                                         style={{ width: `${progress}%` }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="mb-4 rounded-2xl bg-[#f8fbff] border border-blue-100 px-5 py-4">
-                                            <p className="text-sm text-slate-600 leading-relaxed">
-                                                Kamu bisa mulai dengan:
-                                                <span className="font-semibold text-[#0a1d48]">
-                                                    {" "}
-                                                    “Aku ingin menuliskan tentang…”
-                                                </span>
-                                            </p>
+                                        <div className="mb-4 rounded-xl bg-[#F2F2F2] px-4 py-3 text-sm font-bold">
+                                            Kamu bisa mulai dengan: <span className="text-[#00BFFF]">“Aku ingin menuliskan tentang…”</span>
                                         </div>
 
                                         <textarea
@@ -357,59 +291,52 @@ const WritingTherapy = ({ isOpen, setIsOpen, counselorUrl = "" }) => {
                                             value={writingText}
                                             onChange={(e) => setWritingText(e.target.value)}
                                             maxLength={3000}
-                                            placeholder="Aku ingin menuliskan tentang..."
-                                            className="w-full min-h-[330px] md:min-h-[390px] resize-none rounded-[1.4rem] border border-blue-100 bg-[#fbfdff] px-5 py-5 text-[#0a1d48] placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#4A90E2]/40 focus:border-[#4A90E2] leading-relaxed shadow-inner"
+                                            placeholder="Tumpahkan semua di sini..."
+                                            className="w-full min-h-[300px] resize-none rounded-2xl border-2 border-[#F2F2F2] bg-[#FFFFFF] px-5 py-4 text-[#292929] font-medium placeholder:text-[#292929]/30 focus:outline-none focus:border-[#00BFFF] leading-relaxed shadow-sm"
                                         />
 
-                                        <div className="mt-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                            <p className="text-xs md:text-sm text-slate-500">
+                                        <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                            <p className="text-xs font-bold text-[#292929]/50">
                                                 {wordCount} kata • {writingText.length}/3000 karakter
                                             </p>
 
-                                            <div className="flex flex-wrap gap-3">
+                                            <div className="flex gap-3">
                                                 <button
                                                     type="button"
                                                     onClick={handleResetWriting}
-                                                    className="px-5 py-3 rounded-full border border-red-100 text-red-500 font-semibold text-sm hover:bg-red-50 transition"
+                                                    className="px-5 py-2.5 rounded-xl border-2 border-[#F2F2F2] text-[#292929]/70 font-black text-sm hover:bg-[#F2F2F2] transition"
                                                 >
-                                                    Hapus
+                                                    Hapus Semuanya
                                                 </button>
-
                                                 <button
                                                     type="button"
                                                     onClick={handleFinishWriting}
                                                     disabled={!writingText.trim()}
-                                                    className={
-                                                        writingText.trim()
-                                                            ? "px-6 py-3 rounded-full font-semibold text-sm transition shadow-md bg-[#0a1d48] text-white hover:scale-105"
-                                                            : "px-6 py-3 rounded-full font-semibold text-sm transition bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-                                                    }
+                                                    className={`px-6 py-2.5 rounded-xl font-black text-sm transition shadow-sm ${writingText.trim()
+                                                            ? "bg-[#00BFFF] text-[#FFFFFF] hover:opacity-90"
+                                                            : "bg-[#F2F2F2] text-[#292929]/30 cursor-not-allowed"
+                                                        }`}
                                                 >
                                                     Selesai
                                                 </button>
                                             </div>
                                         </div>
 
+                                        {/* Deteksi Kata Kunci Krisis */}
                                         {containsCrisisKeyword && (
-                                            <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-                                                <h4 className="text-sm font-bold text-amber-800">
+                                            <div className="mt-6 rounded-2xl bg-[#00BFFF] p-6 text-[#FFFFFF] shadow-sm">
+                                                <h4 className="text-base font-black text-[#ADFF2F]">
                                                     Kamu tidak harus menghadapi ini sendirian.
                                                 </h4>
-
-                                                <p className="mt-2 text-sm text-amber-800 leading-relaxed">
-                                                    Tulisanmu menunjukkan adanya tekanan emosional
-                                                    yang berat. Jika kamu merasa tidak aman atau
-                                                    memiliki dorongan untuk menyakiti diri sendiri,
-                                                    segera hubungi orang terdekat, konselor kampus,
-                                                    atau layanan bantuan profesional.
+                                                <p className="mt-2 text-sm leading-relaxed font-medium">
+                                                    Tulisanmu menunjukkan adanya tekanan emosional yang berat. Jika kamu merasa tidak aman atau memiliki dorongan untuk menyakiti diri sendiri, segera hubungi orang terdekat, konselor kampus, atau layanan bantuan profesional.
                                                 </p>
-
                                                 {counselorUrl && (
                                                     <a
                                                         href={counselorUrl}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="mt-4 inline-flex px-5 py-2.5 rounded-full bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition"
+                                                        className="mt-4 inline-flex px-5 py-2.5 rounded-xl bg-[#FFFFFF] text-[#292929] text-xs font-black hover:bg-[#F2F2F2] transition"
                                                     >
                                                         Hubungi Konselor
                                                     </a>
@@ -419,58 +346,44 @@ const WritingTherapy = ({ isOpen, setIsOpen, counselorUrl = "" }) => {
                                     </div>
                                 )}
 
+                                {/* VIEW 3: Selesai Sesi */}
                                 {isCompleted && (
-                                    <div className="text-center py-10 md:py-14">
-                                        <div className="mx-auto w-16 h-16 rounded-full bg-blue-50 text-[#0a1d48] flex items-center justify-center">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-8 w-8"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M5 13l4 4L19 7"
-                                                />
+                                    <div className="text-center py-8">
+                                        <div className="mx-auto w-14 h-14 rounded-full bg-[#ADFF2F] text-[#292929] flex items-center justify-center shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                             </svg>
                                         </div>
 
-                                        <h3 className="mt-5 text-2xl md:text-3xl font-bold text-[#0a1d48]">
+                                        <h3 className="mt-5 text-2xl md:text-3xl font-black">
                                             Terima kasih sudah menulis.
                                         </h3>
 
-                                        <p className="mt-3 max-w-xl mx-auto text-sm md:text-base text-slate-600 leading-relaxed">
-                                            Kamu sudah memberi ruang untuk pikiran dan perasaanmu.
-                                            Tidak semua hal harus selesai sekarang. Kamu boleh
-                                            berhenti sejenak.
+                                        <p className="mt-3 max-w-xl mx-auto text-sm md:text-base text-[#292929]/70 font-medium leading-relaxed">
+                                            Kamu sudah memberi ruang untuk pikiran dan perasaanmu. Tidak semua hal harus selesai sekarang. Kamu boleh berhenti sejenak.
                                         </p>
 
-                                        <div className="mt-7 flex flex-col sm:flex-row justify-center gap-3">
+                                        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => setIsCompleted(false)}
-                                                className="px-6 py-3 rounded-full border border-blue-100 text-[#0a1d48] font-semibold text-sm hover:bg-blue-50 transition"
+                                                className="px-5 py-2.5 rounded-xl border-2 border-[#F2F2F2] text-[#292929] font-black text-sm hover:bg-[#F2F2F2] transition"
                                             >
                                                 Lanjut Menulis
                                             </button>
-
                                             <button
                                                 type="button"
                                                 onClick={handleResetWriting}
-                                                className="px-6 py-3 rounded-full bg-[#0a1d48] text-white font-semibold text-sm hover:scale-105 transition shadow-md"
+                                                className="px-5 py-2.5 rounded-xl bg-[#ADFF2F] text-[#292929] font-black text-sm hover:opacity-90 transition shadow-sm"
                                             >
                                                 Mulai Ulang
                                             </button>
-
                                             <button
                                                 type="button"
                                                 onClick={handleClose}
-                                                className="px-6 py-3 rounded-full bg-white border border-blue-100 text-[#0a1d48] font-semibold text-sm hover:bg-blue-50 transition"
+                                                className="px-5 py-2.5 rounded-xl bg-[#00BFFF] text-[#FFFFFF] font-black text-sm hover:opacity-90 transition shadow-sm"
                                             >
-                                                Tutup
+                                                Tutup Aplikasi
                                             </button>
                                         </div>
                                     </div>

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-const audioFile = "/assets/breathing-audio.mp3"; // <-- moved to public/assets
+const audioFile = "/assets/breathing-audio.mp3";
 
-// Breathing Exercise
 export default function BreathingExercise({
     totalSeconds = 300,
     cycle = [
@@ -14,11 +13,10 @@ export default function BreathingExercise({
     const totalCycleSec = cycle.reduce((s, p) => s + p.duration, 0);
     const rafRef = useRef(null);
     const lastTsRef = useRef(null);
+    const audioRef = useRef(null);
 
     const [running, setRunning] = useState(false);
     const [elapsed, setElapsed] = useState(0);
-
-    const audioRef = useRef(null); // AUDIO REFERENCE
 
     const remainingSeconds = Math.max(0, Math.round(totalSeconds - elapsed));
 
@@ -45,8 +43,8 @@ export default function BreathingExercise({
     const [phaseInfo, setPhaseInfo] = useState(() => computePhase(0));
 
     const getScale = (phaseName, progress) => {
-        const min = 0.7;
-        const max = 1.2;
+        const min = 0.75;
+        const max = 1.25;
         if (phaseName === "Inhale") return min + (max - min) * progress;
         if (phaseName === "Exhale") return max - (max - min) * progress;
         return 1;
@@ -57,47 +55,32 @@ export default function BreathingExercise({
         const name = phaseInfo.phase;
         const prog = phaseInfo.phaseProgress;
         if (name === "Hold") {
-            if (idx === 1) return 1.2;
-            if (idx === 3) return 0.7;
+            if (idx === 1) return 1.25;
+            if (idx === 3) return 0.75;
         }
         return getScale(name, prog);
     })();
 
-    // ========== AUDIO CONTROL ==========
-    const startAudio = () => {
+    const start = () => {
+        setRunning(true);
         if (audioRef.current) {
             audioRef.current.loop = true;
-            audioRef.current.currentTime = 0;
             audioRef.current.play().catch(() => { });
         }
     };
 
-    const pauseAudio = () => {
-        if (audioRef.current) audioRef.current.pause();
-    };
-
-    const resetAudio = () => {
-        if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.currentTime = 0;
-        }
-    };
-    // ===================================
-
-    const start = () => {
-        setRunning(true);
-        startAudio(); // AUDIO START
-    };
-
     const pause = () => {
         setRunning(false);
-        pauseAudio(); // AUDIO PAUSE
+        if (audioRef.current) audioRef.current.pause();
     };
 
     const reset = () => {
         setRunning(false);
         setElapsed(0);
-        resetAudio(); // AUDIO RESET
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
     };
 
     useEffect(() => {
@@ -116,7 +99,6 @@ export default function BreathingExercise({
                 const next = prev + delta;
                 if (next >= totalSeconds) {
                     setRunning(false);
-                    resetAudio();
                     return totalSeconds;
                 }
                 return next;
@@ -140,46 +122,71 @@ export default function BreathingExercise({
     };
 
     return (
-        <div className="w-full flex justify-center p-4">
-            {/* HIDDEN AUDIO */}
+        <div className="w-full flex justify-center">
             <audio ref={audioRef} src={audioFile} preload="auto" />
 
-            <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-6 items-center landscape-card">
+            {/* CARD UTAMA: Sekarang diubah menjadi BG Biru (#00BFFF) Full dan Tanpa Border */}
+            <div className="w-full max-w-5xl bg-[#00BFFF] rounded-[2rem] shadow-md p-6 sm:p-10 flex flex-col sm:flex-row gap-8 items-center text-[#FFFFFF]">
 
-                {/* Circle animation */}
-                <div className="shrink-0 relative h-48 w-48 md:h-56 md:w-56 flex items-center justify-center">
+                {/* Animation Circle Container */}
+                <div className="shrink-0 relative h-48 w-48 flex items-center justify-center">
                     <div
-                        className="absolute rounded-full border-2 border-indigo-300/40"
-                        style={{ height: "190px", width: "190px", transform: `scale(${visualScale})`, transition: "0.2s linear" }}
+                        className="absolute rounded-full transition-transform"
+                        style={{
+                            height: "150px",
+                            width: "150px",
+                            transform: `scale(${visualScale})`,
+                            transition: "0.2s linear",
+                            backgroundColor: "#ADFF2F", // Efek denyut luar menggunakan hijau cerah
+                            opacity: 0.4
+                        }}
                     />
                     <div
-                        className="rounded-full bg-indigo-100/60 backdrop-blur p-4 flex items-center justify-center text-center shadow-md"
-                        style={{ height: "155px", width: "155px", transform: `scale(${visualScale})`, transition: "0.2s linear" }}
+                        className="rounded-full bg-[#FFFFFF] flex items-center justify-center text-center border-4 border-[#ADFF2F] z-10"
+                        style={{
+                            height: "125px",
+                            width: "125px",
+                            transform: `scale(${visualScale})`,
+                            transition: "0.2s linear",
+                        }}
                     >
                         <div>
-                            <div className="text-xl font-semibold">{phaseInfo.phase}</div>
-                            <div className="text-sm text-slate-600">{phaseInfo.phaseRemaining}s</div>
+                            {/* Teks di dalam lingkaran dibuat hitam (#292929) agar terbaca jelas di atas warna putih */}
+                            <div className="text-lg font-black text-[#292929]">{phaseInfo.phase}</div>
+                            <div className="text-xs font-bold text-[#292929]/70 mt-0.5">{phaseInfo.phaseRemaining}s</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Text info */}
-                <div className="flex flex-col grow gap-4 text-center md:text-left">
-                    <h2 className="text-2xl font-semibold">Box Breathing (4-4-4-4)</h2>
-                    <p className="text-slate-600 text-sm">A guided 5-minute breathing exercise.</p>
+                {/* Info & Controls */}
+                <div className="flex flex-col grow gap-4 text-center sm:text-left w-full">
+                    <div>
+                        <h3 className="text-2xl font-black text-[#FFFFFF]">Box Breathing (4-4-4-4)</h3>
+                        <p className="text-[#FFFFFF]/80 text-xs font-bold mt-1">A guided 5-minute breathing exercise for deep relaxation.</p>
+                    </div>
 
-                    <div className="flex justify-between text-sm text-slate-700">
+                    {/* Garis pembatas disesuaikan menggunakan opacity putih agar menyatu dengan elegan */}
+                    <div className="flex justify-between border-y border-[#FFFFFF]/20 py-3 text-xs font-black text-[#FFFFFF]">
                         <span>Elapsed: {format(elapsed)}</span>
                         <span>Remaining: {format(remainingSeconds)}</span>
                     </div>
 
-                    <div className="flex gap-3 mt-2">
+                    <div className="flex justify-center sm:justify-start gap-3 mt-1">
                         {!running ? (
-                            <button onClick={start} className="px-4 py-2 bg-[#0a1d48] text-white rounded-lg shadow cursor-pointer">Start</button>
+                            // Tombol Start menggunakan warna putih bersih agar sangat kontras dengan background biru
+                            <button onClick={start} className="px-6 py-2.5 bg-[#FFFFFF] text-[#292929] font-black text-sm rounded-xl shadow-sm hover:bg-[#F2F2F2] transition active:scale-95">
+                                Start
+                            </button>
                         ) : (
-                            <button onClick={pause} className="px-4 py-2 bg-amber-500 text-white rounded-lg shadow cursor-pointer">Pause</button>
+                            // Tombol Pause menggunakan Hijau Cerah (#ADFF2F)
+                            <button onClick={pause} className="px-6 py-2.5 bg-[#ADFF2F] text-[#292929] font-black text-sm rounded-xl shadow-sm hover:opacity-90 transition active:scale-95">
+                                Pause
+                            </button>
                         )}
-                        <button onClick={reset} className="px-4 py-2 border rounded-lg cursor-pointer">Reset</button>
+                        {/* Tombol Reset menggunakan background abu-abu tombol (#F2F2F2) */}
+                        <button onClick={reset} className="px-6 py-2.5 bg-[#F2F2F2] text-[#292929] font-black text-sm rounded-xl shadow-sm hover:opacity-90 transition active:scale-95">
+                            Reset
+                        </button>
                     </div>
                 </div>
             </div>

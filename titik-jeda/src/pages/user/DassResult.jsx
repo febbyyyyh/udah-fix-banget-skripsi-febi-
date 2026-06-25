@@ -4,6 +4,25 @@ import axios from "axios";
 import Navbar from "../../components/user/Navbar";
 import Footer from "../../components/user/Footer";
 
+// ELEMEN TAMBAHAN MONOKROM: ORNAMEN BINTANG ABSTRAK
+const TinySparkle = ({ className }) => (
+    <svg className={`w-8 h-8 text-[#292929]/15 absolute z-0 pointer-events-none ${className}`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" />
+    </svg>
+);
+
+// ELEMEN TAMBAHAN MONOKROM: ORNAMEN LINGKARAN DONUT
+const TinyCircle = ({ className }) => (
+    <div className={`w-6 h-6 rounded-full border-4 border-[#292929]/15 absolute z-0 pointer-events-none ${className}`} />
+);
+
+// ELEMEN TAMBAHAN MONOKROM: ORNAMEN SEGITIGA MINI
+const TinyTriangle = ({ className }) => (
+    <svg className={`w-6 h-6 text-[#292929]/15 absolute z-0 pointer-events-none ${className} transform rotate-45`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L22 22H2L12 2Z" />
+    </svg>
+);
+
 export default function DassResult() {
     const { state } = useLocation();
     const navigate = useNavigate();
@@ -14,7 +33,6 @@ export default function DassResult() {
         const fetchOrSaveData = async () => {
             setLoading(true);
             try {
-                // Skenario 1: Baru selesai tes (Simpan ke DB)
                 if (state?.depression !== undefined) {
                     await axios.post("/api/user/dass/save", {
                         depression_score: state.depression,
@@ -22,9 +40,7 @@ export default function DassResult() {
                         stress_score: state.stress
                     }, { withCredentials: true });
                     setScores(state);
-                }
-                // Skenario 2: Mengakses hasil terakhir dari database
-                else {
+                } else {
                     const res = await axios.get("/api/user/dass/last-result", {
                         withCredentials: true
                     });
@@ -46,45 +62,36 @@ export default function DassResult() {
         fetchOrSaveData();
     }, [state, navigate]);
 
-    // --- LOGIKA KATEGORI ---
     const getCategory = (type, score) => {
         if (type === "depression") {
             if (score <= 9) return "Normal";
             if (score <= 13) return "Ringan";
             if (score <= 20) return "Sedang";
-            if (score <= 27) return "Parah";
-            return "Sangat Parah";
+            if (score <= 27) return "Berat";
+            return "Sangat Berat";
         }
         if (type === "anxiety") {
             if (score <= 7) return "Normal";
             if (score <= 9) return "Ringan";
             if (score <= 14) return "Sedang";
-            if (score <= 19) return "Parah";
-            return "Sangat Parah";
+            if (score <= 19) return "Berat";
+            return "Sangat Berat";
         }
         if (type === "stress") {
             if (score <= 14) return "Normal";
             if (score <= 18) return "Ringan";
             if (score <= 25) return "Sedang";
-            if (score <= 33) return "Parah";
-            return "Sangat Parah";
+            if (score <= 33) return "Berat";
+            return "Sangat Berat";
         }
     };
 
-    // --- FUNGSI WEIGHT (INI YANG TADI KURANG SEHINGGA WHITE SCREEN) ---
     const getSeverityWeight = (type, score) => {
         const cat = getCategory(type, score);
-        const weights = {
-            "Normal": 1,
-            "Ringan": 2,
-            "Sedang": 3,
-            "Parah": 4,
-            "Sangat Parah": 5
-        };
+        const weights = { "Normal": 1, "Ringan": 2, "Sedang": 3, "Berat": 4, "Sangat Berat": 5 };
         return weights[cat] || 1;
     };
 
-    // --- CARI PRIORITAS TERTINGGI ---
     const getHighestSeverity = () => {
         if (!scores) return { label: "General", type: "general" };
         const results = [
@@ -92,14 +99,13 @@ export default function DassResult() {
             { label: "Anxiety", type: "anxiety", weight: getSeverityWeight("anxiety", scores.anxiety) },
             { label: "Stress", type: "stress", weight: getSeverityWeight("stress", scores.stress) }
         ];
-        // Sort descending berdasarkan weight, ambil yang pertama
         return results.sort((a, b) => b.weight - a.weight)[0];
     };
 
     if (loading) return (
-        <div className="w-full h-screen flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0a1d48]"></div>
-            <p className="mt-4 text-gray-500 font-medium">Menganalisis hasil kamu...</p>
+        <div className="w-full h-screen flex flex-col items-center justify-center bg-[#FFFFFF] text-[#292929]">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#F2F2F2] border-b-[#00BFFF]"></div>
+            <p className="mt-4 text-sm font-black uppercase tracking-wide text-[#292929]/50">Menganalisis hasil kamu...</p>
         </div>
     );
 
@@ -114,20 +120,56 @@ export default function DassResult() {
     ];
 
     return (
-        <>
+        /* Kunci background menggunakan warna flat putih murni (#FFFFFF) */
+        <div className="bg-[#FFFFFF] min-h-screen text-[#292929] flex flex-col justify-between relative overflow-hidden">
             <Navbar />
-            <div className="w-full min-h-screen flex flex-col items-center px-6 py-20 bg-white">
-                <div className="text-center mb-12">
-                    <h1 className="text-3xl md:text-5xl font-bold text-[#0a1d48] tracking-tight">
+
+            {/* SEBARAN ELEMEN GEOMETRI RANDOM DI LATAR BELAKANG */}
+            <div className="absolute inset-x-0 top-0 h-[80vh] pointer-events-none z-0">
+                <TinySparkle className="top-36 left-8 md:left-16 animate-pulse" />
+                <TinyCircle className="top-56 left-20 md:left-32 animate-bounce duration-[1500ms]" />
+                <TinyTriangle className="top-40 right-12 md:right-24" />
+                <TinySparkle className="top-64 right-24 md:right-40" />
+
+                <TinyTriangle className="top-[450px] left-10 md:left-24" />
+                <TinySparkle className="top-[550px] left-28 md:left-48" />
+                <TinyCircle className="top-[480px] right-14 md:right-28 animate-bounce duration-[1800ms]" />
+                <TinyTriangle className="top-[600px] right-28 md:right-52" />
+            </div>
+
+            <div className="w-full flex flex-col items-center px-4 sm:px-6 pt-48 bg-[#FFFFFF] relative z-10">
+                <div className="text-center mb-16 max-w-3xl">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase">
                         {state ? "Your Results Are Ready" : "Your Last Results"}
                     </h1>
-                    <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
-                        {state
-                            ? "Hasil skrining DASS-21 kamu sudah siap. Hasil ini hanya menjadi gambaran awal kondisi emosionalmu, bukan diagnosis medis atau label untuk dirimu. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional."
-                            : "Berikut adalah riwayat hasil skrining DASS-21 terbarumu. Hasil ini hanya membantu kamu melihat gambaran awal kondisi emosional yang pernah kamu rekam, bukan diagnosis medis atau pengganti konsultasi profesional. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional."}
+                    <p className="text-[#292929]/80 mt-6 text-base sm:text-lg leading-relaxed font-normal">
+                        {state ? (
+                            <>
+                                Hasil skrining{" "}
+                                <span
+                                    onClick={() => navigate("/dass-info")}
+                                    className="inline-block text-[#00BFFF] font-black underline decoration-4 decoration-[#ADFF2F] underline-offset-4 cursor-pointer transition-transform hover:scale-105"
+                                >
+                                    DASS-21
+                                </span>{" "}
+                                kamu sudah siap. Hasil ini hanya menjadi gambaran awal kondisi emosionalmu, bukan diagnosis medis atau label untuk dirimu. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional.
+                            </>
+                        ) : (
+                            <>
+                                Berikut adalah riwayat hasil skrining{" "}
+                                <span
+                                    onClick={() => navigate("/dass-info")}
+                                    className="inline-block text-[#00BFFF] font-black underline decoration-4 decoration-[#ADFF2F] underline-offset-4 cursor-pointer transition-transform hover:scale-105"
+                                >
+                                    DASS-21
+                                </span>{" "}
+                                terbarumu. Hasil ini hanya membantu kamu melihat gambaran awal kondisi emosional yang pernah kamu rekam, bukan diagnosis medis atau pengganti konsultasi profesional. Jika kamu membutuhkan bantuan lanjutan, silakan hubungi psikolog, konselor, atau tenaga profesional.
+                            </>
+                        )}
                     </p>
                 </div>
 
+                {/* SLIDER CARDS GRID AREA */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
                     {cards.map((card, i) => (
                         <DassSliderCard
@@ -139,43 +181,65 @@ export default function DassResult() {
                 </div>
 
                 {/* Next Steps Section */}
-                <h2 className="text-2xl md:text-3xl font-bold mt-32 mb-10 text-[#0a1d48]">What You Can Do Next?</h2>
+                <h2 className="text-2xl md:text-3xl font-black mt-32 mb-10 tracking-tight uppercase">What You Can Do Next?</h2>
+
+                {/* NAV CARDS (FIX: Dirombak Menggunakan Gaya Stacked Solid Neo-Brutalism Biar Sinkron) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-20">
-                    <div onClick={() => navigate("/meditation")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/assets/headphone.svg" className="w-20 mb-6" alt="Meditation" />
-                        <p className="font-bold text-[#0a1d48] text-center">Explore {topRecommendation.label} Meditation</p>
+                    {/* Card 1 */}
+                    <div onClick={() => navigate("/meditation")} className="relative group rounded-3xl">
+                        <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2 transition-transform duration-200 group-hover:translate-x-3 group-hover:translate-y-3" />
+                        <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer h-full transition-all duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1">
+                            <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-4 group-hover:w-16 transition-all duration-300" />
+                            <p className="font-black text-xl text-[#292929] group-hover:text-[#00BFFF] transition-colors uppercase">Explore {topRecommendation.label} Meditation</p>
+                            <span className="text-xs font-black text-[#00BFFF] mt-4 uppercase tracking-widest">Buka Sesi →</span>
+                        </div>
                     </div>
 
-                    <div onClick={() => navigate("/education")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/assets/video.svg" className="w-20 mb-6" alt="Education" />
-                        <p className="font-bold text-[#0a1d48] text-center">Open Learn & Grow</p>
+                    {/* Card 2 */}
+                    <div onClick={() => navigate("/education")} className="relative group rounded-3xl">
+                        <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2 transition-transform duration-200 group-hover:translate-x-3 group-hover:translate-y-3" />
+                        <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer h-full transition-all duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1">
+                            <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-4 group-hover:w-16 transition-all duration-300" />
+                            <p className="font-black text-xl text-[#292929] group-hover:text-[#00BFFF] transition-colors uppercase">Open Learn & Grow</p>
+                            <span className="text-xs font-black text-[#00BFFF] mt-4 uppercase tracking-widest">Lihat Materi →</span>
+                        </div>
                     </div>
 
-                    <div onClick={() => window.open("https://wa.me/6281953027359", "_blank")} className="bg-[#F8FBFF] border border-[#ADC7EA] rounded-3xl px-8 py-10 flex flex-col items-center cursor-pointer">
-                        <img src="/assets/call.svg" className="w-20 mb-6" alt="Counselor" />
-                        <p className="font-bold text-[#0a1d48] text-center">Contact Counselor</p>
+                    {/* Card 3 */}
+                    <div onClick={() => window.open("https://wa.me/6281953027359", "_blank")} className="relative group rounded-3xl">
+                        <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2 transition-transform duration-200 group-hover:translate-x-3 group-hover:translate-y-3" />
+                        <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer h-full transition-all duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1">
+                            <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-4 group-hover:w-16 transition-all duration-300" />
+                            <p className="font-black text-xl text-[#292929] group-hover:text-[#00BFFF] transition-colors uppercase">Contact Counselor</p>
+                            <span className="text-xs font-black text-[#00BFFF] mt-4 uppercase tracking-widest">Hubungi WA →</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="mt-10 p-12 bg-linear-to-br from-[#F8FBFF] to-[#f0f7ff] border border-[#d0e1f9] rounded-[48px] text-center max-w-4xl w-full shadow-sm mb-20">
-                    <h3 className="text-2xl font-bold text-[#0a1d48] mb-4">Ingin pantau progresmu?</h3>
-                    <p className="text-gray-600 mb-8 max-w-l mx-auto">
-                        Hasil ini bukan diagnosis medis, hanya screening awal. Lakukan pengecekan rutin untuk melihat perkembangan kesehatan mentalmu.
-                    </p>
-                    <button
-                        onClick={() => navigate("/dass-question")}
-                        className="px-12 py-4 bg-[#0a1d48] text-white rounded-full font-bold shadow-md hover:bg-[#0c275f] transition duration-300 cursor-pointer"
-                    >
-                        Ambil Tes Ulang
-                    </button>
+                {/* Footer Banner Card Bertumpuk Tebal */}
+                <div className="relative group max-w-4xl w-full mb-24">
+                    <div className="absolute inset-0 bg-[#292929] rounded-[32px] translate-x-2 translate-y-2" />
+                    <div className="relative p-12 bg-[#FFFFFF] border-4 border-[#292929] rounded-[32px] text-center w-full">
+                        <h3 className="text-2xl font-black text-[#292929] mb-4 uppercase">Ingin pantau progresmu?</h3>
+                        <p className="text-[#292929]/70 mb-8 max-w-xl mx-auto font-normal text-base">
+                            Ukuran ini bukan diagnosis medis, hanya screening awal. Lakukan pengecekan rutin untuk melihat perkembangan kesehatan mentalmu.
+                        </p>
+                        <button
+                            onClick={() => navigate("/dass-question")}
+                            className="px-12 py-4 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer uppercase tracking-wider text-xs"
+                        >
+                            Ambil Tes Ulang
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* FIX: Footer langsung menempel alami tanpa pembungkus penengah abu-abu tebal terpisah */}
             <Footer />
-        </>
+        </div>
     );
 }
 
-// Sub-komponen tetap sama
 function DassSliderCard({ card, category }) {
     const [flipped, setFlipped] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
@@ -186,81 +250,90 @@ function DassSliderCard({ card, category }) {
             { label: "Normal", range: "0-9", color: "bg-[#75b9e4]" },
             { label: "Ringan", range: "10-13", color: "bg-[#7aef92]" },
             { label: "Sedang", range: "14-20", color: "bg-[#fff771]" },
-            { label: "Parah", range: "21-27", color: "bg-[#ffba58]" },
-            { label: "Sangat Parah", range: "28+", color: "bg-[#f94e67]" },
+            { label: "Berat", range: "21-27", color: "bg-[#ffba58]" },
+            { label: "Sangat Berat", range: "28+", color: "bg-[#f94e67]" },
         ],
         anxiety: [
             { label: "Normal", range: "0-7", color: "bg-[#75b9e4]" },
             { label: "Ringan", range: "8-9", color: "bg-[#7aef92]" },
             { label: "Sedang", range: "10-14", color: "bg-[#fff771]" },
-            { label: "Parah", range: "15-19", color: "bg-[#ffba58]" },
-            { label: "Sangat Parah", range: "20+", color: "bg-[#f94e67]" },
+            { label: "Berat", range: "15-19", color: "bg-[#ffba58]" },
+            { label: "Sangat Berat", range: "20+", color: "bg-[#f94e67]" },
         ],
         stress: [
             { label: "Normal", range: "0-14", color: "bg-[#75b9e4]" },
             { label: "Ringan", range: "15-18", color: "bg-[#7aef92]" },
             { label: "Sedang", range: "19-25", color: "bg-[#fff771]" },
-            { label: "Parah", range: "26-33", color: "bg-[#ffba58]" },
-            { label: "Sangat Parah", range: "34+", color: "bg-[#f94e67]" },
+            { label: "Berat", range: "26-33", color: "bg-[#ffba58]" },
+            { label: "Sangat Berat", range: "34+", color: "bg-[#f94e67]" }
         ]
     };
 
     return (
-        <div className="relative w-full h-80">
-            <div onClick={() => setFlipped(!flipped)} className="group perspective w-full h-full cursor-pointer">
+        <div className="relative w-full h-85 group">
+            {/* Efek Bayangan Solid Belakang Khusus Card Hasil Slider */}
+            <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2" />
+
+            <div onClick={() => setFlipped(!flipped)} className="perspective w-full h-full cursor-pointer relative z-10">
                 <div className={`relative w-full h-full transition-all duration-700 transform-style-preserve-3d ${flipped ? "rotate-y-180" : ""}`}>
-                    {/* DEPAN */}
-                    <div className="absolute inset-0 backface-hidden bg-white border border-gray-100 rounded-[40px] p-8 shadow-sm flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <h3 className="text-xl font-bold text-gray-800">{card.title}</h3>
+
+                    {/* DEPAN CARD (FIX: Menggunakan Border Tebal Khas Tema) */}
+                    <div className="absolute inset-0 backface-hidden bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-8 flex flex-col justify-between">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-xl font-black text-[#292929] uppercase tracking-tight">{card.title}</h3>
                             <button
                                 onClick={(e) => { e.stopPropagation(); setShowInfo(true); }}
-                                className="w-7 h-7 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-[#636363] hover:bg-[#0a1d48] cursor-pointer hover:text-white transition-all shadow-sm"
+                                className="w-8 h-8 rounded-full bg-[#F2F2F2] border-2 border-[#292929] flex items-center justify-center text-[#292929] hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer shadow-sm"
                             >
-                                <span className="font-serif">i</span>
+                                <span className="font-serif font-black text-xs">i</span>
                             </button>
                         </div>
+
+                        {/* Slider Panel Area */}
                         <div className="relative py-10">
                             <div className="absolute top-0 -translate-x-1/2 flex flex-col items-center transition-all duration-1000 ease-out" style={{ left: `${percentage}%` }}>
-                                <div className="bg-[#f0f7ff] text-[#0a1d48] text-sm font-bold px-4 py-2 rounded-2xl border border-blue-100 shadow-sm mb-1 whitespace-nowrap">
-                                    {category} <span className="ml-1 opacity-50">| {card.score}</span>
+                                <div className="bg-[#292929] text-[#FFFFFF] text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg shadow-sm mb-1 whitespace-nowrap border border-[#FFFFFF]/10">
+                                    {category} <span className="ml-1 text-[#ADFF2F]">| {card.score}</span>
                                 </div>
-                                <div className="w-0.5 h-3 bg-blue-200"></div>
+                                <div className="w-0.5 h-3 bg-[#292929]"></div>
                             </div>
-                            <div className="w-full h-4 rounded-full bg-gradient-to-r from-[#75b9e4] via-[#7aef92] via-[#fff771] via-[#ffba58] to-[#f94e67]"></div>
-                            <div className="flex justify-between mt-3 text-[12px] font-semibold text-gray-600 uppercase tracking-widest">
+                            <div className="w-full h-3.5 rounded-full border-2 border-[#292929] bg-gradient-to-r from-[#75b9e4] via-[#7aef92] via-[#fff771] via-[#ffba58] to-[#f94e67] overflow-hidden shadow-inner"></div>
+                            <div className="flex justify-between mt-3 text-[10px] font-black text-[#292929]/40 uppercase tracking-widest">
                                 <span>0</span>
                                 <span>42</span>
                             </div>
                         </div>
-                        <div className="text-center text-xs text-gray-400 font-medium italic">Klik kartu untuk afirmasi</div>
+                        <div className="text-center text-[10px] text-[#292929]/40 font-black uppercase tracking-wider">Klik kartu untuk afirmasi</div>
                     </div>
-                    {/* BELAKANG */}
-                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#0a1d48] rounded-[40px] p-10 flex flex-col items-center justify-center text-center shadow-xl">
-                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white text-2xl font-serif italic">"</div>
-                        <p className="text-white text-lg font-medium leading-relaxed italic">{card.affirmation}</p>
+
+                    {/* BELAKANG CARD */}
+                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-8 flex flex-col items-center justify-center text-center">
+                        <div className="w-10 h-1.5 bg-[#00BFFF] rounded-full mb-6" />
+                        <p className="text-[#292929] text-base font-medium leading-relaxed italic">"{card.affirmation}"</p>
                     </div>
                 </div>
             </div>
+
+            {/* MODAL DETIL INFO SCALE */}
             {showInfo && (
-                <div className="fixed inset-0 z-[400] flex items-center justify-center px-4 bg-[#0a1d48]/40 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
-                    <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[700] flex items-center justify-center px-4 bg-[#292929]/70 backdrop-blur-sm" onClick={() => setShowInfo(false)}>
+                    <div className="bg-[#FFFFFF] rounded-3xl p-8 max-w-sm w-full shadow-2xl border-4 border-[#292929] relative" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h4 className="text-xl font-bold text-[#0a1d48]">{card.title} Scale</h4>
-                            <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+                            <h4 className="text-xl font-black text-[#292929] uppercase tracking-tight">{card.title} Scale</h4>
+                            <button onClick={() => setShowInfo(false)} className="text-[#292929]/40 hover:text-[#292929] text-3xl font-light cursor-pointer">&times;</button>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2.5">
                             {ranges[card.type].map((item, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                                <div key={index} className="flex items-center justify-between p-3 rounded-xl border-2 border-[#292929] bg-[#FFFFFF] shadow-[2px_2px_0px_0px_#292929]">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-4 h-4 rounded-full ${item.color}`}></div>
-                                        <span className="font-bold text-gray-700">{item.label}</span>
+                                        <div className={`w-3 h-3 rounded-full border border-[#292929]/20 ${item.color}`}></div>
+                                        <span className="font-black text-sm text-[#292929] uppercase tracking-tight">{item.label}</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-500">{item.range}</span>
+                                    <span className="text-xs font-black text-[#292929]/50">{item.range}</span>
                                 </div>
                             ))}
                         </div>
-                        <button onClick={() => setShowInfo(false)} className="w-full mt-6 py-4 bg-[#0a1d48] text-white rounded-2xl font-bold hover:shadow-lg transition-all">
+                        <button onClick={() => setShowInfo(false)} className="w-full mt-6 py-3.5 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer">
                             Saya Mengerti
                         </button>
                     </div>

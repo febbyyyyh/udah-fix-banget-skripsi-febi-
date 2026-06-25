@@ -68,21 +68,19 @@ const uploadVideo = multer({ storage: videoStorage });
 router.get("/playlists", getPlaylists);
 router.get("/playlists/:id", getPlaylistById);
 
-// Akses Admin (Kelola Playlist)
+// Akses Admin (Kelola Playlist) - MIDDLEWARE UPLOADCOVER DICOPOT ❌
 router.post(
     "/playlists",
     verifyToken,
     adminOnly,
-    uploadCover.single("cover_image"),
-    createPlaylist
+    createPlaylist // Langsung memanggil controller
 );
 
 router.put(
     "/playlists/:id",
     verifyToken,
     adminOnly,
-    uploadCover.single("cover_image"),
-    updatePlaylist
+    updatePlaylist // Langsung memanggil controller
 );
 
 router.delete(

@@ -1,4 +1,4 @@
-import { useState } from "react"; // Tambahkan useState
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Topbar() {
@@ -6,7 +6,7 @@ export default function Topbar() {
   const navigate = useNavigate();
   const pathname = location.pathname;
 
-  // 1. State untuk kontrol modal logout
+  // State untuk kontrol modal logout
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const getPageTitle = () => {
@@ -20,7 +20,6 @@ export default function Topbar() {
     return "Admin";
   };
 
-  // 2. Fungsi Logout yang sebenarnya
   const confirmLogout = () => {
     localStorage.removeItem("admin_token");
     navigate("/admin/login");
@@ -28,61 +27,51 @@ export default function Topbar() {
 
   return (
     <>
-      <header className="h-16 bg-white shadow flex items-center justify-between px-6">
-        <h1 className="text-lg font-semibold text-[#0a1d48]">
+      {/* Header Utama Panel Admin */}
+      <header className="h-16 bg-[#FFFFFF] border-b-2 border-[#F2F2F2] flex items-center justify-between px-6 text-[#292929]">
+        <h1 className="text-xl font-extrabold tracking-tight">
           {getPageTitle()}
         </h1>
 
-        {/* Tombol Logout memicu Modal */}
+        {/* Tombol Logout Minimalis Modis */}
         <button
-          className="text-sm text-red-500 font-medium hover:text-red-700 transition-colors bg-red-50 px-4 py-2 rounded-lg"
+          className="text-xs text-red-500 font-black uppercase tracking-wider bg-red-50 hover:bg-red-100 transition px-4 py-2.5 rounded-xl cursor-pointer"
           onClick={() => setShowLogoutModal(true)}
         >
           Logout
         </button>
       </header>
 
-      {/* ================= MODAL KONFIRMASI LOGOUT ================= */}
+      {/* ================= MODAL KONFIRMASI LOGOUT (SUDAH DI-AKALI TANPA IKON GAMBAR) ================= */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-[#292929]/50 backdrop-blur-sm">
+          {/* Card Modal dibalut border-2 #00BFFF */}
+          <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 max-w-sm w-full shadow-xl">
             <div className="text-center">
-              {/* Icon Warning (Opsional) */}
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8"
-                  fill="none"
-                  viewBox="24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
+
+              {/* Diakali memakai bulatan karakter teks tanda seru (!) kustom penanda warning */}
+              <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-black select-none">
+                !
               </div>
 
-              <h3 className="text-xl font-bold text-[#0A1D48] mb-2">
+              <h3 className="text-xl font-extrabold tracking-tight text-[#292929] mb-2">
                 Konfirmasi Logout
               </h3>
-              <p className="text-gray-500 text-sm mb-8">
+              <p className="text-[#292929]/60 text-sm font-normal leading-relaxed mb-8">
                 Apakah Anda yakin ingin keluar dari panel admin? Anda harus
                 login kembali untuk mengelola konten.
               </p>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={confirmLogout}
-                  className="w-full bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-100"
+                  className="w-full bg-red-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-90 transition active:scale-95 cursor-pointer shadow-sm"
                 >
                   Ya, Keluar Sekarang
                 </button>
                 <button
                   onClick={() => setShowLogoutModal(false)}
-                  className="w-full bg-gray-50 text-gray-500 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                  className="w-full bg-[#F2F2F2] text-[#292929]/60 py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:opacity-80 transition cursor-pointer"
                 >
                   Batal
                 </button>

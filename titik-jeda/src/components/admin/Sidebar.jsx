@@ -1,22 +1,16 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 
-const logo = "/assets/logo.svg";
-const dashboardIcon = "/assets/icon-dashboard.svg";
-const meditasiIcon = "/assets/icon-meditasi.svg";
-const edukasiIcon = "/assets/icon-edukasi.svg";
-const statistikIcon = "/assets/icon-statistik.svg";
-
 export default function Sidebar() {
     const [open, setOpen] = useState(false);
 
     return (
         <>
             {/* MOBILE TOP BAR */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 py-3 bg-white shadow">
+            <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 py-3 bg-[#FFFFFF] border-b-2 border-[#F2F2F2]">
                 <button
                     onClick={() => setOpen(true)}
-                    className="text-[#0a1d48] text-2xl"
+                    className="text-[#292929] text-2xl cursor-pointer"
                 >
                     ☰
                 </button>
@@ -26,79 +20,90 @@ export default function Sidebar() {
             {open && (
                 <div
                     onClick={() => setOpen(false)}
-                    className="fixed inset-0 bg-black/40 z-40 md:hidden"
+                    className="fixed inset-0 bg-[#292929]/40 z-40 md:hidden backdrop-blur-sm"
                 />
             )}
 
-            {/* SIDEBAR */}
+            {/* SIDEBAR CONTAINER */}
             <aside
                 className={`
                     fixed md:relative top-0 left-0 z-50
-                    w-64 h-full bg-white font-poppins
+                    w-64 h-full bg-[#FFFFFF] border-r-2 border-[#F2F2F2] text-[#292929]
                     transform transition-transform duration-300
                     ${open ? "translate-x-0" : "-translate-x-full"}
                     md:translate-x-0 flex flex-col shrink-0
                 `}
             >
-                {/* LOGO */}
-                <div className="px-6 pt-8 pb-4">
-                    <img
-                        src={logo}
-                        alt="Logo Admin"
-                        className="w-26 object-contain"
-                    />
+                {/* LOGO AREA - Menggunakan 'w-fit' agar background biru pas mengikuti panjang teks */}
+                <div className="px-6 pt-10 pb-6 flex flex-col items-start">
+                    <div className="w-fit flex items-center rounded-full bg-[#00BFFF] p-1 shadow-sm select-none pr-4">
+                        <div className="w-8 h-8 rounded-full bg-[#ADFF2F] flex items-center justify-center font-black text-xs text-[#292929]">
+                            ||
+                        </div>
+                        <span className="pl-2.5 font-black text-xs text-[#FFFFFF] tracking-wider uppercase whitespace-nowrap">
+                            Titik Jeda
+                        </span>
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#292929]/30 mt-2.5 ml-2">
+                        Admin Panel
+                    </p>
                 </div>
 
-                {/* MENU */}
-                <nav className="mt-2 flex flex-col gap-1">
+                {/* MENU NAVIGATION */}
+                <nav className="mt-4 flex flex-col gap-1">
                     <SidebarItem
                         to="/admin/dashboard"
                         label="Dashboard"
-                        icon={dashboardIcon}
+                        activeSymbol="◆"
+                        inactiveSymbol="◇"
                         onClick={() => setOpen(false)}
                     />
 
                     <SidebarItem
                         to="/admin/kelola-meditasi"
                         label="Kelola Meditasi"
-                        icon={meditasiIcon}
+                        activeSymbol="◆"
+                        inactiveSymbol="◇"
                         onClick={() => setOpen(false)}
                     />
 
                     <SidebarItem
                         to="/admin/kelola-edukasi"
                         label="Kelola Learn & Grow"
-                        icon={edukasiIcon}
+                        activeSymbol="◆"
+                        inactiveSymbol="◇"
                         onClick={() => setOpen(false)}
                     />
-
                 </nav>
             </aside>
         </>
     );
 }
 
-/* ======================
-   Sidebar Item
-====================== */
-function SidebarItem({ to, label, icon, onClick }) {
+/* ====================================
+    SUB-COMPONENT SIDEBAR ITEM KUSTOM
+   ==================================== */
+function SidebarItem({ to, label, activeSymbol, inactiveSymbol, onClick }) {
     return (
         <NavLink
             to={to}
             onClick={onClick}
-            className={({ isActive }) =>
-                `
-                flex items-center gap-3 px-6 py-3 text-sm
-                transition
+            className={({ isActive }) => `
+                flex items-center gap-3 px-6 py-3.5 text-sm transition-all duration-200
                 ${isActive
-                    ? "bg-[#EAF3FF] text-[#0a1d48] font-medium border-r-4 border-[#0a1d48]"
-                    : "text-gray-500 hover:bg-[#F4F8FF]"
+                    ? "bg-[#F2F2F2] text-[#00BFFF] font-black border-r-4 border-[#00BFFF]"
+                    : "text-[#292929]/60 font-bold hover:bg-[#F2F2F2]/50 hover:text-[#292929]"
                 }
-                `
-            }
+            `}
         >
-            <img src={icon} alt={label} className="w-5 h-5" />
-            <span>{label}</span>
+            {({ isActive }) => (
+                <>
+                    <span className={`text-base transition-colors ${isActive ? "text-[#00BFFF]" : "text-[#292929]/20"}`}>
+                        {isActive ? activeSymbol : inactiveSymbol}
+                    </span>
+                    <span>{label}</span>
+                </>
+            )}
         </NavLink>
     );
 }

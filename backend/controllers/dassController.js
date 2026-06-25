@@ -5,8 +5,8 @@ const getSeverityWeight = (type, score) => {
         if (score <= 9) return 1; // Normal
         if (score <= 13) return 2; // Ringan
         if (score <= 20) return 3; // Sedang
-        if (score <= 27) return 4; // Parah
-        return 5; // Sangat Parah
+        if (score <= 27) return 4; // Berat
+        return 5; // Sangat Berat
     }
     if (type === "anxiety") {
         if (score <= 7) return 1;

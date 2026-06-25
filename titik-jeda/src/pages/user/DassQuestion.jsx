@@ -1,8 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function DassQuestion() {
+// ELEMEN TAMBAHAN BERWARNA: ORNAMEN BINTANG ABSTRAK (Warna Biru)
+const TinySparkle = ({ className }) => (
+    <svg className={`w-10 h-10 text-[#00BFFF]/30 absolute z-0 pointer-events-none ${className}`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" />
+    </svg>
+);
 
+// ELEMEN TAMBAHAN BERWARNA: ORNAMEN LINGKARAN DONUT (Warna Hijau)
+const TinyCircle = ({ className }) => (
+    <div className={`w-8 h-8 rounded-full border-4 border-[#ADFF2F]/45 absolute z-0 pointer-events-none ${className}`} />
+);
+
+// ELEMEN TAMBAHAN BERWARNA: ORNAMEN SEGITIGA MINI (Warna Oranye)
+const TinyTriangle = ({ className }) => (
+    <svg className={`w-8 h-8 text-[#FF8C00]/30 absolute z-0 pointer-events-none ${className} transform rotate-45`} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L22 22H2L12 2Z" />
+    </svg>
+);
+
+export default function DassQuestion() {
     const navigate = useNavigate();
 
     const questions = [
@@ -77,33 +95,66 @@ export default function DassQuestion() {
     const progress = ((current + 1) / 21) * 100;
 
     return (
-        <div className="w-full min-h-screen flex flex-col items-center px-4 sm:px-6 pt-20 sm:pt-24 pb-10 bg-white">
+        /* Latar belakang putih bersih murni (#FFFFFF) dengan posisi relative */
+        <div className="w-full min-h-screen flex flex-col items-center px-4 sm:px-6 pt-24 pb-16 bg-[#FFFFFF] text-[#292929] relative overflow-hidden">
 
-            {/* Progress Bar */}
-            <div className="w-full max-w-2xl mb-10 px-1">
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            {/* SEBARAN ELEMEN GEOMETRI RANDOM (Masuk ke area tengah latar belakang) */}
+            {/* Layer Atas (Di sekitar area Progress Bar) */}
+            <TinySparkle className="top-12 left-6 sm:left-12 animate-pulse" />
+            <TinyTriangle className="top-14 left-[30%] hidden md:block" />
+            <TinyCircle className="top-16 right-[25%] hidden md:block" />
+            <TinyTriangle className="top-20 right-6 sm:right-16" />
+
+            {/* Layer Tengah (Di belakang area teks pertanyaan h2) */}
+            <div className="absolute inset-x-0 top-[220px] h-[150px] pointer-events-none">
+                <TinyCircle className="top-2 left-10 sm:left-24 animate-bounce duration-[2500ms]" />
+                <TinySparkle className="top-6 left-[20%] animate-pulse hidden lg:block" />
+                <TinyTriangle className="top-0 left-[45%] hidden md:block" />
+                <TinySparkle className="top-4 right-[18%] animate-pulse hidden lg:block" />
+                <TinyCircle className="top-10 right-8 sm:right-20 animate-bounce duration-[2200ms]" />
+            </div>
+
+            {/* Layer Bawah Konten (Di area belakang daftar tombol pilihan) */}
+            <div className="absolute inset-x-0 top-[420px] bottom-16 pointer-events-none">
+                <TinyTriangle className="top-8 left-4 sm:left-14" />
+                <TinyCircle className="top-20 left-[15%] animate-bounce duration-[3000ms] hidden md:block" />
+                <TinySparkle className="top-36 left-8 sm:left-20 animate-pulse" />
+
+                <TinyCircle className="top-6 right-[12%] animate-bounce duration-[2800ms] hidden md:block" />
+                <TinyTriangle className="top-24 right-6 sm:right-14" />
+                <TinySparkle className="top-40 right-10 sm:right-24 animate-pulse" />
+            </div>
+
+            {/* Progress Bar Area */}
+            <div className="w-full max-w-2xl mb-12 px-1 relative z-10">
+                <div className="flex justify-between items-center mb-2.5 text-xs font-black uppercase tracking-widest text-[#292929]/50">
+                    <span>Pertanyaan</span>
+                    <span className="text-[#00BFFF]">{current + 1} dari 21</span>
+                </div>
+                <div className="w-full h-2.5 bg-[#F2F2F2] rounded-full overflow-hidden shadow-inner">
                     <div
-                        className="h-full transition-all duration-300"
-                        style={{ width: `${progress}%`, backgroundColor: "#285FA9" }}
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${progress}%`, backgroundColor: "#00BFFF" }}
                     ></div>
                 </div>
             </div>
 
-            {/* Question */}
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-10 leading-relaxed px-2">
+            {/* Question Text */}
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-12 max-w-3xl leading-relaxed px-2 tracking-tight relative z-10">
                 {questions[current]}
-            </h1>
+            </h2>
 
-            {/* Options */}
-            <div className="w-full max-w-2xl flex flex-col gap-4">
+            {/* Options Button List */}
+            <div className="w-full max-w-2xl flex flex-col gap-4 relative z-10">
                 {options.map((opt) => (
                     <button
                         key={opt.value}
+                        type="button"
                         onClick={() => handleSelect(opt.value)}
-                        className={`w-full text-left px-4 sm:px-6 py-3 sm:py-4 rounded-2xl border text-base sm:text-lg transition-all
+                        className={`w-full text-left px-5 sm:px-7 py-4 rounded-2xl font-medium border-2 text-base sm:text-lg transition-all shadow-sm active:scale-99 cursor-pointer
                             ${answers[current] === opt.value
-                                ? "border-[#285FA9] bg-[#EEF4FF] shadow-sm"
-                                : "border-gray-200 bg-white"
+                                ? "border-[#00BFFF] bg-[#FFFFFF] font-bold"
+                                : "border-transparent bg-[#F2F2F2] hover:bg-[#F2F2F2]/80"
                             }`}
                     >
                         {opt.label}
@@ -111,33 +162,33 @@ export default function DassQuestion() {
                 ))}
             </div>
 
-            {/* Navigation */}
-            <div className="w-full max-w-2xl flex justify-between mt-10">
-
+            {/* Navigation Buttons */}
+            <div className="w-full max-w-2xl flex justify-between items-center mt-12 relative z-10">
                 {current > 0 ? (
                     <button
+                        type="button"
                         onClick={prev}
-                        className="px-4 sm:px-6 py-2 sm:py-3 rounded-full border flex items-center gap-2 text-gray-700 hover:bg-gray-100 text-sm sm:text-base"
+                        className="px-5 py-2.5 rounded-xl border-2 border-[#F2F2F2] text-[#292929]/80 font-bold text-sm sm:text-base hover:bg-[#F2F2F2] transition flex items-center gap-2 cursor-pointer"
                     >
-                        <span className="text-lg">←</span> Sebelumnya
+                        ← Sebelumnya
                     </button>
                 ) : (
-                    <div></div>
+                    <div />
                 )}
 
                 <button
+                    type="button"
                     onClick={next}
                     disabled={answers[current] === null}
-                    className={`px-6 sm:px-8 py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition
+                    className={`px-7 py-3 rounded-xl font-black text-sm sm:text-base transition shadow-sm active:scale-95
                         ${answers[current] === null
-                            ? "bg-[#A5C0E0] cursor-not-allowed"
-                            : "bg-[#285FA9] hover:bg-[#1F4C88]"
+                            ? "bg-[#F2F2F2] text-[#292929]/30 cursor-not-allowed shadow-none"
+                            : "bg-[#00BFFF] text-[#FFFFFF] hover:opacity-90 cursor-pointer"
                         }
                     `}
                 >
-                    {current === 20 ? "Selesai" : "Selanjutnya"}
+                    {current === 20 ? "Selesai" : "Selanjutnya →"}
                 </button>
-
             </div>
         </div>
     );

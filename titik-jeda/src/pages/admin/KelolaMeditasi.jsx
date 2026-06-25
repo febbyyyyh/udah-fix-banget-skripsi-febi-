@@ -8,7 +8,6 @@ export default function KelolaMeditasi() {
     const [loading, setLoading] = useState(true);
 
     const token = localStorage.getItem("admin_token");
-    const API_URL = "";
 
     useEffect(() => {
         fetchMeditations();
@@ -27,19 +26,12 @@ export default function KelolaMeditasi() {
         }
     };
 
-    const getCoverUrl = (path) => {
-        if (!path) return null;
-        if (path.startsWith("http")) return path;
-
-        // Pastikan tidak ada double slash jika path diawali '/'
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${cleanPath}`;
-    };
-
+    // Kustom Spinner Loading Penyelaras Tema Utama
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <p className="text-gray-500 animate-pulse">
+            <div className="flex flex-col justify-center items-center h-64 text-[#292929]">
+                <div className="rounded-full h-10 w-10 border-4 border-[#F2F2F2] border-b-[#00BFFF] animate-spin"></div>
+                <p className="mt-4 text-xs font-bold text-[#292929]/40 uppercase tracking-widest">
                     Memuat data meditasi...
                 </p>
             </div>
@@ -47,51 +39,46 @@ export default function KelolaMeditasi() {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {meditations.map((item) => (
-                <div
-                    key={item.id}
-                    className="bg-white rounded-2xl p-6 shadow-sm border border-gray-50
-                     flex flex-col justify-between"
-                >
-                    <div>
-                        {/* COVER */}
-                        <div className="w-14 h-14 mb-4 rounded-lg overflow-hidden bg-blue-50">
-                            {item.cover_image ? (
-                                <img
-                                    src={getCoverUrl(item.cover_image)}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                                    No Cover
-                                </div>
-                            )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#FFFFFF] text-[#292929]">
+            {meditations.length > 0 ? (
+                meditations.map((item) => (
+                    <div
+                        key={item.id}
+                        className="bg-[#FFFFFF] rounded-3xl p-8 border-2 border-[#F2F2F2] flex flex-col justify-between h-full transition-all hover:border-[#00BFFF] shadow-sm"
+                    >
+                        <div>
+                            {/* Gambar Cover Dihapus Total, Diganti Aksen Garis Ornamen Hijau Minimalis */}
+                            <div className="w-8 h-1 bg-[#ADFF2F] rounded-full mb-4" />
+
+                            {/* Judul Kategori Menggunakan font-bold Proporsional */}
+                            <h3 className="text-xl font-bold tracking-tight text-[#292929] mb-3">
+                                {item.name}
+                            </h3>
+
+                            {/* Deskripsi Menggunakan Teks Normal Regulasi */}
+                            <p className="text-sm text-[#292929]/70 leading-relaxed line-clamp-3 font-normal">
+                                {item.description}
+                            </p>
                         </div>
 
-                        <h3 className="text-lg font-bold text-[#0a1d48] mb-2">
-                            {item.name}
-                        </h3>
-
-                        <p className="text-sm text-gray-500 line-clamp-3">
-                            {item.description}
-                        </p>
+                        {/* Tombol Kontrol Aksi Diubah ke Skema Warna Eksklusif Baru */}
+                        <div className="flex justify-end mt-8">
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/admin/kelola-meditasi/${item.id}`)}
+                                className="bg-[#00BFFF] text-[#FFFFFF] text-xs font-black uppercase tracking-wider px-6 py-2.5 rounded-xl transition-all shadow-sm hover:opacity-90 active:scale-95 cursor-pointer"
+                            >
+                                Edit Sesi
+                            </button>
+                        </div>
                     </div>
-
-                    <div className="flex justify-end mt-6">
-                        <button
-                            onClick={() =>
-                                navigate(`/admin/kelola-meditasi/${item.id}`)
-                            }
-                            className="bg-[#1A62C2] text-white text-sm px-6 py-2 rounded-xl
-                         hover:bg-[#154fa0] transition-all font-medium"
-                        >
-                            Edit
-                        </button>
-                    </div>
+                ))
+            ) : (
+                /* Kosong State Area */
+                <div className="col-span-3 text-center py-16 bg-[#FFFFFF] border-2 border-dashed border-[#00BFFF] rounded-3xl p-8">
+                    <p className="text-[#292929]/40 font-bold text-sm uppercase tracking-wider">Belum ada kategori meditasi terdaftar.</p>
                 </div>
-            ))}
+            )}
         </div>
     );
 }
