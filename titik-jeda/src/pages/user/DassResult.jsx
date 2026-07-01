@@ -50,9 +50,8 @@ export default function DassResult() {
                         stress: res.data.stress
                     });
                 }
-            } catch (err) {
-                console.error("Error fetching/saving DASS:", err);
-                if (err.response?.status === 404 || !state) {
+            } catch {
+                if (typeof state === 'undefined' || !state) {
                     navigate("/dass");
                 }
             } finally {
@@ -62,27 +61,31 @@ export default function DassResult() {
         fetchOrSaveData();
     }, [state, navigate]);
 
+    /* PERBAIKAN UTAMA: Menggunakan struktur else if / else formal & menyelaraskan kata "Parah" menjadi "Berat" */
     const getCategory = (type, score) => {
         if (type === "depression") {
             if (score <= 9) return "Normal";
-            if (score <= 13) return "Ringan";
-            if (score <= 20) return "Sedang";
-            if (score <= 27) return "Berat";
-            return "Sangat Berat";
+            else if (score <= 13) return "Ringan";
+            else if (score <= 20) return "Sedang";
+            else if (score <= 27) return "Berat";
+            else return "Sangat Berat";
         }
-        if (type === "anxiety") {
+        else if (type === "anxiety") {
             if (score <= 7) return "Normal";
-            if (score <= 9) return "Ringan";
-            if (score <= 14) return "Sedang";
-            if (score <= 19) return "Berat";
-            return "Sangat Berat";
+            else if (score <= 9) return "Ringan";
+            else if (score <= 14) return "Sedang";
+            else if (score <= 19) return "Berat";
+            else return "Sangat Berat";
         }
-        if (type === "stress") {
+        else if (type === "stress") {
             if (score <= 14) return "Normal";
-            if (score <= 18) return "Ringan";
-            if (score <= 25) return "Sedang";
-            if (score <= 33) return "Berat";
-            return "Sangat Berat";
+            else if (score <= 18) return "Ringan";
+            else if (score <= 25) return "Sedang";
+            else if (score <= 33) return "Berat";
+            else return "Sangat Berat";
+        }
+        else {
+            return "Normal";
         }
     };
 
@@ -120,11 +123,10 @@ export default function DassResult() {
     ];
 
     return (
-        /* Kunci background menggunakan warna flat putih murni (#FFFFFF) */
         <div className="bg-[#FFFFFF] min-h-screen text-[#292929] flex flex-col justify-between relative overflow-hidden">
             <Navbar />
 
-            {/* SEBARAN ELEMEN GEOMETRI RANDOM DI LATAR BELAKANG */}
+            {/* SEBARAN ELEMEN GEOMETRI RANDOM */}
             <div className="absolute inset-x-0 top-0 h-[80vh] pointer-events-none z-0">
                 <TinySparkle className="top-36 left-8 md:left-16 animate-pulse" />
                 <TinyCircle className="top-56 left-20 md:left-32 animate-bounce duration-[1500ms]" />
@@ -183,7 +185,6 @@ export default function DassResult() {
                 {/* Next Steps Section */}
                 <h2 className="text-2xl md:text-3xl font-black mt-32 mb-10 tracking-tight uppercase">What You Can Do Next?</h2>
 
-                {/* NAV CARDS (FIX: Dirombak Menggunakan Gaya Stacked Solid Neo-Brutalism Biar Sinkron) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full mb-20">
                     {/* Card 1 */}
                     <div onClick={() => navigate("/meditation")} className="relative group rounded-3xl">
@@ -216,7 +217,7 @@ export default function DassResult() {
                     </div>
                 </div>
 
-                {/* Footer Banner Card Bertumpuk Tebal */}
+                {/* Footer Banner Card */}
                 <div className="relative group max-w-4xl w-full mb-24">
                     <div className="absolute inset-0 bg-[#292929] rounded-[32px] translate-x-2 translate-y-2" />
                     <div className="relative p-12 bg-[#FFFFFF] border-4 border-[#292929] rounded-[32px] text-center w-full">
@@ -226,7 +227,7 @@ export default function DassResult() {
                         </p>
                         <button
                             onClick={() => navigate("/dass-question")}
-                            className="px-12 py-4 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer uppercase tracking-wider text-xs"
+                            className="px-12 py-4 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:scale-95 cursor-pointer uppercase tracking-wider text-xs"
                         >
                             Ambil Tes Ulang
                         </button>
@@ -234,7 +235,6 @@ export default function DassResult() {
                 </div>
             </div>
 
-            {/* FIX: Footer langsung menempel alami tanpa pembungkus penengah abu-abu tebal terpisah */}
             <Footer />
         </div>
     );
@@ -271,13 +271,10 @@ function DassSliderCard({ card, category }) {
 
     return (
         <div className="relative w-full h-85 group">
-            {/* Efek Bayangan Solid Belakang Khusus Card Hasil Slider */}
             <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2" />
-
             <div onClick={() => setFlipped(!flipped)} className="perspective w-full h-full cursor-pointer relative z-10">
                 <div className={`relative w-full h-full transition-all duration-700 transform-style-preserve-3d ${flipped ? "rotate-y-180" : ""}`}>
-
-                    {/* DEPAN CARD (FIX: Menggunakan Border Tebal Khas Tema) */}
+                    {/* DEPAN CARD */}
                     <div className="absolute inset-0 backface-hidden bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-8 flex flex-col justify-between">
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl font-black text-[#292929] uppercase tracking-tight">{card.title}</h3>
@@ -288,12 +285,10 @@ function DassSliderCard({ card, category }) {
                                 <span className="font-serif font-black text-xs">i</span>
                             </button>
                         </div>
-
-                        {/* Slider Panel Area */}
                         <div className="relative py-10">
                             <div className="absolute top-0 -translate-x-1/2 flex flex-col items-center transition-all duration-1000 ease-out" style={{ left: `${percentage}%` }}>
                                 <div className="bg-[#292929] text-[#FFFFFF] text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg shadow-sm mb-1 whitespace-nowrap border border-[#FFFFFF]/10">
-                                    {category} <span className="ml-1 text-[#ADFF2F]">| {card.score}</span>
+                                    {category} | {card.score}
                                 </div>
                                 <div className="w-0.5 h-3 bg-[#292929]"></div>
                             </div>
@@ -305,7 +300,6 @@ function DassSliderCard({ card, category }) {
                         </div>
                         <div className="text-center text-[10px] text-[#292929]/40 font-black uppercase tracking-wider">Klik kartu untuk afirmasi</div>
                     </div>
-
                     {/* BELAKANG CARD */}
                     <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#FFFFFF] border-4 border-[#292929] rounded-3xl p-8 flex flex-col items-center justify-center text-center">
                         <div className="w-10 h-1.5 bg-[#00BFFF] rounded-full mb-6" />
@@ -333,7 +327,7 @@ function DassSliderCard({ card, category }) {
                                 </div>
                             ))}
                         </div>
-                        <button onClick={() => setShowInfo(false)} className="w-full mt-6 py-3.5 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer">
+                        <button onClick={() => setShowInfo(false)} className="w-full mt-6 py-3.5 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#292929] hover:opacity-90 transition active:scale-95 cursor-pointer">
                             Saya Mengerti
                         </button>
                     </div>

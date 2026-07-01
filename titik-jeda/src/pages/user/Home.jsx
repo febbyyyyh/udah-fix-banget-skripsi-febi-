@@ -90,7 +90,8 @@ export default function Home() {
         try {
             const res = await axios.get("/api/user/dass/last-result", { withCredentials: true });
             if (res.data) navigate("/dass/result");
-        } catch (err) {
+        } catch {
+            /* FIX: Menggunakan fitur ES6 Optional Catch Binding (tanpa variabel 'err') untuk menghilangkan warning linter */
             navigate("/dass");
         } finally {
             setLoading(false);
@@ -142,7 +143,7 @@ export default function Home() {
                             </h1>
 
                             <p className="text-base sm:text-lg text-[#292929]/80 max-w-md mt-6 leading-relaxed font-normal">
-                                Ukur tingkat stres, kecemasan, dan depresimu secara akurat melalui komparasi screening terpercaya{" "}
+                                Kenali tingkat stres, kecemasan, dan depresi yang kamu alami menggunakan screening{" "}
                                 <span
                                     onClick={() => navigate("/dass-info")}
                                     className="inline-block text-[#00BFFF] font-black underline decoration-4 decoration-[#ADFF2F] underline-offset-4 cursor-pointer transition-transform hover:scale-105"
@@ -208,7 +209,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Section 3: Fitur (MODIFIKASI: Polosan Putih + Taburan Elemen Berwarna Tersebar) */}
+            {/* Section 3: Fitur */}
             <section className="w-full pt-24 pb-20 px-4 md:px-8 min-h-[60vh] relative overflow-hidden bg-[#FFFFFF]">
 
                 {/* TABURAN ORNAMEN BERWARNA DINAMIS DI SEKITAR AREA FITUR */}

@@ -95,100 +95,98 @@ export default function DassQuestion() {
     const progress = ((current + 1) / 21) * 100;
 
     return (
-        /* Latar belakang putih bersih murni (#FFFFFF) dengan posisi relative */
-        <div className="w-full min-h-screen flex flex-col items-center px-4 sm:px-6 pt-24 pb-16 bg-[#FFFFFF] text-[#292929] relative overflow-hidden">
+        /* KUNCI UTAMA: w-full h-screen overflow-hidden dipasang pada pembungkus terluar browser */
+        <div className="w-full h-screen overflow-hidden bg-[#FFFFFF] relative text-[#292929]">
 
-            {/* SEBARAN ELEMEN GEOMETRI RANDOM (Masuk ke area tengah latar belakang) */}
-            {/* Layer Atas (Di sekitar area Progress Bar) */}
+            {/* SEBARAN ELEMEN GEOMETRI RANDOM (Dikunci statis terhadap window view agar tidak bergeser) */}
             <TinySparkle className="top-12 left-6 sm:left-12 animate-pulse" />
             <TinyTriangle className="top-14 left-[30%] hidden md:block" />
             <TinyCircle className="top-16 right-[25%] hidden md:block" />
             <TinyTriangle className="top-20 right-6 sm:right-16" />
 
-            {/* Layer Tengah (Di belakang area teks pertanyaan h2) */}
-            <div className="absolute inset-x-0 top-[220px] h-[150px] pointer-events-none">
-                <TinyCircle className="top-2 left-10 sm:left-24 animate-bounce duration-[2500ms]" />
-                <TinySparkle className="top-6 left-[20%] animate-pulse hidden lg:block" />
-                <TinyTriangle className="top-0 left-[45%] hidden md:block" />
-                <TinySparkle className="top-4 right-[18%] animate-pulse hidden lg:block" />
-                <TinyCircle className="top-10 right-8 sm:right-20 animate-bounce duration-[2200ms]" />
-            </div>
+            <TinyCircle className="top-[250px] left-10 sm:left-24 animate-bounce duration-[2500ms]" />
+            <TinySparkle className="top-[270px] left-[20%] animate-pulse hidden lg:block" />
+            <TinyTriangle className="top-[220px] left-[45%] hidden md:block" />
+            <TinySparkle className="top-[240px] right-[18%] animate-pulse hidden lg:block" />
+            <TinyCircle className="top-[300px] right-8 sm:right-20 animate-bounce duration-[2200ms]" />
 
-            {/* Layer Bawah Konten (Di area belakang daftar tombol pilihan) */}
-            <div className="absolute inset-x-0 top-[420px] bottom-16 pointer-events-none">
-                <TinyTriangle className="top-8 left-4 sm:left-14" />
-                <TinyCircle className="top-20 left-[15%] animate-bounce duration-[3000ms] hidden md:block" />
-                <TinySparkle className="top-36 left-8 sm:left-20 animate-pulse" />
+            <TinyTriangle className="bottom-48 left-4 sm:left-14" />
+            <TinyCircle className="bottom-72 left-[15%] animate-bounce duration-[3000ms] hidden md:block" />
+            <TinySparkle className="bottom-24 left-8 sm:left-20 animate-pulse" />
 
-                <TinyCircle className="top-6 right-[12%] animate-bounce duration-[2800ms] hidden md:block" />
-                <TinyTriangle className="top-24 right-6 sm:right-14" />
-                <TinySparkle className="top-40 right-10 sm:right-24 animate-pulse" />
-            </div>
+            <TinyCircle className="bottom-64 right-[12%] animate-bounce duration-[2800ms] hidden md:block" />
+            <TinyTriangle className="bottom-36 right-6 sm:right-14" />
+            <TinySparkle className="bottom-16 right-10 sm:right-24 animate-pulse" />
 
-            {/* Progress Bar Area */}
-            <div className="w-full max-w-2xl mb-12 px-1 relative z-10">
-                <div className="flex justify-between items-center mb-2.5 text-xs font-black uppercase tracking-widest text-[#292929]/50">
-                    <span>Pertanyaan</span>
-                    <span className="text-[#00BFFF]">{current + 1} dari 21</span>
+            {/* AREA KONTEN MANDIRI: Diatur overflow-y-scroll dan h-full agar scrollbar kanan SELALU TERKUNCI MUNCUL */}
+            <div className="w-full h-full overflow-y-scroll flex flex-col items-center px-4 sm:px-6 pt-24 pb-16 relative z-10">
+
+                {/* Progress Bar Area */}
+                <div className="w-full max-w-2xl mb-12 px-1 relative z-10">
+                    <div className="flex justify-between items-center mb-2.5 text-xs font-black uppercase tracking-widest text-[#292929]/50">
+                        <span>Pertanyaan</span>
+                        <span className="text-[#00BFFF]">{current + 1} dari 21</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-[#F2F2F2] rounded-full overflow-hidden shadow-inner">
+                        <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%`, backgroundColor: "#00BFFF" }}
+                        ></div>
+                    </div>
                 </div>
-                <div className="w-full h-2.5 bg-[#F2F2F2] rounded-full overflow-hidden shadow-inner">
-                    <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%`, backgroundColor: "#00BFFF" }}
-                    ></div>
+
+                {/* Question Text */}
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-12 max-w-3xl leading-relaxed px-2 tracking-tight relative z-10">
+                    {questions[current]}
+                </h2>
+
+                {/* Options Button List */}
+                <div className="w-full max-w-2xl flex flex-col gap-4 relative z-10">
+                    {options.map((opt) => (
+                        <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => handleSelect(opt.value)}
+                            className={`w-full text-left px-5 sm:px-7 py-4 rounded-2xl font-medium border-2 text-base sm:text-lg transition-all shadow-sm active:scale-99 cursor-pointer
+                                ${answers[current] === opt.value
+                                    ? "border-[#00BFFF] bg-[#FFFFFF] font-bold"
+                                    : "border-transparent bg-[#F2F2F2] hover:bg-[#F2F2F2]/80"
+                                }`}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
                 </div>
-            </div>
 
-            {/* Question Text */}
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-12 max-w-3xl leading-relaxed px-2 tracking-tight relative z-10">
-                {questions[current]}
-            </h2>
+                {/* Navigation Buttons */}
+                <div className="w-full max-w-2xl flex justify-between items-center mt-12 relative z-10">
+                    {current > 0 ? (
+                        <button
+                            type="button"
+                            onClick={prev}
+                            className="px-5 py-2.5 rounded-xl border-2 border-[#F2F2F2] text-[#292929]/80 font-bold text-sm sm:text-base hover:bg-[#F2F2F2] transition flex items-center gap-2 cursor-pointer"
+                        >
+                            ← Sebelumnya
+                        </button>
+                    ) : (
+                        <div />
+                    )}
 
-            {/* Options Button List */}
-            <div className="w-full max-w-2xl flex flex-col gap-4 relative z-10">
-                {options.map((opt) => (
-                    <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => handleSelect(opt.value)}
-                        className={`w-full text-left px-5 sm:px-7 py-4 rounded-2xl font-medium border-2 text-base sm:text-lg transition-all shadow-sm active:scale-99 cursor-pointer
-                            ${answers[current] === opt.value
-                                ? "border-[#00BFFF] bg-[#FFFFFF] font-bold"
-                                : "border-transparent bg-[#F2F2F2] hover:bg-[#F2F2F2]/80"
-                            }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="w-full max-w-2xl flex justify-between items-center mt-12 relative z-10">
-                {current > 0 ? (
                     <button
                         type="button"
-                        onClick={prev}
-                        className="px-5 py-2.5 rounded-xl border-2 border-[#F2F2F2] text-[#292929]/80 font-bold text-sm sm:text-base hover:bg-[#F2F2F2] transition flex items-center gap-2 cursor-pointer"
+                        onClick={next}
+                        disabled={answers[current] === null}
+                        className={`px-7 py-3 rounded-xl font-black text-sm sm:text-base transition shadow-sm active:scale-95
+                            ${answers[current] === null
+                                ? "bg-[#F2F2F2] text-[#292929]/30 cursor-not-allowed shadow-none"
+                                : "bg-[#00BFFF] text-[#FFFFFF] hover:opacity-90 cursor-pointer"
+                            }
+                        `}
                     >
-                        ← Sebelumnya
+                        {current === 20 ? "Selesai" : "Selanjutnya →"}
                     </button>
-                ) : (
-                    <div />
-                )}
+                </div>
 
-                <button
-                    type="button"
-                    onClick={next}
-                    disabled={answers[current] === null}
-                    className={`px-7 py-3 rounded-xl font-black text-sm sm:text-base transition shadow-sm active:scale-95
-                        ${answers[current] === null
-                            ? "bg-[#F2F2F2] text-[#292929]/30 cursor-not-allowed shadow-none"
-                            : "bg-[#00BFFF] text-[#FFFFFF] hover:opacity-90 cursor-pointer"
-                        }
-                    `}
-                >
-                    {current === 20 ? "Selesai" : "Selanjutnya →"}
-                </button>
             </div>
         </div>
     );

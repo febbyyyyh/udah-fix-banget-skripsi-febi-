@@ -62,6 +62,7 @@ export default function Footer() {
                             allowFullScreen=""
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
+                            allow="accelerometer; gyroscope; magnetometer"
                         ></iframe>
                     </div>
                 </div>
