@@ -32,19 +32,19 @@ export default function DassQuestion() {
         "Saya cenderung bereaksi berlebihan pada situasi.",
         "Saya merasa gemetar (tremor).",
         "Saya merasa menggunakan banyak energi untuk cemas.",
+        "Saya merasa takut akan situasi yang membuat saya cemas.",
+        "Saya merasa tidak ada harapan.",
+        "Saya merasa gelisah.",
+        "Saya merasa sulit untuk beristirahat setelah melakukan sesuatu.",
         "Saya merasa sedih dan tertekan.",
         "Saya merasa saya tidak sabar.",
-        "Saya merasa sulit untuk beristirahat setelah melakukan sesuatu.",
-        "Saya merasa takut tanpa alasan yang jelas.",
+        "Saya merasa takut dan seolah akan panik.",
         "Saya tidak bisa menikmati hal-hal yang saya lakukan.",
-        "Saya merasa gelisah.",
         "Saya merasa saya tidak berharga.",
         "Saya mudah tersinggung.",
         "Saya merasa jantung saya berdebar-debar (tanpa aktivitas).",
-        "Saya merasa takut akan situasi yang membuat saya cemas.",
-        "Saya merasa tidak ada harapan.",
-        "Saya merasa mudah marah.",
-        "Saya merasa takut dan seolah akan panik."
+        "Saya merasa takut tanpa alasan yang jelas.",
+        "Saya merasa hidup ini tidak berarti."
     ];
 
     const [current, setCurrent] = useState(0);
@@ -76,9 +76,9 @@ export default function DassQuestion() {
     };
 
     const calculateResult = () => {
-        const depressionIndex = [2, 4, 9, 12, 15, 19, 20];
-        const anxietyIndex = [1, 3, 6, 8, 14, 18, 21];
-        const stressIndex = [5, 7, 10, 11, 13, 16, 17];
+        const depressionIndex = [3, 5, 10, 13, 16, 17, 21];
+        const anxietyIndex = [2, 4, 7, 9, 15, 19, 20];
+        const stressIndex = [1, 6, 8, 11, 12, 14, 18];
 
         const sum = (indexes) =>
             indexes.reduce((acc, i) => acc + (answers[i - 1] || 0), 0);
