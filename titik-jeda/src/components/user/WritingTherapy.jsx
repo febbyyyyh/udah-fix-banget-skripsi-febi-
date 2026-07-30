@@ -10,6 +10,7 @@ const crisisKeywords = [
     "self harm",
     "suicide",
     "kill myself",
+    "mau mati"
 ];
 
 const WRITING_DURATION = 15 * 60;
@@ -20,6 +21,7 @@ const WritingTherapy = ({ isOpen, setIsOpen, counselorUrl = "" }) => {
     const [isCompleted, setIsCompleted] = useState(false);
     const [timeLeft, setTimeLeft] = useState(WRITING_DURATION);
 
+    //Kursor aktif
     const textAreaRef = useRef(null);
 
     const wordCount = useMemo(() => {

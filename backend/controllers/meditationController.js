@@ -20,13 +20,16 @@ const deletePhysicalFile = (relativePaths) => {
 // CREATE meditation type
 export const createMeditationType = async (req, res) => {
     try {
-        const { name, description } = req.body;
-        const cover_image = req.file
-            ? `uploads/meditation/covers/${req.file.filename}`
-            : null;
-
-        const sql = `INSERT INTO meditation_types (name, description, cover_image) VALUES (?, ?, ?)`;
-        const [result] = await db.query(sql, [name, description, cover_image]);
+        const { name, description, category_type } = req.body;
+        
+        // Validasi: semua field wajib diisi
+        if (!name || !name.trim() || !description || !description.trim() || !category_type) {
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
+        }
+        
+        // No cover image handling: store NULL in cover_image column
+        const sql = `INSERT INTO meditation_types (name, description, cover_image, category_type) VALUES (?, ?, NULL, ?)`;
+        const [result] = await db.query(sql, [name, description, category_type || null]);
 
         res.status(201).json({
             message: "Meditation type berhasil dibuat",
@@ -71,20 +74,19 @@ export const getMeditationById = async (req, res) => {
 export const updateMeditation = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description } = req.body;
+        const { name, description, category_type } = req.body;
 
-        const [existing] = await db.query(`SELECT cover_image FROM meditation_types WHERE id = ?`, [id]);
-        if (existing.length === 0) return res.status(404).json({ message: "Meditasi tidak ditemukan" });
-
-        let cover_image = existing[0].cover_image;
-
-        if (req.file) {
-            deletePhysicalFile(existing[0].cover_image); // Hapus cover lama
-            cover_image = `uploads/meditation/covers/${req.file.filename}`;
+        // Validasi: semua field wajib diisi
+        if (!name || !name.trim() || !description || !description.trim() || !category_type) {
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
         }
 
-        const sql = `UPDATE meditation_types SET name = ?, description = ?, cover_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-        await db.query(sql, [name, description, cover_image, id]);
+        const [existing] = await db.query(`SELECT id FROM meditation_types WHERE id = ?`, [id]);
+        if (existing.length === 0) return res.status(404).json({ message: "Meditasi tidak ditemukan" });
+
+        // Update only text fields and category_type; we intentionally keep cover_image NULL
+        const sql = `UPDATE meditation_types SET name = ?, description = ?, category_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+        await db.query(sql, [name, description, category_type || null, id]);
 
         res.json({ message: "Meditasi berhasil diperbarui" });
     } catch (err) {
@@ -144,6 +146,10 @@ export const getRecommendation = async (req, res) => {
     try {
         const sessionId = req.cookies.session_id;
 
+        if (!sessionId) {
+            return res.json({ message: "Session tidak ditemukan", data: [] });
+        }
+
         // 1. Ambil kategori DASS terbaru berdasarkan session_id
         const [dassResult] = await db.query(
             "SELECT result_category FROM dass_results WHERE session_id = ? ORDER BY created_at DESC LIMIT 1",
@@ -152,22 +158,36 @@ export const getRecommendation = async (req, res) => {
 
         // Jika user belum pernah tes
         if (dassResult.length === 0) {
-            return res.json({ message: "Belum ada hasil tes", data: null });
+            return res.json({ message: "Belum ada hasil tes", data: [] });
         }
 
         const category = dassResult[0].result_category;
 
         // 2. Query audio menggunakan nama kolom yang benar: meditation_type_id
+        const fallbackName = category === "depression" ? "%Depression%" : category === "anxiety" ? "%Anxiety%" : "%Stress%";
+
         const [meditations] = await db.query(
-            `SELECT ma.*, mt.name as type_name 
+            `SELECT ma.*, mt.name as type_name, mt.id as meditation_type_id 
              FROM meditation_audios ma
              JOIN meditation_types mt ON ma.meditation_type_id = mt.id
-             WHERE mt.category_type = ?`,
-            [category]
+             WHERE mt.category_type = ?
+               OR mt.name LIKE ?
+             ORDER BY ma.created_at ASC`,
+            [category, fallbackName]
+        );
+
+        const [recommendedType] = await db.query(
+            `SELECT id, name FROM meditation_types 
+             WHERE category_type = ?
+               OR name LIKE ?
+             ORDER BY created_at DESC LIMIT 1`,
+            [category, fallbackName]
         );
 
         res.json({
             category_name: category,
+            recommended_meditation_type_id: recommendedType[0]?.id || null,
+            recommended_meditation_type_name: recommendedType[0]?.name || null,
             data: meditations
         });
     } catch (error) {

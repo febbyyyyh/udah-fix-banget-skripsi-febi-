@@ -1,4 +1,7 @@
+import crypto from "crypto";
 import db from "../config/db.js";
+
+const isProd = process.env.NODE_ENV === "production";
 
 const getSeverityWeight = (type, score) => {
     if (type === "depression") {
@@ -27,10 +30,24 @@ const getSeverityWeight = (type, score) => {
 
 export const saveDassResult = async (req, res) => {
     try {
-        const sessionId = req.cookies.session_id;
+        let sessionId = req.cookies.session_id;
         const { depression_score, anxiety_score, stress_score } = req.body;
 
-        if (!sessionId) return res.status(401).json({ message: "Session tidak ditemukan" });
+        if (!sessionId) {
+            // Jika session cookie belum ada, buat session anonymous baru sebagai fallback.
+            sessionId = crypto.randomUUID();
+            const now = new Date();
+            await db.query(
+                `INSERT IGNORE INTO user_session (session_id, first_access, last_access) VALUES (?, ?, ?)`,
+                [sessionId, now, now]
+            );
+            res.cookie("session_id", sessionId, {
+                httpOnly: true,
+                secure: isProd,
+                sameSite: "lax",
+                maxAge: 72 * 60 * 60 * 1000
+            });
+        }
 
         // Tentukan prioritas kategori
         const categories = [
@@ -60,7 +77,8 @@ export const saveDassResult = async (req, res) => {
 
         return res.status(200).json({
             message: "Hasil berhasil diproses",
-            recommendation: highest.name
+            recommendation: highest.name,
+            session_id: sessionId
         });
 
     } catch (error) {

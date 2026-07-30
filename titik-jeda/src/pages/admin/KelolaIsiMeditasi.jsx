@@ -23,7 +23,11 @@ export default function KelolaIsiMeditasi() {
     const [audioFile, setAudioFile] = useState(null);
     const [catName, setCatName] = useState("");
     const [catDesc, setCatDesc] = useState("");
+    const [catCategoryType, setCatCategoryType] = useState("general");
     const [successMessage, setSuccessMessage] = useState("");
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
+    const [formError, setFormError] = useState("");
 
     /* ================= EFFECT ================= */
     useEffect(() => {
@@ -46,6 +50,7 @@ export default function KelolaIsiMeditasi() {
             setCategory(res.data);
             setCatName(res.data.name);
             setCatDesc(res.data.description);
+            setCatCategoryType(res.data.category_type || "general");
         } catch (err) {
             console.error(err);
         }
@@ -66,11 +71,13 @@ export default function KelolaIsiMeditasi() {
     /* ================= LOGIC CRUD ================= */
     const handleSaveAudio = async () => {
         if (!title.trim()) {
-            return alert("Gagal simpan. Semua kolom wajib diisi.");
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
         }
 
         if (showAdd && !audioFile) {
-            return alert("Gagal simpan. Semua kolom wajib diisi.");
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
         }
 
         const formData = new FormData();
@@ -78,6 +85,10 @@ export default function KelolaIsiMeditasi() {
         if (audioFile) formData.append("audio_file", audioFile);
 
         try {
+            setFormError("");
+            setUploadLoading(true);
+            setUploadError("");
+
             const config = {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -97,12 +108,16 @@ export default function KelolaIsiMeditasi() {
                 setShowEdit(false);
                 setTitle("");
                 setAudioFile(null);
+                setFormError("");
                 showSuccess("Audio berhasil disimpan!");
                 await fetchAudios();
             }
         } catch (err) {
+            const message = err.response?.data?.message || err.message || "Terjadi kesalahan saat menyimpan audio";
             console.error("Gagal simpan:", err.response?.data || err.message);
-            alert(err.response?.data?.message || "Terjadi kesalahan saat menyimpan audio");
+            setUploadError(message);
+        } finally {
+            setUploadLoading(false);
         }
     };
 
@@ -121,21 +136,22 @@ export default function KelolaIsiMeditasi() {
 
     const handleUpdateCategory = async () => {
         if (!catName.trim() || !catDesc.trim()) {
-            return alert("Gagal simpan. Semua kolom wajib diisi.");
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
         }
-
-        const formData = new FormData();
-        formData.append("name", catName);
-        formData.append("description", catDesc);
+        setFormError("");
 
         try {
             await axios.put(
                 `/api/admin/meditations/${id}`,
-                formData,
+                {
+                    name: catName,
+                    description: catDesc,
+                    category_type: catCategoryType
+                },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data"
                     }
                 }
             );
@@ -190,7 +206,7 @@ export default function KelolaIsiMeditasi() {
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="font-black text-lg tracking-tight">Daftar Audio Meditasi</h2>
                     <button
-                        onClick={() => { setTitle(""); setAudioFile(null); setShowAdd(true); }}
+                        onClick={() => { setTitle(""); setAudioFile(null); setFormError(""); setUploadError(""); setShowAdd(true); }}
                         className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Audio
@@ -227,6 +243,8 @@ export default function KelolaIsiMeditasi() {
                                                     setSelectedAudio(audio);
                                                     setTitle(audio.title);
                                                     setAudioFile(null);
+                                                    setFormError("");
+                                                    setUploadError("");
                                                     setShowEdit(true);
                                                 }}
                                                 className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
@@ -253,11 +271,16 @@ export default function KelolaIsiMeditasi() {
                 <ModalWrapper>
                     <h3 className="font-black text-xl mb-6 tracking-tight">Edit Informasi Tipe Meditasi</h3>
                     <div className="space-y-4">
+                        {formError && (
+                            <div className="mb-4 rounded-md bg-[#fff1f2] border border-[#fca5a5] text-[#b91c1c] px-4 py-3 text-sm font-medium">
+                                {formError}
+                            </div>
+                        )}
                         <div>
                             <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Nama Tipe Meditasi</label>
                             <input
                                 value={catName}
-                                onChange={(e) => setCatName(e.target.value)}
+                                onChange={(e) => { setCatName(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
                             />
                         </div>
@@ -266,9 +289,22 @@ export default function KelolaIsiMeditasi() {
                             <textarea
                                 rows="3"
                                 value={catDesc}
-                                onChange={(e) => setCatDesc(e.target.value)}
+                                onChange={(e) => { setCatDesc(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                             />
+                        </div>
+                        <div>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Tipe Kategori DASS-21</label>
+                            <select
+                                value={catCategoryType}
+                                onChange={(e) => setCatCategoryType(e.target.value)}
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
+                            >
+                                <option value="general">General (Umum)</option>
+                                <option value="depression">Depression (Depresi)</option>
+                                <option value="anxiety">Anxiety (Cemas)</option>
+                                <option value="stress">Stress (Stres)</option>
+                            </select>
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
@@ -292,7 +328,7 @@ export default function KelolaIsiMeditasi() {
                             </label>
                             <input
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => { setTitle(e.target.value); setFormError(""); setUploadError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none text-sm font-medium"
                                 placeholder="Masukkan judul audio..."
                             />
@@ -306,7 +342,7 @@ export default function KelolaIsiMeditasi() {
                             <input
                                 type="file"
                                 accept="audio/*"
-                                onChange={(e) => setAudioFile(e.target.files[0])}
+                                onChange={(e) => { setAudioFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
                                 className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
                             />
 
@@ -315,22 +351,30 @@ export default function KelolaIsiMeditasi() {
                                     *Biarkan kosong jika tidak ingin mengubah file audio
                                 </p>
                             )}
+                            {uploadError && (
+                                <p className="text-xs text-red-500 mt-3 font-medium">{uploadError}</p>
+                            )}
+                            {formError && (
+                                <p className="text-xs text-red-500 mt-3 font-medium">{formError}</p>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-3 mt-8">
                         <button
                             onClick={() => { setShowAdd(false); setShowEdit(false); }}
-                            className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer"
+                            className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+                            disabled={uploadLoading}
                         >
                             Batal
                         </button>
 
                         <button
                             onClick={handleSaveAudio}
-                            className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90"
+                            className={`bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90 ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+                            disabled={uploadLoading}
                         >
-                            Simpan Audio
+                            {uploadLoading ? "Menyimpan..." : "Simpan Audio"}
                         </button>
                     </div>
                 </ModalWrapper>
@@ -345,7 +389,7 @@ export default function KelolaIsiMeditasi() {
                     </div>
 
                     <audio controls key={selectedAudio.id} className="w-full mt-4 bg-[#F2F2F2] rounded-xl">
-                        <source src={getAudioUrl(selectedAudio.audio_file)} type="audio/mpeg" />
+                        <source src={`http://localhost:5000${getAudioUrl(selectedAudio.audio_file)}`} type="audio/mpeg" />
                         Browser kamu tidak mendukung pemutar audio.
                     </audio>
 

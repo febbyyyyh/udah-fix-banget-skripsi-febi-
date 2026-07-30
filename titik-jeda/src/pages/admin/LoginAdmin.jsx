@@ -42,15 +42,23 @@ export default function LoginAdmin() {
                 email,
                 password,
             });
-            localStorage.setItem("admin_token", response.data.token);
+
+            // 💡 PENCARI TOKEN PINTAR: Mengantisipasi segala jenis struktur objek dari backend
+            const token = response.data?.token || response.data?.accessToken || response.data?.data?.token;
+
+            if (!token) {
+                throw new Error("Token tidak ditemukan dalam respon server.");
+            }
+
+            localStorage.setItem("admin_token", token);
             navigate("/admin/dashboard");
         } catch (err) {
-            setError(err.response?.data?.message || "Email atau password salah.");
+            setError(err.response?.data?.message || err.message || "Email atau password salah.");
         } finally {
             setLoading(false);
         }
     };
-
+    
     return (
         /* Latar belakang dikunci putih murni (#FFFFFF) dengan posisi relative untuk menampung floating elements */
         <div className="min-h-screen flex items-center justify-center bg-[#FFFFFF] px-4 text-[#292929] relative overflow-hidden">

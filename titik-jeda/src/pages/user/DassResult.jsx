@@ -28,10 +28,13 @@ export default function DassResult() {
     const navigate = useNavigate();
     const [scores, setScores] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [saveError, setSaveError] = useState(false);
 
     useEffect(() => {
         const fetchOrSaveData = async () => {
             setLoading(true);
+            setSaveError(false);
+
             try {
                 if (state?.depression !== undefined) {
                     await axios.post("/api/user/dass/save", {
@@ -39,20 +42,23 @@ export default function DassResult() {
                         anxiety_score: state.anxiety,
                         stress_score: state.stress
                     }, { withCredentials: true });
-                    setScores(state);
-                } else {
-                    const res = await axios.get("/api/user/dass/last-result", {
-                        withCredentials: true
-                    });
-                    setScores({
-                        depression: res.data.depression,
-                        anxiety: res.data.anxiety,
-                        stress: res.data.stress
-                    });
                 }
-            } catch {
-                if (typeof state === 'undefined' || !state) {
+
+                const res = await axios.get("/api/user/dass/last-result", {
+                    withCredentials: true
+                });
+                setScores({
+                    depression: res.data.depression,
+                    anxiety: res.data.anxiety,
+                    stress: res.data.stress
+                });
+            } catch (err) {
+                console.error("❌ Error save/verify DASS:", err);
+                setSaveError(true);
+                if (!state) {
                     navigate("/dass");
+                } else if (state?.depression !== undefined) {
+                    setScores(state);
                 }
             } finally {
                 setLoading(false);
@@ -169,6 +175,11 @@ export default function DassResult() {
                             </>
                         )}
                     </p>
+                    {saveError && (
+                        <div className="mt-6 rounded-2xl border border-[#f94e67]/40 bg-[#fff1f2] px-5 py-4 text-sm text-[#b91c1c] font-medium">
+                            Terjadi masalah saat menyimpan hasil. Menampilkan hasil terakhir yang tersedia.
+                        </div>
+                    )}
                 </div>
 
                 {/* SLIDER CARDS GRID AREA */}

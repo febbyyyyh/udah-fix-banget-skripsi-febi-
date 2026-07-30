@@ -24,7 +24,7 @@ export const createAudio = async (req, res) => {
         const audio_file = req.file ? `/uploads/meditation/audios/${req.file.filename}` : null;
 
         if (!title || !audio_file) {
-            return res.status(400).json({ message: "Judul dan File Audio wajib diisi" });
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
         }
 
         const sql = `INSERT INTO meditation_audios (meditation_type_id, title, audio_file) VALUES (?, ?, ?)`;
@@ -54,6 +54,11 @@ export const updateAudio = async (req, res) => {
     try {
         const { id } = req.params;
         const { title } = req.body;
+
+        // Validasi: title wajib diisi
+        if (!title || !title.trim()) {
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
+        }
 
         const [existing] = await db.query(`SELECT audio_file FROM meditation_audios WHERE id = ?`, [id]);
         if (existing.length === 0) return res.status(404).json({ message: "Audio tidak ditemukan" });

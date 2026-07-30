@@ -73,8 +73,32 @@ router.post(
     "/playlists",
     verifyToken,
     adminOnly,
+    // No multer here — accept JSON body for creating playlist
     createPlaylist // Langsung memanggil controller
 );
+
+// Temporary debug endpoint (no auth) to verify multipart parsing during development
+router.post(
+    "/playlists/test",
+    uploadCover.none(),
+    (req, res) => {
+        console.log("[DEBUG] /playlists/test headers:", req.headers);
+        console.log("[DEBUG] /playlists/test body:", req.body);
+        res.json({ ok: true, body: req.body });
+    }
+);
+
+// Debug: list internal routes of this router
+router.get("/routes", (req, res) => {
+    const list = [];
+    router.stack.forEach((layer) => {
+        if (layer.route) {
+            const methods = Object.keys(layer.route.methods).join(',');
+            list.push({ path: layer.route.path, methods });
+        }
+    });
+    res.json(list);
+});
 
 router.put(
     "/playlists/:id",

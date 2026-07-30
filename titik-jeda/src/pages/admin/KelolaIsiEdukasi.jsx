@@ -26,6 +26,9 @@ export default function KelolaIsiEdukasi() {
     const [videoTitle, setVideoTitle] = useState("");
     const [tempVideoFile, setTempVideoFile] = useState(null);
     const [successMessage, setSuccessMessage] = useState("");
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [uploadError, setUploadError] = useState("");
+    const [formError, setFormError] = useState("");
 
     /* ================= FETCH DATA ================= */
     const fetchData = useCallback(async () => {
@@ -60,7 +63,11 @@ export default function KelolaIsiEdukasi() {
 
     /* ================= LOGIC UPDATE PLAYLIST (MURNI JSON TANPA FORMDATA FILE) ================= */
     const handleUpdateCategory = async () => {
-        if (!playlistName || !playlistDesc) return alert("Gagal simpan. Semua kolom wajib diisi.");
+        if (!playlistName || !playlistDesc) {
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
+        }
+        setFormError("");
 
         try {
             await axiosAdmin.put(`/admin/learngrow/playlists/${id}`, {
@@ -81,7 +88,19 @@ export default function KelolaIsiEdukasi() {
 
     /* ================= LOGIC CRUD VIDEO ================= */
     const handleSaveVideo = async () => {
-        if (!videoTitle) return alert("Gagal simpan. Semua kolom wajib diisi.");
+        // Validasi yang lebih ketat
+        if (!videoTitle || !videoTitle.trim()) {
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
+        }
+
+        // Jika tambah video baru, file WAJIB ada
+        if (showAdd && !tempVideoFile) {
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            return;
+        }
+
+        setFormError("");
 
         const formData = new FormData();
         formData.append("title", videoTitle);
@@ -89,6 +108,9 @@ export default function KelolaIsiEdukasi() {
         if (tempVideoFile) formData.append("video_file", tempVideoFile);
 
         try {
+            setUploadLoading(true);
+            setUploadError("");
+
             if (showAdd) {
                 await axiosAdmin.post("/admin/learngrow/videos", formData);
                 showSuccess("Video berhasil ditambahkan");
@@ -100,9 +122,14 @@ export default function KelolaIsiEdukasi() {
             setShowEdit(false);
             setVideoTitle("");
             setTempVideoFile(null);
+            setFormError("");
             fetchData();
-        } catch {
-            alert("Gagal simpan. Semua kolom wajib diisi.");
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || "Terjadi kesalahan saat menyimpan video";
+            console.error("Gagal simpan video:", err.response?.data || err.message);
+            setUploadError(message);
+        } finally {
+            setUploadLoading(false);
         }
     };
 
@@ -142,12 +169,14 @@ export default function KelolaIsiEdukasi() {
                 ← Kembali ke Kelola Learn & Grow
             </button>
 
-            {/* ================= INFO PLAYLIST (SUDAH DI-AKALI TANPA COVER & IKON GAMBAR) ================= */}
+            {/* ================= INFO PLAYLIST (IKUTI LAYOUT KELOLAISIMEDITASI) ================= */}
             <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 mb-8 max-w-5xl relative shadow-sm">
+                {/* Button Edit Info di sudut kanan atas */}
                 <button
                     onClick={() => {
                         setPlaylistName(category.name);
                         setPlaylistDesc(category.description);
+                        setFormError("");
                         setShowEditCategory(true);
                     }}
                     className="absolute top-5 right-5 px-3 py-1.5 rounded-xl bg-[#F2F2F2] text-[#292929]/60 hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all text-xs font-black uppercase tracking-wider cursor-pointer"
@@ -167,7 +196,7 @@ export default function KelolaIsiEdukasi() {
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="font-black text-lg tracking-tight">Daftar Video Edukasi</h2>
                     <button
-                        onClick={() => { setVideoTitle(""); setTempVideoFile(null); setShowAdd(true); }}
+                        onClick={() => { setVideoTitle(""); setTempVideoFile(null); setFormError(""); setUploadError(""); setShowAdd(true); }}
                         className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Video
@@ -204,6 +233,8 @@ export default function KelolaIsiEdukasi() {
                                                     setSelectedVideo(video);
                                                     setVideoTitle(video.title);
                                                     setTempVideoFile(null);
+                                                    setFormError("");
+                                                    setUploadError("");
                                                     setShowEdit(true);
                                                 }}
                                                 className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
@@ -229,12 +260,17 @@ export default function KelolaIsiEdukasi() {
             {showEditCategory && (
                 <ModalWrapper>
                     <h3 className="font-black text-xl mb-6 tracking-tight">Edit Informasi Playlist Edukasi</h3>
+                    {formError && (
+                        <div className="mb-4 rounded-md bg-[#fff1f2] border border-[#fca5a5] text-[#b91c1c] px-4 py-3 text-sm font-medium">
+                            {formError}
+                        </div>
+                    )}
                     <div className="space-y-4">
                         <div>
                             <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Nama Playlist</label>
                             <input
                                 value={playlistName}
-                                onChange={(e) => setPlaylistName(e.target.value)}
+                                onChange={(e) => { setPlaylistName(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
                             />
                         </div>
@@ -243,7 +279,7 @@ export default function KelolaIsiEdukasi() {
                             <textarea
                                 rows="3"
                                 value={playlistDesc}
-                                onChange={(e) => setPlaylistDesc(e.target.value)}
+                                onChange={(e) => { setPlaylistDesc(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                             />
                         </div>
@@ -266,7 +302,7 @@ export default function KelolaIsiEdukasi() {
                             <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Judul Video</label>
                             <input
                                 value={videoTitle}
-                                onChange={(e) => setVideoTitle(e.target.value)}
+                                onChange={(e) => { setVideoTitle(e.target.value); setFormError(""); setUploadError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none text-sm font-medium"
                                 placeholder="Masukkan judul video..."
                             />
@@ -276,15 +312,19 @@ export default function KelolaIsiEdukasi() {
                             <input
                                 type="file"
                                 accept="video/mp4"
-                                onChange={(e) => setTempVideoFile(e.target.files[0])}
+                                onChange={(e) => { setTempVideoFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
                                 className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
                             />
                             {showEdit && <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">*Biarkan kosong jika tidak ingin mengubah video</p>}
+                            {uploadError && <p className="text-xs text-red-500 mt-3 font-medium">{uploadError}</p>}
+                            {formError && <p className="text-xs text-red-500 mt-3 font-medium">{formError}</p>}
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">
-                        <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors cursor-pointer">Batal</button>
-                        <button onClick={handleSaveVideo} className="bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90">Simpan Video</button>
+                        <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`} disabled={uploadLoading}>Batal</button>
+                        <button onClick={handleSaveVideo} className={`bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90 ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`} disabled={uploadLoading}>
+                            {uploadLoading ? "Menyimpan..." : "Simpan Video"}
+                        </button>
                     </div>
                 </ModalWrapper>
             )}
@@ -304,7 +344,7 @@ export default function KelolaIsiEdukasi() {
                             autoPlay
                             preload="auto"
                             className="w-full h-full"
-                            src={getVideoUrl(selectedVideo.video_file)}
+                            src={`http://localhost:5000${getVideoUrl(selectedVideo.video_file)}`}
                         >
                             Browser kamu tidak mendukung pemutaran video.
                         </video>

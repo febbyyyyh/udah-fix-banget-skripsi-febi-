@@ -16,6 +16,7 @@ export default function KelolaEdukasi() {
     // FORM INPUT (Murni teks tanpa state file)
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [formError, setFormError] = useState("");
 
     /* ======================
             SUCCESS TOAST
@@ -56,27 +57,22 @@ export default function KelolaEdukasi() {
        ====================== */
     const handleCreatePlaylist = async () => {
         if (!title.trim() || !description.trim()) {
-            alert("Semua kolom wajib diisi.");
+            setFormError("Gagal simpan. Semua kolom wajib diisi.");
             return;
         }
+        setFormError("");
 
         try {
             const token = localStorage.getItem("admin_token");
 
-            // Menggunakan FormData agar terbaca sempurna oleh middleware upload di backend
-            const formData = new FormData();
-            formData.append("name", title);
-            formData.append("description", description);
-
-            // INI KUNCINYA: Kita buat file teks kosong pura-pura sebagai 'cover.jpg'
-            // Trik ini sukses mengelabui validasi (!coverImage) di backend tanpa perlu bongkar file Node.js
-            const dummyBlob = new Blob([""], { type: "image/jpeg" });
-            formData.append("cover_image", dummyBlob, "cover.jpg");
-
-            await axios.post(`${API_URL}/playlists`, formData, {
+            // Kirim JSON biasa — backend menerima JSON untuk membuat playlist
+            await axios.post(`${API_URL}/playlists`, {
+                name: title,
+                description: description
+            }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": "application/json"
                 },
             });
 
@@ -84,6 +80,7 @@ export default function KelolaEdukasi() {
             setShowAdd(false);
             setTitle("");
             setDescription("");
+            setFormError("");
 
             showSuccess("Playlist berhasil ditambahkan");
             fetchPlaylists();
@@ -125,6 +122,7 @@ export default function KelolaEdukasi() {
                     onClick={() => {
                         setTitle("");
                         setDescription("");
+                        setFormError("");
                         setShowAdd(true);
                     }}
                     className="bg-[#00BFFF] text-[#FFFFFF] text-xs font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
@@ -186,6 +184,11 @@ export default function KelolaEdukasi() {
                     <h3 className="font-black text-xl mb-6 tracking-tight text-[#292929]">
                         Tambah Playlist Baru
                     </h3>
+                    {formError && (
+                        <div className="mb-4 rounded-md bg-[#fff1f2] border border-[#fca5a5] text-[#b91c1c] px-4 py-3 text-sm font-medium">
+                            {formError}
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         {/* Input Nama */}
@@ -195,7 +198,7 @@ export default function KelolaEdukasi() {
                             </label>
                             <input
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => { setTitle(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
                                 placeholder="Masukkan nama playlist..."
                             />
@@ -209,7 +212,7 @@ export default function KelolaEdukasi() {
                             <textarea
                                 rows="3"
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e) => { setDescription(e.target.value); setFormError(""); }}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                                 placeholder="Jelaskan isi singkat playlist ini..."
                             />

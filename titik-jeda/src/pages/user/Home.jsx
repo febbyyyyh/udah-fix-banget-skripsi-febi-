@@ -1,10 +1,10 @@
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import { useState } from "react";
-import Footer from "../../components/user/Footer";
-import BreathingExercise from "../../components/user/BreathingExercise";
-import WritingTherapy from "../../components/user/WritingTherapy";
-import MusicPlayer from "../../components/user/MusicPlayer";
+import { useNavigate, Link } from "react-router-dom"; // Mengimpor alat navigasi (Link untuk tautan biasa, useNavigate untuk pindah halaman via fungsi)
+import axios from "axios"; // Mengimpor HTTP client untuk menembak/mengirim request data ke API backend
+import { useState } from "react"; // Mengimpor React Hook untuk membuat variabel penampung data dinamis (state) di dalam komponen
+import Footer from "../../components/user/Footer"; // Mengimpor komponen UI bagian bawah/kaki halaman (Footer)
+import BreathingExercise from "../../components/user/BreathingExercise"; // Mengimpor komponen fitur interaktif Latihan Pernapasan
+import WritingTherapy from "../../components/user/WritingTherapy"; // Mengimpor komponen fitur interaktif Terapi Menulis (Kanvas)
+import MusicPlayer from "../../components/user/MusicPlayer"; // Mengimpor komponen pemutar audio/musik relaksasi (Floating)
 
 const affirmations = [
     "Kamu nggak harus cepet-cepet. Berproses juga bentuk dari kekuatan.",
@@ -17,7 +17,7 @@ const affirmations = [
     "Apa pun yang kamu rasakan hari ini, kamu tidak sendirian."
 ];
 
-// ICON BINTANG NEO-BRUTALISM HERO
+// ICON BINTANG NEO-BRUTALISM HERO (Functional Component)
 const SparkleIcon = () => (
     <svg className="w-12 h-12 text-[#00BFFF] animate-pulse" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 0L14.6 9.4L24 12L14.6 14.6L12 24L9.4 14.6L0 12L9.4 9.4Z" />
@@ -41,7 +41,7 @@ const SectionTriangle = ({ className }) => (
     </svg>
 );
 
-function FlipCard({ text, onClick }) {
+function FlipCard({ text, onClick }) { //FlipCard (fungsi internal)
     const [isFlipped, setIsFlipped] = useState(false);
 
     const handleFlip = () => {
@@ -51,7 +51,7 @@ function FlipCard({ text, onClick }) {
 
     return (
         <div className="w-full h-64 md:h-72 lg:h-80 cursor-pointer relative z-10" style={{ perspective: "1000px" }} onClick={handleFlip}>
-            {/* Efek Bayangan Solid */}
+            {/* Efek Bayangan Solid Card Flip */}
             <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-3 translate-y-3" />
 
             <div className={`relative w-full h-full transition-transform duration-700 border-4 border-[#292929] rounded-3xl ${isFlipped ? "rotate-y-180" : ""}`} style={{ transformStyle: "preserve-3d" }}>
@@ -76,14 +76,18 @@ export default function Home() {
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [message, setMessage] = useState(() => affirmations[Math.floor(Math.random() * affirmations.length)]);
 
+    // Fungsi untuk mengacak ulang kata-kata afirmasi pada kartu
     const randomizeMessage = () => {
-        let nextMsg = affirmations[Math.floor(Math.random() * affirmations.length)];
+        let nextMsg = affirmations[Math.floor(Math.random() * affirmations.length)]; // Mengambil satu teks acak baru
+        
+        // Perulangan untuk memastikan teks baru yang diacak TIDAK SAMA dengan teks yang sekarang lagi tampil
         while (nextMsg === message) {
-            nextMsg = affirmations[Math.floor(Math.random() * affirmations.length)];
+            nextMsg = affirmations[Math.floor(Math.random() * affirmations.length)]; // Kalo sama, diacak ulang lagi
         }
-        setMessage(nextMsg);
+        setMessage(nextMsg); // Menyimpan teks acak baru yang sudah valid ke dalam state message
     };
 
+    // Fungsi asinkronus untuk menangani tombol klik screening (Check-In)
     const handleCheckIn = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -91,7 +95,6 @@ export default function Home() {
             const res = await axios.get("/api/user/dass/last-result", { withCredentials: true });
             if (res.data) navigate("/dass/result");
         } catch {
-            /* FIX: Menggunakan fitur ES6 Optional Catch Binding (tanpa variabel 'err') untuk menghilangkan warning linter */
             navigate("/dass");
         } finally {
             setLoading(false);
@@ -123,7 +126,7 @@ export default function Home() {
                 </svg>
 
                 {/* AREA KONTEN UTAMA */}
-                <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-stretch relative z-10">
+                <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 relative z-10">
 
                     {/* SISI KIRI (CARD 1) */}
                     <div className="text-left flex flex-col items-start relative bg-[#FFFFFF]/35 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-[#FFFFFF]/40 shadow-sm w-full">
@@ -155,7 +158,7 @@ export default function Home() {
 
                         {/* Tombol Screening */}
                         <div className="relative mt-6 group w-fit">
-                            <div className="absolute inset-0 bg-[#292929] rounded-full translate-x-1.5 translate-y-1.5 transition-transform group-hover:translate-x-1 group-hover:y-1" />
+                            <div className="absolute inset-0 bg-[#292929] rounded-full translate-x-1.5 translate-y-1.5 transition-transform group-hover:translate-x-1 group-hover:translate-y-1" />
                             <div className="relative flex items-center rounded-full bg-[#FFFFFF] border-4 border-[#292929] p-1 pr-2">
                                 <button
                                     onClick={handleCheckIn}

@@ -13,7 +13,7 @@ const pool = mysql.createPool({
 });
 
 async function testDBConnection(options = {}) {
-  const { retries = 3, delay = 2000 } = options;
+  const { retries = 15, delay = 3000 } = options;
 
   if (!process.env.DB_HOST) {
     console.warn("⚠️ DB_HOST not set. Skipping DB connectivity test.");

@@ -60,7 +60,7 @@ export default function DashboardAdmin() {
                 <StatCard
                     title="Total Meditasi"
                     value={loading ? "..." : stats.totalAudio}
-                    subtitle="audio terbitan"
+                    subtitle="audio meditasi"
                 />
                 <StatCard
                     title="Total Edukasi"
@@ -95,7 +95,7 @@ export default function DashboardAdmin() {
                                     outerRadius={105}
                                     paddingAngle={4}
                                     stroke="none"
-                                    label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                                    label={({ percent }) => percent != null ? `${(percent * 100).toFixed(0)}%` : ""}
                                 >
                                     {stats.dassAnalysis.map((entry, index) => {
                                         const colorConfig = getCategoryColors(entry.result_category);

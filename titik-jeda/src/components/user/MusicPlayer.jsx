@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-// =========================================================================
-// AUDIO MANAGER (MODULE SCOPE)
-// Membungkus objek Audio agar aman dari deteksi linter/kompiler ketat.
-// =========================================================================
 const audioManager = {
     instance: typeof window !== "undefined" ? new Audio() : null,
     track: null,
@@ -61,9 +57,6 @@ if (typeof window !== "undefined") {
     });
 }
 
-// =========================================================================
-// KOMPONEN UTAMA REACT
-// =========================================================================
 const MusicPlayer = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -73,6 +66,7 @@ const MusicPlayer = () => {
         { id: 1, name: "Rain", path: "/music/rain.mp3", icon: "🌧️" },
         { id: 2, name: "Piano", path: "/music/piano.mp3", icon: "🎹" },
         { id: 3, name: "Forest", path: "/music/forest.mp3", icon: "🌲" },
+        { id: 4, name: "Binaural Beats", path: "/music/binaural beats.mp3", icon: "🎧" },
     ];
 
     const syncUIWithGlobal = () => {
@@ -82,10 +76,12 @@ const MusicPlayer = () => {
     };
 
     useEffect(() => {
-        syncUIWithGlobal();
+        // Defer initial sync to avoid synchronous setState inside effect
+        const initialTimer = setTimeout(() => syncUIWithGlobal(), 0);
 
+        // Use deferred handler as well to prevent cascading renders
         const handleStateChange = () => {
-            syncUIWithGlobal();
+            setTimeout(() => syncUIWithGlobal(), 0);
         };
 
         window.addEventListener("relaxation-state-changed", handleStateChange);
@@ -97,6 +93,7 @@ const MusicPlayer = () => {
         }
 
         return () => {
+            clearTimeout(initialTimer);
             window.removeEventListener("relaxation-state-changed", handleStateChange);
             if (audioEl) {
                 audioEl.removeEventListener("play", handleStateChange);
@@ -108,7 +105,7 @@ const MusicPlayer = () => {
     const handleSelectMusic = (track) => {
         const status = audioManager.getStatus();
 
-        if (status.track?.id === track.id) {
+        if (status.track && status.track.id === track.id) {
             audioManager.togglePlay();
         } else {
             audioManager.play(track)
@@ -141,14 +138,14 @@ const MusicPlayer = () => {
                                 key={track.id}
                                 onClick={() => handleSelectMusic(track)}
                                 // Aktif menggunakan kombinasi warna kustom #00BFFF, tidak aktif menggunakan hover #F2F2F2
-                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-bold active:scale-95 ${currentTrack?.id === track.id && isPlaying
+                                className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl transition-all text-sm font-bold active:scale-95 ${currentTrack && currentTrack.id === track.id && isPlaying
                                         ? "bg-[#00BFFF] text-[#FFFFFF]"
                                         : "hover:bg-[#F2F2F2] text-[#292929]"
                                     }`}
                             >
                                 <span className="text-base select-none">{track.icon}</span>
                                 <span className="flex-1 text-left">{track.name}</span>
-                                {currentTrack?.id === track.id && isPlaying && (
+                                {currentTrack && currentTrack.id === track.id && isPlaying && (
                                     // Pulse indicator diganti warna kontras #ADFF2F
                                     <span className="w-2.5 h-2.5 bg-[#ADFF2F] rounded-full animate-pulse"></span>
                                 )}

@@ -31,20 +31,33 @@ export const createPlaylist = async (req, res) => {
         // DEBUG: Cek data teks yang masuk
         console.log("Body:", req.body);
 
-        const { name, description } = req.body;
+        // Safely read body in case multipart parsing failed
+        const name = req.body?.name;
+        const description = req.body?.description;
+
+        if (!req.body || (typeof req.body === 'object' && Object.keys(req.body).length === 0)) {
+            console.error("createPlaylist: req.body is empty or undefined. Headers:", req.headers);
+            return res.status(400).json({ message: "Request body tidak ditemukan. Pastikan request dikirim sebagai multipart/form-data atau application/json." });
+        }
 
         // Validasi hanya mengecek nama dan deskripsi teks saja
         if (!name || !description) {
             return res.status(400).json({
-                message: "Semua field teks wajib diisi!"
+                message: "Gagal simpan. Semua kolom wajib diisi."
             });
         }
 
         // Simpan ke database tanpa mengisi kolom cover_image (diisi NULL atau kosong sesuai skema DB)
-        await db.query(
-            "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, NULL)",
-            [name, description]
-        );
+        console.log("createPlaylist: inserting playlist", { name, description });
+        try {
+            await db.query(
+                "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, NULL)",
+                [name, description]
+            );
+        } catch (dbErr) {
+            console.error("DB Error inserting playlist:", dbErr);
+            return res.status(500).json({ message: "Gagal menyimpan playlist ke database", detail: dbErr.sqlMessage || dbErr.message });
+        }
 
         res.status(201).json({ message: "Playlist berhasil dibuat" });
     } catch (error) {
@@ -60,7 +73,7 @@ export const updatePlaylist = async (req, res) => {
         const { name, description } = req.body;
 
         if (!name || !description) {
-            return res.status(400).json({ message: "Semua field teks wajib diisi!" });
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
         }
 
         // Murni hanya mengupdate teks informasi saja

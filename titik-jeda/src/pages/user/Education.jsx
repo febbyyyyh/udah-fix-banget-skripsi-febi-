@@ -29,7 +29,8 @@ export default function Education() {
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                const response = await axios.get("/api/user/education", {
+                // 🔥 PERBAIKAN: Diarahkan langsung ke port backend 5000
+                const response = await axios.get("http://localhost:5000/api/user/education", {
                     withCredentials: true
                 });
                 setPlaylists(response.data);
@@ -83,7 +84,8 @@ export default function Education() {
                 ) : (
                     /* PLAYLISTS CONTAINER - Menggunakan Neo-Brutalism Stacked Card Style */
                     <div className="mt-16 w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-                        {playlists.length > 0 ? (
+                        {/* FIX: Ditambahkan validasi Array.isArray agar kebal dari Whitescreen */}
+                        {Array.isArray(playlists) && playlists.length > 0 ? (
                             playlists.map((item) => (
                                 <Link
                                     key={item.id}

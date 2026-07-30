@@ -1,6 +1,6 @@
 import express from "express";
 import crypto from "crypto";
-import db from "../config/db.js";
+import db from "../config/db.js"; // Mengimpor modul bawaan Node.js untuk membuat ID unik (UUID)
 import { getAllMeditations, getAudiosByMeditationId, getRecommendation } from "../controllers/meditationController.js";
 import { getPlaylists, getPlaylistDetailWithVideos } from "../controllers/learngrowController.js";
 import { saveDassResult, getLastResult } from "../controllers/dassController.js";
@@ -17,7 +17,7 @@ router.get("/init", async (req, res) => {
             const newSessionId = crypto.randomUUID();
             const now = new Date();
 
-            // HANYA menggunakan 3 kolom sesuai tabel kamu: session_id, first_access, last_access
+            // HANYA menggunakan 3 kolom: session_id, first_access, last_access
             await db.query(
                 `INSERT IGNORE INTO user_session (session_id, first_access, last_access) VALUES (?, ?, ?)`,
                 [newSessionId, now, now]

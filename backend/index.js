@@ -28,9 +28,10 @@ if (process.env.NODE_ENV === "production") {
 }
 
 /* ================= MIDDLEWARE GLOBAL ================= */
+const frontendOrigin = process.env.FRONTEND_URL || "*";
 app.use(cors({
-  origin: "http://localhost:5173", // Pastikan ini sesuai URL Vite kamu
-  credentials: true, // 🚨 WAJIB TRUE agar cookie bisa lewat
+  origin: 'http://localhost:3000', // Izinkan frontend port 3000
+  credentials: true                // Wajib true karena frontend bawa cookie/session
 }));
 
 app.use(express.json());
@@ -67,6 +68,25 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  // Log registered routes for debugging
+  try {
+    const routes = [];
+    app._router.stack.forEach((middleware) => {
+      if (middleware.route) {
+        // routes registered directly on the app
+        routes.push(middleware.route.path);
+      } else if (middleware.name === 'router' && middleware.handle && middleware.handle.stack) {
+        middleware.handle.stack.forEach((handler) => {
+          if (handler.route) {
+            routes.push(handler.route.path ? `${middleware.regexp}/${handler.route.path}` : handler.route.path);
+          }
+        });
+      }
+    });
+    console.log('Registered routes:', routes.slice(0, 200));
+  } catch (e) {
+    console.warn('Unable to enumerate routes:', e.message || e);
+  }
   (async () => {
     const ok = await testDBConnection({ retries: 3, delay: 2000 });
     if (!ok) {

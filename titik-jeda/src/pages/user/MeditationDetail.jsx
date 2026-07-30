@@ -118,7 +118,7 @@ export default function MeditationDetail() {
                                     </div>
                                     <audio
                                         controls
-                                        src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
+                                        src={'http://localhost:5000/' + String(audio.audio_file || '').replace(/^\/+/, '')}
                                         className="w-full bg-[#F2F2F2] rounded-xl border border-[#292929]/10"
                                         onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
                                     />
@@ -128,17 +128,11 @@ export default function MeditationDetail() {
                     ) : (
                         /* Kosong State Box */
                         <div className="relative group w-full">
-                            <div className="absolute inset-0 bg-[#292929] rounded-3xl translate-x-2 translate-y-2" />
+                            <div className="absolute inset-0 bg-[#00BFFF] rounded-3xl translate-x-2 translate-y-2" />
                             <div className="relative bg-[#FFFFFF]/40 backdrop-blur-md border-4 border-[#292929] rounded-3xl p-12 text-center">
                                 <p className="text-[#292929] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
                                     Belum ada audio meditasi di kategori ini.
                                 </p>
-                                <Link to="/meditation" className="inline-block mt-6 relative group/btn">
-                                    <div className="absolute inset-0 bg-[#292929] rounded-xl translate-x-1 translate-y-1 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:translate-y-0.5" />
-                                    <button className="relative px-8 py-3.5 bg-[#00BFFF] border-2 border-[#292929] text-[#FFFFFF] rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer">
-                                        Kembali ke Meditasi
-                                    </button>
-                                </Link>
                             </div>
                         </div>
                     )}

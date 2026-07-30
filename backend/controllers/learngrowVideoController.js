@@ -14,14 +14,28 @@ export const getVideosByPlaylist = async (req, res) => {
 
 export const createVideo = async (req, res) => {
     try {
+        console.log("=== createVideo DEBUG ===");
+        console.log("req.body:", JSON.stringify(req.body));
+        console.log("req.file:", req.file);
+        console.log("req.files:", req.files);
+        console.log("========================");
+
         const { title, playlist_id } = req.body;
         const videoFile = req.file ? req.file.filename : null;
+
+        // Validasi: semua field wajib diisi
+        if (!title || !title.trim() || !videoFile) {
+            console.log("Validation failed - title:", title, "videoFile:", videoFile);
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
+        }
+
         await db.query(
             "INSERT INTO learngrow_videos (playlist_id, title, video_file) VALUES (?, ?, ?)",
             [playlist_id, title, videoFile]
         );
         res.status(201).json({ message: "Video berhasil ditambahkan" });
     } catch (error) {
+        console.error("Error in createVideo:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -31,6 +45,11 @@ export const updateVideo = async (req, res) => {
         const { id } = req.params;
         const { title } = req.body;
         const newFile = req.file ? req.file.filename : null;
+
+        // Validasi: title wajib diisi
+        if (!title || !title.trim()) {
+            return res.status(400).json({ message: "Gagal simpan. Semua kolom wajib diisi." });
+        }
 
         if (newFile) {
             const [old] = await db.query("SELECT video_file FROM learngrow_videos WHERE id = ?", [id]);

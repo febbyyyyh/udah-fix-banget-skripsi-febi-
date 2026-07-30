@@ -21,6 +21,7 @@ export default function DASS21() {
                 }
             } catch (err) {
                 // Jika 404 atau error, biarkan false (artinya belum pernah tes)
+                console.warn("Gagal memeriksa hasil DASS terakhir:", err);
                 setHasLastResult(false);
             } finally {
                 setChecking(false);

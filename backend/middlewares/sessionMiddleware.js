@@ -1,17 +1,16 @@
-// middleware/sessionMiddleware.js
 import db from "../config/db.js";
 
 const sessionMiddleware = (req, res, next) => {
     const sessionId = req.cookies.session_id;
 
-    // 1️⃣ cek cookie ada atau tidak
+    //cek cookie ada atau tidak
     if (!sessionId) {
         return res.status(401).json({
             message: "Session not found",
         });
     }
 
-    // 2️⃣ cek session di database
+    //cek session di database
     const query = `
     SELECT * FROM user_session 
     WHERE session_id = ? AND is_active = 1

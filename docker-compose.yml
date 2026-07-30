@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  # 1. CONTAINER DATABASE (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: mental_health_app
+      MYSQL_ROOT_PASSWORD: titikjeda123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-ptitikjeda123",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  # 2. CONTAINER BACKEND (Express JS)
+  backend:
+    build: ./backend
+    container_name: express_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=titikjeda123
+      - DB_NAME=mental_health_app
+    # 💡 SUNTIKAN FILE .ENV BACKEND:
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+        
+
+  # 3. CONTAINER FRONTEND (Vite React)
+  frontend:
+    build: ./titik-jeda
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./titik-jeda:/app         
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
