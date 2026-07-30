@@ -63,20 +63,14 @@ export default function KelolaEdukasi() {
         try {
             const token = localStorage.getItem("admin_token");
 
-            // Menggunakan FormData agar terbaca sempurna oleh middleware upload di backend
-            const formData = new FormData();
-            formData.append("name", title);
-            formData.append("description", description);
-
-            // INI KUNCINYA: Kita buat file teks kosong pura-pura sebagai 'cover.jpg'
-            // Trik ini sukses mengelabui validasi (!coverImage) di backend tanpa perlu bongkar file Node.js
-            const dummyBlob = new Blob([""], { type: "image/jpeg" });
-            formData.append("cover_image", dummyBlob, "cover.jpg");
+            const formData = {
+                name: title,
+                description
+            };
 
             await axios.post(`${API_URL}/playlists`, formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data"
+                    Authorization: `Bearer ${token}`
                 },
             });
 

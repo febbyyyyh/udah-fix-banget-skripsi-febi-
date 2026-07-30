@@ -20,13 +20,10 @@ const deletePhysicalFile = (relativePaths) => {
 // CREATE meditation type
 export const createMeditationType = async (req, res) => {
     try {
-        const { name, description } = req.body;
-        const cover_image = req.file
-            ? `uploads/meditation/covers/${req.file.filename}`
-            : null;
+        const { name, description, category_type } = req.body;
 
-        const sql = `INSERT INTO meditation_types (name, description, cover_image) VALUES (?, ?, ?)`;
-        const [result] = await db.query(sql, [name, description, cover_image]);
+        const sql = `INSERT INTO meditation_types (name, description, category_type) VALUES (?, ?, ?)`;
+        const [result] = await db.query(sql, [name, description, category_type || 'general']);
 
         res.status(201).json({
             message: "Meditation type berhasil dibuat",
@@ -71,20 +68,13 @@ export const getMeditationById = async (req, res) => {
 export const updateMeditation = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description } = req.body;
+        const { name, description, category_type } = req.body;
 
-        const [existing] = await db.query(`SELECT cover_image FROM meditation_types WHERE id = ?`, [id]);
+        const [existing] = await db.query(`SELECT id FROM meditation_types WHERE id = ?`, [id]);
         if (existing.length === 0) return res.status(404).json({ message: "Meditasi tidak ditemukan" });
 
-        let cover_image = existing[0].cover_image;
-
-        if (req.file) {
-            deletePhysicalFile(existing[0].cover_image); // Hapus cover lama
-            cover_image = `uploads/meditation/covers/${req.file.filename}`;
-        }
-
-        const sql = `UPDATE meditation_types SET name = ?, description = ?, cover_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-        await db.query(sql, [name, description, cover_image, id]);
+        const sql = `UPDATE meditation_types SET name = ?, description = ?, category_type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+        await db.query(sql, [name, description, category_type || 'general', id]);
 
         res.json({ message: "Meditasi berhasil diperbarui" });
     } catch (err) {
@@ -96,11 +86,9 @@ export const updateMeditation = async (req, res) => {
 export const deleteMeditation = async (req, res) => {
     try {
         const { id } = req.params;
-        const [existing] = await db.query(`SELECT cover_image FROM meditation_types WHERE id = ?`, [id]);
+        const [existing] = await db.query(`SELECT id FROM meditation_types WHERE id = ?`, [id]);
 
-        if (existing.length > 0) {
-            deletePhysicalFile(existing[0].cover_image); // Hapus file fisik
-        }
+        if (existing.length === 0) return res.status(404).json({ message: "Meditasi tidak ditemukan" });
 
         await db.query(`DELETE FROM meditation_types WHERE id = ?`, [id]);
         res.json({ message: "Meditasi berhasil dihapus" });
@@ -116,7 +104,7 @@ export const getAudiosByMeditationId = async (req, res) => {
 
         // 1. Ambil detail kategori
         const [typeInfo] = await db.query(
-            `SELECT name, description, cover_image FROM meditation_types WHERE id = ?`,
+            `SELECT name, description, category_type FROM meditation_types WHERE id = ?`,
             [id]
         );
 

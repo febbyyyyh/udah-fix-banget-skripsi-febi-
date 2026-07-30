@@ -1,0 +1,16 @@
+node_modules/
+backend/node_modules/
+titik-jeda/node_modules/
+titik-jeda/dist/
+
+.env
+backend/.env
+titik-jeda/.env
+titik-jeda/.env.local
+
+backend/uploads/
+.git
+.gitignore
+README.md
+perubahan.zip
+database.sql

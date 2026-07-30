@@ -9,6 +9,8 @@ const storage = multer.diskStorage({
             dest = "uploads/meditation/covers/";
         } else if (file.fieldname === "audio_file") {
             dest = "uploads/meditation/audios/";
+        } else if (file.fieldname === "video_file") {
+            dest = "uploads/learngrow/videos/";
         }
 
         // --- SOLUSI: Cek & Buat folder otomatis jika belum ada ---

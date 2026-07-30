@@ -26,8 +26,8 @@ router.use(verifyToken, adminOnly);
 // --- RUTE MEDITASI (Kategori) ---
 router.get("/", getAllMeditations);
 router.get("/:id", getMeditationById);
-router.post("/", upload.single("cover_image"), createMeditationType);
-router.put("/:id", upload.single("cover_image"), updateMeditation);
+router.post("/", createMeditationType);
+router.put("/:id", updateMeditation);
 router.delete("/:id", deleteMeditation);
 
 // --- RUTE AUDIO (Ini yang Tadi Hilang!) ---

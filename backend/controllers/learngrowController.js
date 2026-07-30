@@ -25,24 +25,18 @@ export const getPlaylistById = async (req, res) => {
     }
 };
 
-// Buat playlist baru (MODIFIKASI: Tanpa Cover Image)
+// Buat playlist baru
 export const createPlaylist = async (req, res) => {
     try {
-        // DEBUG: Cek data teks yang masuk
-        console.log("Body:", req.body);
-
         const { name, description } = req.body;
-
-        // Validasi hanya mengecek nama dan deskripsi teks saja
         if (!name || !description) {
             return res.status(400).json({
                 message: "Semua field teks wajib diisi!"
             });
         }
 
-        // Simpan ke database tanpa mengisi kolom cover_image (diisi NULL atau kosong sesuai skema DB)
         await db.query(
-            "INSERT INTO learngrow_playlists (name, description, cover_image) VALUES (?, ?, NULL)",
+            "INSERT INTO learngrow_playlists (name, description) VALUES (?, ?)",
             [name, description]
         );
 
@@ -53,7 +47,7 @@ export const createPlaylist = async (req, res) => {
     }
 };
 
-// Update playlist (MODIFIKASI: Tanpa Memproses Cover Image)
+// Update playlist
 export const updatePlaylist = async (req, res) => {
     try {
         const { id } = req.params;
@@ -63,9 +57,11 @@ export const updatePlaylist = async (req, res) => {
             return res.status(400).json({ message: "Semua field teks wajib diisi!" });
         }
 
-        // Murni hanya mengupdate teks informasi saja
+        const [existing] = await db.query(`SELECT id FROM learngrow_playlists WHERE id = ?`, [id]);
+        if (existing.length === 0) return res.status(404).json({ message: "Playlist tidak ditemukan" });
+
         await db.query(
-            "UPDATE learngrow_playlists SET name=?, description=? WHERE id=?",
+            "UPDATE learngrow_playlists SET name=?, description=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
             [name, description, id]
         );
 
@@ -89,12 +85,7 @@ export const deletePlaylist = async (req, res) => {
             }
         });
 
-        // 2. Hapus file cover playlist
-        const [playlist] = await db.query("SELECT cover_image FROM learngrow_playlists WHERE id = ?", [id]);
-        if (playlist[0]?.cover_image) {
-            const cPath = path.join(process.cwd(), "uploads/learngrow/covers", playlist[0].cover_image);
-            if (fs.existsSync(cPath)) fs.unlinkSync(cPath);
-        }
+        // 2. Hapus file cover playlist dihapus karena kolom sudah tidak ada
 
         // 3. Hapus database
         await db.query("DELETE FROM learngrow_videos WHERE playlist_id = ?", [id]);

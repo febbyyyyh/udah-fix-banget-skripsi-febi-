@@ -23,6 +23,7 @@ export default function KelolaIsiMeditasi() {
     const [audioFile, setAudioFile] = useState(null);
     const [catName, setCatName] = useState("");
     const [catDesc, setCatDesc] = useState("");
+    const [catType, setCatType] = useState("general");
     const [successMessage, setSuccessMessage] = useState("");
 
     /* ================= EFFECT ================= */
@@ -46,6 +47,7 @@ export default function KelolaIsiMeditasi() {
             setCategory(res.data);
             setCatName(res.data.name);
             setCatDesc(res.data.description);
+            setCatType(res.data.category_type || "general");
         } catch (err) {
             console.error(err);
         }
@@ -124,9 +126,11 @@ export default function KelolaIsiMeditasi() {
             return alert("Gagal simpan. Semua kolom wajib diisi.");
         }
 
-        const formData = new FormData();
-        formData.append("name", catName);
-        formData.append("description", catDesc);
+        const formData = {
+            name: catName,
+            description: catDesc,
+            category_type: catType
+        };
 
         try {
             await axios.put(
@@ -134,8 +138,7 @@ export default function KelolaIsiMeditasi() {
                 formData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data"
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
@@ -269,6 +272,19 @@ export default function KelolaIsiMeditasi() {
                                 onChange={(e) => setCatDesc(e.target.value)}
                                 className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none resize-none transition-all text-sm font-medium leading-relaxed"
                             />
+                        </div>
+                        <div>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Tipe Kategori DASS-21</label>
+                            <select
+                                value={catType}
+                                onChange={(e) => setCatType(e.target.value)}
+                                className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-4 py-3 rounded-xl mt-1 outline-none transition-all text-sm font-medium"
+                            >
+                                <option value="general">General (Umum)</option>
+                                <option value="depression">Depression (Depresi)</option>
+                                <option value="anxiety">Anxiety (Kecemasan)</option>
+                                <option value="stress">Stress (Stres)</option>
+                            </select>
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-8">

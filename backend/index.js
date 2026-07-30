@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path"; // Tambahan: Untuk mengelola path file
 import { fileURLToPath } from "url"; // Tambahan: Untuk ES Modules __dirname
+import fs from "fs"; // Tambahan: Untuk membuat folder otomatis
 
 import adminAuthRoutes from "./routes/adminAuth.js";
 import adminRoutes from "./routes/admin.js";
@@ -29,7 +30,7 @@ if (process.env.NODE_ENV === "production") {
 
 /* ================= MIDDLEWARE GLOBAL ================= */
 app.use(cors({
-  origin: "http://localhost:5173", // Pastikan ini sesuai URL Vite kamu
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Mengambil URL dari .env untuk produksi
   credentials: true, // 🚨 WAJIB TRUE agar cookie bisa lewat
 }));
 
@@ -37,6 +38,12 @@ app.use(express.json());
 app.use(cookieParser()); // boleh ada, tapi admin TIDAK pakai cookie
 
 /* ================= STATIC FOLDER ================= */
+// Buat folder uploads otomatis jika belum ada untuk mencegah error saat pertama kali deploy
+const uploadPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+  console.log("✅ Created 'uploads' directory");
+}
 app.use('/uploads', express.static('uploads'));
 
 /* ================= ROUTES ================= */
@@ -58,9 +65,38 @@ app.use("/api/admin/learngrow", learngrowRoutes);
 // USER
 app.use("/api/user", userRoutes);
 
-// TEST
-app.get("/", (req, res) => {
-  res.send("API RUNNING");
+// Serve frontend statis untuk testing local
+const frontendPath = path.join(__dirname, "../titik-jeda/dist");
+app.use(express.static(frontendPath));
+
+app.use((req, res, next) => {
+    // Abaikan API route agar diteruskan ke 404/handler berikutnya
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+        return next();
+    }
+    res.sendFile(path.join(frontendPath, "index.html"));
+});
+
+// DEBUG ROUTE (hapus setelah deploy berhasil)
+app.get("/api/debug", async (req, res) => {
+  const info = {
+    env_loaded: !!process.env.DB_HOST,
+    DB_HOST: process.env.DB_HOST || "TIDAK ADA",
+    DB_USER: process.env.DB_USER || "TIDAK ADA",
+    DB_NAME: process.env.DB_NAME || "TIDAK ADA",
+    PORT: process.env.PORT || "TIDAK ADA",
+    JWT_SECRET_SET: !!process.env.JWT_SECRET,
+  };
+  try {
+    const [rows] = await db.query("SELECT 1+1 AS result");
+    info.db_connection = "✅ BERHASIL";
+    info.db_test_query = rows[0].result;
+  } catch (err) {
+    info.db_connection = "❌ GAGAL";
+    info.db_error = err.message;
+    info.db_error_code = err.code;
+  }
+  res.json(info);
 });
 
 /* ================= SERVER ================= */

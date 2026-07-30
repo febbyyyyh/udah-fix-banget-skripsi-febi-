@@ -18,7 +18,7 @@ export default function KelolaIsiEdukasi() {
     const [showPreview, setShowPreview] = useState(false);
     const [showEditCategory, setShowEditCategory] = useState(false);
 
-    // Form States (Playlist Info - Murni Teks)
+    // Form States (Playlist Info)
     const [playlistName, setPlaylistName] = useState("");
     const [playlistDesc, setPlaylistDesc] = useState("");
 
@@ -58,17 +58,17 @@ export default function KelolaIsiEdukasi() {
         setTimeout(() => setSuccessMessage(""), 2000);
     };
 
-    /* ================= LOGIC UPDATE PLAYLIST (MURNI JSON TANPA FORMDATA FILE) ================= */
+    /* ================= LOGIC UPDATE PLAYLIST ================= */
     const handleUpdateCategory = async () => {
         if (!playlistName || !playlistDesc) return alert("Gagal simpan. Semua kolom wajib diisi.");
 
+        const formData = {
+            name: playlistName,
+            description: playlistDesc
+        };
+
         try {
-            await axiosAdmin.put(`/admin/learngrow/playlists/${id}`, {
-                name: playlistName,
-                description: playlistDesc
-            }, {
-                headers: { "Content-Type": "application/json" }
-            });
+            await axiosAdmin.put(`/admin/learngrow/playlists/${id}`, formData);
 
             setShowEditCategory(false);
             fetchData();

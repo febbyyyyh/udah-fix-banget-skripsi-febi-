@@ -40,7 +40,7 @@ export default function Footer() {
                             Unit Penunjang Akademik (UPA) Bimbingan & Konseling
                         </p>
                         <p className="text-[#292929]/60 text-xs md:text-sm mt-1 mb-3">
-                            Depan Gedung Rektorat Universitas Houston Sam Ratulangi
+                            Depan Gedung Rektorat Universitas Sam Ratulangi
                         </p>
                         <a
                             href="https://wa.me/6281953027359"

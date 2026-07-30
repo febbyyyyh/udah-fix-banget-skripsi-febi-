@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosAdmin = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: "/api",
 });
 
 // otomatis kirim token ke semua request admin
