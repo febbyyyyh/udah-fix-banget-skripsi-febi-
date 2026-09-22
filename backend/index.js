@@ -28,10 +28,23 @@ if (process.env.NODE_ENV === "production") {
 }
 
 /* ================= MIDDLEWARE GLOBAL ================= */
-const frontendOrigin = process.env.FRONTEND_URL || "*";
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Izinkan frontend port 3000
-  credentials: true                // Wajib true karena frontend bawa cookie/session
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origin ${origin} not allowed`));
+  },
+  credentials: true,
 }));
 
 app.use(express.json());
