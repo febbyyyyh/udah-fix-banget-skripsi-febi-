@@ -42,7 +42,7 @@ export default function Meditation() {
       try {
         // 1. Tembak langsung ke port backend (5000)
         const resMed = await axios.get(
-          "http://localhost:5000/api/user/meditations",
+          "http://172.16.222.8:5000/api/user/meditations",
           {
             withCredentials: true,
           },
@@ -51,7 +51,7 @@ export default function Meditation() {
 
         // 2. Lakukan hal yang sama untuk rekomendasi
         const resRec = await axios.get(
-          "http://localhost:5000/api/user/meditation/recommendation",
+          "http://172.16.222.8:5000/api/user/meditation/recommendation",
           {
             withCredentials: true,
           },
@@ -203,7 +203,7 @@ export default function Meditation() {
                               audioPath
                                 ? audioPath.startsWith("http")
                                   ? audioPath
-                                  : "http://localhost:5000/" +
+                                  : "http://172.16.222.8:5000/" +
                                     String(audioPath).replace(/^\/+/, "")
                                 : ""
                             }

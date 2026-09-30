@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import path from "path"; // Tambahan: Untuk mengelola path file
-import { fileURLToPath } from "url"; // Tambahan: Untuk ES Modules __dirname
+import path from "path";
+import { fileURLToPath } from "url";
 
 import adminAuthRoutes from "./routes/adminAuth.js";
 import adminRoutes from "./routes/admin.js";
@@ -15,41 +15,54 @@ import db, { testDBConnection } from "./config/db.js";
 
 dotenv.config();
 
-// Konfigurasi __dirname untuk ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// Jika berjalan di produksi di balik reverse proxy, beri tahu Express untuk mempercayai proxy.
-// Ini diperlukan agar cookie yang diset dengan `secure: true` tetap dikirim ketika TLS
-// di-terminate oleh proxy (mis. nginx, Heroku).
+
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
 /* ================= MIDDLEWARE GLOBAL ================= */
+
+// Daftar origin yang diizinkan mengakses API
 const allowedOrigins = [
-  'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:5173',
-  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
   'http://127.0.0.1:5173',
+  'http://172.16.222.8:3001', // IP Frontend VM
+  'http://172.16.222.8:5000', // IP Backend VM
+  'http://172.16.222.8:3001', // IP Frontend VM
+  'http://172.16.222.8:5000', // IP Backend VM
+  'http://mentalsehat.unsrat.ac.id', // Domain HTTP
+  'https://mentalsehat.unsrat.ac.id', // Domain HTTPS
+  'http://mentalsehat.unsrat.ac.id:3001',
+  'http://103.84.116.31',               // Tambahan IP Publik
+  'http://103.84.116.31:3001',          // Tambahan IP Publik dengan Port Frontend
+  'http://103.84.116.31:5000',          // Tambahan IP Publik dengan Port Backend
 ];
 
-app.use(cors({
+// Konfigurasi CORS tunggal yang valid
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
-      return;
+    } else {
+      callback(null, true);
     }
-
-    callback(new Error(`Origin ${origin} not allowed`));
   },
   credentials: true,
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+// Cukup gunakan app.use(cors(...)) saja
+app.use(cors(corsOptions));
 
 app.use(express.json());
-app.use(cookieParser()); // boleh ada, tapi admin TIDAK pakai cookie
-
+app.use(cookieParser());
 /* ================= STATIC FOLDER ================= */
 app.use('/uploads', express.static('uploads'));
 
@@ -81,12 +94,11 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-  // Log registered routes for debugging
+
   try {
     const routes = [];
     app._router.stack.forEach((middleware) => {
       if (middleware.route) {
-        // routes registered directly on the app
         routes.push(middleware.route.path);
       } else if (middleware.name === 'router' && middleware.handle && middleware.handle.stack) {
         middleware.handle.stack.forEach((handler) => {
@@ -100,6 +112,7 @@ app.listen(PORT, () => {
   } catch (e) {
     console.warn('Unable to enumerate routes:', e.message || e);
   }
+
   (async () => {
     const ok = await testDBConnection({ retries: 3, delay: 2000 });
     if (!ok) {

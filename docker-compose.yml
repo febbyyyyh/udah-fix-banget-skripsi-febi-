@@ -14,20 +14,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-ptitikjeda123",
-        ]
-      interval: 3s
-      timeout: 3s
+      test: ["CMD-SHELL", "mysqladmin ping -u root -ptitikjeda123 || exit 1"]
+      interval: 5s
+      timeout: 5s
       retries: 10
+      start_period: 30s
 
   # 2. CONTAINER BACKEND (Express JS)
   backend:
@@ -56,7 +47,7 @@ services:
     container_name: react_frontend
     restart: always
     ports:
-      - "3000:3000"
+      - "3001:80"
     volumes:
       - ./titik-jeda:/app         
       - /app/node_modules

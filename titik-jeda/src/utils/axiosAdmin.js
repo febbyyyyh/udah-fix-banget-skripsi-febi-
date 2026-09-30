@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const axiosAdmin = axios.create({
-    // 💡 SUNTIKAN JALUR: Tembak langsung ke port backend Express di Docker
-    baseURL: "http://localhost:5000/api", 
+    // Gunakan relative path '/api' agar otomatis mengikuti domain/IP tempat halaman dibuka
+    baseURL: "/api",
     withCredentials: true
 });
 
@@ -10,11 +10,9 @@ const axiosAdmin = axios.create({
 axiosAdmin.interceptors.request.use((config) => {
     const token = localStorage.getItem("admin_token");
 
-    // Pengaman: Hanya kirim jika token benar-benar ada (bukan null atau string "undefined")
     if (token && token !== "undefined" && token !== "null") {
         config.headers.Authorization = `Bearer ${token}`;
     } else {
-        // Hapus header jika kosong agar tidak mengacaukan backend
         delete config.headers.Authorization;
     }
 

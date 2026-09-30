@@ -1,14 +1,11 @@
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# 1. Salin konfigurasi kustom Nginx (penanganan React Router/SPA)
+COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Langsung install web server ringan
-RUN npm install -g serve
+# 2. Salin folder dist hasil build
+COPY dist /usr/share/nginx/html
 
-# Salin folder 'dist' hasil build lokal kamu ke dalam Docker
-COPY dist ./dist
+EXPOSE 80
 
-EXPOSE 3000
-
-# Jalankan aplikasi langsung dari folder dist
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["nginx", "-g", "daemon off;"]
