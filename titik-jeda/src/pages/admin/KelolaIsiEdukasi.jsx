@@ -344,7 +344,7 @@ export default function KelolaIsiEdukasi() {
                             autoPlay
                             preload="auto"
                             className="w-full h-full"
-                            src={`http://172.16.222.8:5000${getVideoUrl(selectedVideo.video_file)}`}
+                            src={getVideoUrl(selectedVideo.video_file)}
                         >
                             Browser kamu tidak mendukung pemutaran video.
                         </video>

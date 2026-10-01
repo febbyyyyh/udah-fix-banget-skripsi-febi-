@@ -29,8 +29,7 @@ export default function Education() {
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                // 🔥 PERBAIKAN: Diarahkan langsung ke port backend 5000
-                const response = await axios.get("http://172.16.222.8:5000/api/user/education", {
+                const response = await axios.get("/api/user/education", {
                     withCredentials: true
                 });
                 setPlaylists(response.data);

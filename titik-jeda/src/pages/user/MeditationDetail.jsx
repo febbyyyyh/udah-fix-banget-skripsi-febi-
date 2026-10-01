@@ -118,7 +118,7 @@ export default function MeditationDetail() {
                                     </div>
                                     <audio
                                         controls
-                                        src={'http://172.16.222.8:5000/' + String(audio.audio_file || '').replace(/^\/+/, '')}
+                                        src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
                                         className="w-full bg-[#F2F2F2] rounded-xl border border-[#292929]/10"
                                         onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
                                     />

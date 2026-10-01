@@ -5,10 +5,7 @@ WORKDIR /app
 # Salin package.json untuk instalasi library backend
 COPY package*.json ./
 
-RUN npm config set fetch-retries 5 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm install --no-audit
+RUN npm ci --omit=dev --no-audit
 
 # Salin semua file kodingan backend
 COPY . .

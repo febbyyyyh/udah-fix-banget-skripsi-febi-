@@ -40,18 +40,16 @@ export default function Meditation() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Tembak langsung ke port backend (5000)
         const resMed = await axios.get(
-          "http://172.16.222.8:5000/api/user/meditations",
+          "/api/user/meditations",
           {
             withCredentials: true,
           },
         );
         setMeditations(resMed.data);
 
-        // 2. Lakukan hal yang sama untuk rekomendasi
         const resRec = await axios.get(
-          "http://172.16.222.8:5000/api/user/meditation/recommendation",
+          "/api/user/meditation/recommendation",
           {
             withCredentials: true,
           },
@@ -203,7 +201,7 @@ export default function Meditation() {
                               audioPath
                                 ? audioPath.startsWith("http")
                                   ? audioPath
-                                  : "http://172.16.222.8:5000/" +
+                                  : "/" +
                                     String(audioPath).replace(/^\/+/, "")
                                 : ""
                             }

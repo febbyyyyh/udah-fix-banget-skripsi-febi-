@@ -1,0 +1,13 @@
+services:
+  backend:
+    image: ghcr.io/febbyyyyh/udah-fix-banget-skripsi-febi-/backend:${IMAGE_TAG:-main}
+    pull_policy: always
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    image: ghcr.io/febbyyyyh/udah-fix-banget-skripsi-febi-/frontend:${IMAGE_TAG:-main}
+    pull_policy: always
+
+volumes:
+  backend_uploads:

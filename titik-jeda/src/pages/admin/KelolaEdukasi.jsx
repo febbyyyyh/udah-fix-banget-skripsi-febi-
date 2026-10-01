@@ -39,9 +39,10 @@ export default function KelolaEdukasi() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            setCategories(res.data);
+            return res.data;
         } catch (error) {
             console.error("Gagal load playlist:", error);
+            return [];
         }
     }
 
@@ -49,7 +50,7 @@ export default function KelolaEdukasi() {
             LOAD AWAL
        ====================== */
     useEffect(() => {
-        fetchPlaylists();
+        fetchPlaylists().then(setCategories);
     }, []);
 
     /* ======================
@@ -83,7 +84,7 @@ export default function KelolaEdukasi() {
             setFormError("");
 
             showSuccess("Playlist berhasil ditambahkan");
-            fetchPlaylists();
+            setCategories(await fetchPlaylists());
         } catch (error) {
             console.error("ERROR TAMBAH PLAYLIST:", error);
             if (error.response) {

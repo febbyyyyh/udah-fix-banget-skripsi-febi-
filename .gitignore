@@ -14,3 +14,10 @@ titik-jeda/.vite/
 .DS_Store
 npm-debug.log
 yarn-error.log
+
+# Machine-specific configuration; keep shared service definitions tracked.
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+docker-compose.vm.yml

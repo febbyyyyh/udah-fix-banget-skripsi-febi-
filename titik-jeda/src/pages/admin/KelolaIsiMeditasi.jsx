@@ -389,7 +389,7 @@ export default function KelolaIsiMeditasi() {
                     </div>
 
                     <audio controls key={selectedAudio.id} className="w-full mt-4 bg-[#F2F2F2] rounded-xl">
-                        <source src={`http://172.16.222.8:5000${getAudioUrl(selectedAudio.audio_file)}`} type="audio/mpeg" />
+                        <source src={getAudioUrl(selectedAudio.audio_file)} type="audio/mpeg" />
                         Browser kamu tidak mendukung pemutar audio.
                     </audio>
 

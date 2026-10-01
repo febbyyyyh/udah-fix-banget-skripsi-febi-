@@ -129,7 +129,7 @@ export default function EducationDetail() {
                                             {/* VIDEO THUMBNAIL WRAPPER */}
                                             <div className="w-full h-48 bg-[#F2F2F2] overflow-hidden relative border-b-4 border-[#292929]">
                                                 <video
-                                                    src={`http://172.16.222.8:5000/uploads/learngrow/videos/${video.video_file}#t=0.1`}
+                                                    src={`/uploads/learngrow/videos/${video.video_file}#t=0.1`}
                                                     className="w-full h-full object-cover pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity"
                                                 />
 
@@ -196,7 +196,7 @@ export default function EducationDetail() {
 
                         {/* Video Frame */}
                         <video
-                            src={`http://172.16.222.8:5000/uploads/learngrow/videos/${preview.video_file}`}
+                            src={`/uploads/learngrow/videos/${preview.video_file}`}
                             controls
                             autoPlay
                             className="w-full max-h-[70vh] object-contain bg-black"

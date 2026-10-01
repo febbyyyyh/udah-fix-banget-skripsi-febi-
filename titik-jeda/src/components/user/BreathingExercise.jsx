@@ -40,7 +40,7 @@ export default function BreathingExercise({
         return { phaseIndex: cycle.length - 1, phase: last.name, phaseProgress: 1, phaseRemaining: 0 };
     };
 
-    const [phaseInfo, setPhaseInfo] = useState(() => computePhase(0));
+    const phaseInfo = computePhase(elapsed);
 
     const getScale = (phaseName, progress) => {
         const min = 0.75;
@@ -110,10 +110,6 @@ export default function BreathingExercise({
         rafRef.current = requestAnimationFrame(loop);
         return () => cancelAnimationFrame(rafRef.current);
     }, [running, totalSeconds]);
-
-    useEffect(() => {
-        setPhaseInfo(computePhase(elapsed));
-    }, [elapsed]);
 
     const format = (s) => {
         const mm = Math.floor(s / 60).toString().padStart(2, "0");
