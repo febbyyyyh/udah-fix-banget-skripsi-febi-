@@ -33,27 +33,30 @@ export default function KelolaIsiEdukasi() {
     /* ================= FETCH DATA ================= */
     const fetchData = useCallback(async () => {
         try {
-            setLoading(true);
-            // 1. Detail Playlist
             const playlistRes = await axiosAdmin.get(`/admin/learngrow/playlists/${id}`);
-            const data = playlistRes.data;
-
-            setCategory(data);
-            setPlaylistName(data.name);
-            setPlaylistDesc(data.description);
-
-            // 2. Daftar Video
             const videoRes = await axiosAdmin.get(`/admin/learngrow/playlists/${id}/videos`);
-            setVideos(videoRes.data);
+            return { category: playlistRes.data, videos: videoRes.data };
         } catch (error) {
             console.error("Gagal mengambil data:", error);
-        } finally {
-            setLoading(false);
+            return null;
         }
     }, [id]);
 
     useEffect(() => {
-        fetchData();
+        let isActive = true;
+        fetchData().then((data) => {
+            if (!isActive) return;
+            if (data) {
+                setCategory(data.category);
+                setPlaylistName(data.category.name);
+                setPlaylistDesc(data.category.description);
+                setVideos(data.videos);
+            }
+            setLoading(false);
+        });
+        return () => {
+            isActive = false;
+        };
     }, [fetchData]);
 
     const showSuccess = (msg) => {
@@ -78,7 +81,13 @@ export default function KelolaIsiEdukasi() {
             });
 
             setShowEditCategory(false);
-            fetchData();
+            const data = await fetchData();
+            if (data) {
+                setCategory(data.category);
+                setPlaylistName(data.category.name);
+                setPlaylistDesc(data.category.description);
+                setVideos(data.videos);
+            }
             showSuccess("Playlist berhasil diperbarui");
         } catch (error) {
             console.error("Gagal update playlist:", error);
@@ -123,7 +132,13 @@ export default function KelolaIsiEdukasi() {
             setVideoTitle("");
             setTempVideoFile(null);
             setFormError("");
-            fetchData();
+            const data = await fetchData();
+            if (data) {
+                setCategory(data.category);
+                setPlaylistName(data.category.name);
+                setPlaylistDesc(data.category.description);
+                setVideos(data.videos);
+            }
         } catch (err) {
             const message = err.response?.data?.message || err.message || "Terjadi kesalahan saat menyimpan video";
             console.error("Gagal simpan video:", err.response?.data || err.message);
@@ -138,7 +153,13 @@ export default function KelolaIsiEdukasi() {
             await axiosAdmin.delete(`/admin/learngrow/videos/${selectedVideo.id}`);
             showSuccess("Video berhasil dihapus");
             setShowDelete(false);
-            fetchData();
+            const data = await fetchData();
+            if (data) {
+                setCategory(data.category);
+                setPlaylistName(data.category.name);
+                setPlaylistDesc(data.category.description);
+                setVideos(data.videos);
+            }
         } catch {
             alert("Gagal menghapus video");
         }

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 
 export default function KelolaIsiMeditasi() {
@@ -29,44 +29,54 @@ export default function KelolaIsiMeditasi() {
     const [uploadError, setUploadError] = useState("");
     const [formError, setFormError] = useState("");
 
-    /* ================= EFFECT ================= */
-    useEffect(() => {
-        fetchCategory();
-        fetchAudios();
-    }, [id]);
-
     const showSuccess = (msg) => {
         setSuccessMessage(msg);
         setTimeout(() => setSuccessMessage(""), 2000);
     };
 
     /* ================= FETCH DATA ================= */
-    const fetchCategory = async () => {
+    const fetchCategory = useCallback(async () => {
         try {
             const res = await axios.get(
                 `/api/admin/meditations/${id}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setCategory(res.data);
-            setCatName(res.data.name);
-            setCatDesc(res.data.description);
-            setCatCategoryType(res.data.category_type || "general");
+            return res.data;
         } catch (err) {
             console.error(err);
+            return null;
         }
-    };
+    }, [id, token]);
 
-    const fetchAudios = async () => {
+    const fetchAudios = useCallback(async () => {
         try {
             const res = await axios.get(`/api/admin/meditations/${id}/audios?t=${Date.now()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setAudios([...res.data]);
+            return [...res.data];
         } catch (err) {
             console.error("Gagal ambil audio:", err);
-            setAudios([]);
+            return [];
         }
-    };
+    }, [id, token]);
+
+    /* ================= EFFECT ================= */
+    useEffect(() => {
+        let isActive = true;
+        Promise.all([fetchCategory(), fetchAudios()]).then(([data, audioList]) => {
+            if (!isActive) return;
+            if (data) {
+                setCategory(data);
+                setCatName(data.name);
+                setCatDesc(data.description);
+                setCatCategoryType(data.category_type || "general");
+            }
+            setAudios(audioList);
+        });
+        return () => {
+            isActive = false;
+        };
+    }, [fetchAudios, fetchCategory]);
 
     /* ================= LOGIC CRUD ================= */
     const handleSaveAudio = async () => {
@@ -110,7 +120,7 @@ export default function KelolaIsiMeditasi() {
                 setAudioFile(null);
                 setFormError("");
                 showSuccess("Audio berhasil disimpan!");
-                await fetchAudios();
+                setAudios(await fetchAudios());
             }
         } catch (err) {
             const message = err.response?.data?.message || err.message || "Terjadi kesalahan saat menyimpan audio";
@@ -127,7 +137,7 @@ export default function KelolaIsiMeditasi() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setShowDelete(false);
-            fetchAudios();
+            setAudios(await fetchAudios());
             showSuccess("Audio berhasil dihapus");
         } catch (err) {
             console.error(err);
@@ -156,7 +166,13 @@ export default function KelolaIsiMeditasi() {
                 }
             );
 
-            await fetchCategory();
+            const data = await fetchCategory();
+            if (data) {
+                setCategory(data);
+                setCatName(data.name);
+                setCatDesc(data.description);
+                setCatCategoryType(data.category_type || "general");
+            }
             setShowEditCategory(false);
             showSuccess("Informasi kategori berhasil diperbarui");
         } catch (err) {

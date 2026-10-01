@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -16,22 +16,29 @@ export default function KelolaMeditasi() {
     const [successMessage, setSuccessMessage] = useState("");
     const token = localStorage.getItem("admin_token");
 
-    useEffect(() => {
-        fetchMeditations();
-    }, []);
-
-    const fetchMeditations = async () => {
+    const fetchMeditations = useCallback(async () => {
         try {
             const res = await axios.get(`/api/admin/meditations`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setMeditations(res.data);
+            return res.data;
         } catch (error) {
             console.error("Gagal mengambil data meditasi", error);
-        } finally {
-            setLoading(false);
+            return [];
         }
-    };
+    }, [token]);
+
+    useEffect(() => {
+        let isActive = true;
+        fetchMeditations().then((data) => {
+            if (!isActive) return;
+            setMeditations(data);
+            setLoading(false);
+        });
+        return () => {
+            isActive = false;
+        };
+    }, [fetchMeditations]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -54,7 +61,7 @@ export default function KelolaMeditasi() {
             setDescription("");
             setCategoryType("general");
             setFormError("");
-            fetchMeditations();
+            setMeditations(await fetchMeditations());
         } catch (err) {
             console.error("Gagal membuat kategori meditasi", err);
             alert("Gagal membuat kategori meditasi");
@@ -82,7 +89,7 @@ export default function KelolaMeditasi() {
             setShowDelete(false);
             setSelectedCategory(null);
             showSuccess("Kategori meditasi berhasil dihapus");
-            fetchMeditations();
+            setMeditations(await fetchMeditations());
         } catch (err) {
             console.error("Gagal menghapus kategori", err);
             alert("Gagal menghapus kategori");
