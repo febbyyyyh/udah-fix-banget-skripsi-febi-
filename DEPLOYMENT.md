@@ -19,7 +19,7 @@ Panduan Gemini yang dilampirkan menyarankan build backend di VM memakai `--netwo
 
 - `.github/workflows/publish-images.yml`: validasi PR/push, build, dan publish image.
 - `docker-compose.yml`: Compose lama yang sudah ada di VM; file ini sengaja tidak diubah oleh workflow.
-- `docker-compose.images.yml`: overlay baru untuk memilih image GHCR dan menyimpan uploads. Pasang overlay satu kali di VM, berdampingan dengan Compose VM yang benar.
+- `docker-compose.images.yml`: overlay baru untuk memilih image `ghcr.io/febbyyyyh/titik-jeda-backend` dan `ghcr.io/febbyyyyh/titik-jeda-frontend`, serta menyimpan uploads. Pasang overlay satu kali di VM, berdampingan dengan Compose VM yang benar.
 - `backend/.env`, Compose override, dan data uploads: tetap berada di VM/lokal, tidak masuk ke image maupun Git.
 
 ## Prasyarat Laptop
