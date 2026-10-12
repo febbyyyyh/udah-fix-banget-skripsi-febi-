@@ -35,6 +35,26 @@ export default function Footer() {
                     <h3 className="font-black text-xs uppercase tracking-widest text-[#00BFFF] mb-4 h-6 flex items-center">
                         Layanan Kampus
                     </h3>
+                    <a
+                        href="https://www.unsrat.ac.id/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-3 mb-4 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF]"
+                    >
+                        <img
+                            src="/assets/logo-unsrat.png"
+                            alt="Logo Universitas Sam Ratulangi"
+                            className="h-14 w-14 rounded-full bg-white p-1 object-contain shadow-sm"
+                        />
+                        <span className="flex flex-col">
+                            <span className="text-sm font-bold group-hover:text-[#00BFFF] transition-colors">
+                                Universitas Sam Ratulangi
+                            </span>
+                            <span className="text-xs text-[#292929]/60 group-hover:text-[#00BFFF] transition-colors">
+                                Kunjungi situs resmi →
+                            </span>
+                        </span>
+                    </a>
                     <div className="mb-4">
                         <p className="font-black text-[#292929] text-sm md:text-base">
                             Unit Penunjang Akademik (UPA) Bimbingan & Konseling
@@ -81,11 +101,25 @@ export default function Footer() {
                 </div>
             </div>
 
-            {/* Bottom Bar: Sekarang menggunakan warna putih (#FFFFFF) agar kontrasnya manis */}
-            <div className="w-full mt-16 px-4">
-                <div className="max-w-5xl mx-auto bg-[#FFFFFF] py-4 rounded-full text-center text-[#292929] text-xs sm:text-sm font-bold shadow-sm">
-                    © 2026 Made with 💚 for Gen Z UNSRAT.
-                </div>
+            <div className="mt-12 flex items-center justify-center gap-1.5 text-[10px] text-[#292929]/45">
+                <span>© 2026 Titik Jeda · UNSRAT</span>
+                <span className="group relative inline-flex">
+                    <button
+                        type="button"
+                        aria-label="Lihat kredit pengembang"
+                        aria-describedby="developer-credit"
+                        className="rounded-full px-1 text-[#292929]/50 transition-colors hover:text-[#292929] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00BFFF]"
+                    >
+                        ✦
+                    </button>
+                    <span
+                        id="developer-credit"
+                        role="tooltip"
+                        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-lg bg-[#292929] px-3 py-2 text-xs text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                    >
+                        Designed and developed by Febiola Lengkong
+                    </span>
+                </span>
             </div>
         </footer>
     );
