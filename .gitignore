@@ -1,6 +1,7 @@
 # Backend
 backend/node_modules/
 backend/.env
+backend/.env.production
 backend/uploads/
 
 # Frontend
@@ -10,10 +11,8 @@ titik-jeda/.env.local
 titik-jeda/build/
 titik-jeda/.vite/
 
-# General
-.DS_Store
-npm-debug.log
-yarn-error.log
+# Build artifacts
+titik-jeda/dist/
 
 # Machine-specific configuration; keep shared service definitions tracked.
 .env
@@ -21,3 +20,11 @@ yarn-error.log
 !.env.example
 docker-compose.override.yml
 docker-compose.vm.yml
+
+# Ops / local backups
+backups/
+
+# General
+.DS_Store
+npm-debug.log
+yarn-error.log
