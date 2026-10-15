@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import axiosAdmin from "../../utils/axiosAdmin";
+import MediaPlayer from "../../components/common/MediaPlayer";
+import { parseMediaSource, normalizeEmbedInput } from "../../utils/mediaEmbed";
 
 export default function KelolaIsiEdukasi() {
     const { id } = useParams();
@@ -24,7 +26,9 @@ export default function KelolaIsiEdukasi() {
 
     // Form States (Video)
     const [videoTitle, setVideoTitle] = useState("");
+    const [sourceMode, setSourceMode] = useState("file"); // "file" | "embed"
     const [tempVideoFile, setTempVideoFile] = useState(null);
+    const [embedUrl, setEmbedUrl] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadError, setUploadError] = useState("");
@@ -64,7 +68,7 @@ export default function KelolaIsiEdukasi() {
         setTimeout(() => setSuccessMessage(""), 2000);
     };
 
-    /* ================= LOGIC UPDATE PLAYLIST (MURNI JSON TANPA FORMDATA FILE) ================= */
+    /* ================= LOGIC UPDATE PLAYLIST ================= */
     const handleUpdateCategory = async () => {
         if (!playlistName || !playlistDesc) {
             setFormError("Gagal simpan. Semua kolom wajib diisi.");
@@ -95,26 +99,36 @@ export default function KelolaIsiEdukasi() {
         }
     };
 
-    /* ================= LOGIC CRUD VIDEO ================= */
+    /* ================= LOGIC CRUD VIDEO (WITH EMBED SUPPORT) ================= */
     const handleSaveVideo = async () => {
-        // Validasi yang lebih ketat
         if (!videoTitle || !videoTitle.trim()) {
-            setFormError("Gagal simpan. Semua kolom wajib diisi.");
+            setFormError("Gagal simpan. Judul video wajib diisi.");
             return;
         }
 
-        // Jika tambah video baru, file WAJIB ada
-        if (showAdd && !tempVideoFile) {
-            setFormError("Gagal simpan. Semua kolom wajib diisi.");
-            return;
+        if (sourceMode === "file") {
+            if (showAdd && !tempVideoFile) {
+                setFormError("Gagal simpan. File video wajib dipilih.");
+                return;
+            }
+        } else {
+            if (!embedUrl || !embedUrl.trim()) {
+                setFormError("Gagal simpan. URL atau kode embed video wajib diisi.");
+                return;
+            }
         }
 
         setFormError("");
 
         const formData = new FormData();
-        formData.append("title", videoTitle);
+        formData.append("title", videoTitle.trim());
         formData.append("playlist_id", id);
-        if (tempVideoFile) formData.append("video_file", tempVideoFile);
+
+        if (sourceMode === "file") {
+            if (tempVideoFile) formData.append("video_file", tempVideoFile);
+        } else {
+            formData.append("embed_url", normalizeEmbedInput(embedUrl));
+        }
 
         try {
             setUploadLoading(true);
@@ -127,11 +141,14 @@ export default function KelolaIsiEdukasi() {
                 await axiosAdmin.put(`/admin/learngrow/videos/${selectedVideo.id}`, formData);
                 showSuccess("Video berhasil diperbarui");
             }
+
             setShowAdd(false);
             setShowEdit(false);
             setVideoTitle("");
             setTempVideoFile(null);
+            setEmbedUrl("");
             setFormError("");
+
             const data = await fetchData();
             if (data) {
                 setCategory(data.category);
@@ -165,10 +182,32 @@ export default function KelolaIsiEdukasi() {
         }
     };
 
-    const getVideoUrl = (path) => {
-        if (!path) return "";
-        if (path.startsWith("http")) return path;
-        return `/uploads/learngrow/videos/${path}`;
+    const openAddModal = () => {
+        setVideoTitle("");
+        setTempVideoFile(null);
+        setEmbedUrl("");
+        setSourceMode("file");
+        setFormError("");
+        setUploadError("");
+        setShowAdd(true);
+    };
+
+    const openEditModal = (video) => {
+        setSelectedVideo(video);
+        setVideoTitle(video.title);
+        const info = parseMediaSource(video.video_file, "video");
+        if (info.isEmbed) {
+            setSourceMode("embed");
+            setEmbedUrl(video.video_file);
+            setTempVideoFile(null);
+        } else {
+            setSourceMode("file");
+            setEmbedUrl("");
+            setTempVideoFile(null);
+        }
+        setFormError("");
+        setUploadError("");
+        setShowEdit(true);
     };
 
     if (loading || !category) {
@@ -190,9 +229,8 @@ export default function KelolaIsiEdukasi() {
                 ← Kembali ke Kelola Learn & Grow
             </button>
 
-            {/* ================= INFO PLAYLIST (IKUTI LAYOUT KELOLAISIMEDITASI) ================= */}
+            {/* ================= INFO PLAYLIST ================= */}
             <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 mb-8 max-w-5xl relative shadow-sm">
-                {/* Button Edit Info di sudut kanan atas */}
                 <button
                     onClick={() => {
                         setPlaylistName(category.name);
@@ -217,7 +255,7 @@ export default function KelolaIsiEdukasi() {
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="font-black text-lg tracking-tight">Daftar Video Edukasi</h2>
                     <button
-                        onClick={() => { setVideoTitle(""); setTempVideoFile(null); setFormError(""); setUploadError(""); setShowAdd(true); }}
+                        onClick={openAddModal}
                         className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Video
@@ -230,48 +268,51 @@ export default function KelolaIsiEdukasi() {
                             <tr>
                                 <th className="px-6 py-4 w-16">No</th>
                                 <th className="px-6 py-4">Judul Video</th>
+                                <th className="px-6 py-4">Tipe Media</th>
                                 <th className="px-6 py-4">Konten</th>
                                 <th className="px-6 py-4 text-center w-48">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y-2 divide-[#F2F2F2]">
-                            {videos.map((video, i) => (
-                                <tr key={video.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
-                                    <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
-                                    <td className="px-6 py-4 font-bold text-[#292929]">{video.title}</td>
-                                    <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => { setSelectedVideo(video); setShowPreview(true); }}
-                                            className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
-                                        >
-                                            Preview Video
-                                        </button>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex justify-center gap-2">
+                            {videos.map((video, i) => {
+                                const info = parseMediaSource(video.video_file, "video");
+                                return (
+                                    <tr key={video.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
+                                        <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
+                                        <td className="px-6 py-4 font-bold text-[#292929]">{video.title}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${info.badgeColor}`}>
+                                                <span>{info.icon}</span>
+                                                <span>{info.provider}</span>
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <button
-                                                onClick={() => {
-                                                    setSelectedVideo(video);
-                                                    setVideoTitle(video.title);
-                                                    setTempVideoFile(null);
-                                                    setFormError("");
-                                                    setUploadError("");
-                                                    setShowEdit(true);
-                                                }}
-                                                className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
+                                                onClick={() => { setSelectedVideo(video); setShowPreview(true); }}
+                                                className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
                                             >
-                                                Edit
+                                                Preview Video
                                             </button>
-                                            <button
-                                                onClick={() => { setSelectedVideo(video); setShowDelete(true); }}
-                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
-                                            >
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-center gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(video)}
+                                                    className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => { setSelectedVideo(video); setShowDelete(true); }}
+                                                    className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -312,13 +353,15 @@ export default function KelolaIsiEdukasi() {
                 </ModalWrapper>
             )}
 
-            {/* ================= MODAL: ADD / EDIT VIDEO ================= */}
+            {/* ================= MODAL: ADD / EDIT VIDEO (WITH EMBED SUPPORT) ================= */}
             {(showAdd || showEdit) && (
                 <ModalWrapper>
                     <h3 className="font-black text-xl mb-6 tracking-tight">
                         {showAdd ? "Tambah Video Baru" : "Edit Detail Video"}
                     </h3>
+
                     <div className="space-y-5">
+                        {/* Judul Video */}
                         <div>
                             <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">Judul Video</label>
                             <input
@@ -328,19 +371,100 @@ export default function KelolaIsiEdukasi() {
                                 placeholder="Masukkan judul video..."
                             />
                         </div>
-                        <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
-                            <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">File Video (.mp4)</label>
-                            <input
-                                type="file"
-                                accept="video/mp4"
-                                onChange={(e) => { setTempVideoFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
-                                className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
-                            />
-                            {showEdit && <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">*Biarkan kosong jika tidak ingin mengubah video</p>}
-                            {uploadError && <p className="text-xs text-red-500 mt-3 font-medium">{uploadError}</p>}
-                            {formError && <p className="text-xs text-red-500 mt-3 font-medium">{formError}</p>}
+
+                        {/* MODE SELECTOR TAB: FILE UPLOAD vs EMBED LINK */}
+                        <div>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1 mb-2 block">
+                                Sumber Media Video
+                            </label>
+                            <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F2F2F2] rounded-2xl border-2 border-[#292929]/10">
+                                <button
+                                    type="button"
+                                    onClick={() => { setSourceMode("file"); setFormError(""); }}
+                                    className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        sourceMode === "file"
+                                            ? "bg-[#FFFFFF] text-[#292929] shadow-sm border border-[#292929]/10"
+                                            : "text-[#292929]/60 hover:text-[#292929]"
+                                    }`}
+                                >
+                                    <span>📁</span> Upload File
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setSourceMode("embed"); setFormError(""); }}
+                                    className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        sourceMode === "embed"
+                                            ? "bg-[#00BFFF] text-[#FFFFFF] shadow-sm"
+                                            : "text-[#292929]/60 hover:text-[#292929]"
+                                    }`}
+                                >
+                                    <span>🔗</span> Embed / Link
+                                </button>
+                            </div>
                         </div>
+
+                        {/* TAB 1: FILE UPLOAD */}
+                        {sourceMode === "file" && (
+                            <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
+                                <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">File Video (.mp4)</label>
+                                <input
+                                    type="file"
+                                    accept="video/mp4"
+                                    onChange={(e) => { setTempVideoFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
+                                    className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
+                                />
+                                {showEdit && <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">*Biarkan kosong jika tidak ingin mengubah video</p>}
+                            </div>
+                        )}
+
+                        {/* TAB 2: EMBED / LINK */}
+                        {sourceMode === "embed" && (
+                            <div className="p-5 border-2 border-[#00BFFF]/40 bg-[#FFFFFF] rounded-2xl space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-black text-[#292929]/70 uppercase tracking-wider">
+                                        URL / Kode Embed Video
+                                    </label>
+                                    <span className="text-[10px] font-bold text-[#00BFFF] bg-[#00BFFF]/10 px-2 py-0.5 rounded-md">
+                                        Multi-Platform
+                                    </span>
+                                </div>
+
+                                <textarea
+                                    rows="2"
+                                    value={embedUrl}
+                                    onChange={(e) => { setEmbedUrl(e.target.value); setFormError(""); setUploadError(""); }}
+                                    placeholder="Contoh: https://www.youtube.com/watch?v=... atau https://youtu.be/... atau https://vimeo.com/... atau kode <iframe...>"
+                                    className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-3 py-2.5 rounded-xl outline-none text-xs font-mono transition-all resize-none"
+                                />
+
+                                {/* Platform Badges Help */}
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    <span className="px-2 py-0.5 rounded-md bg-red-50 text-red-700 text-[10px] font-bold border border-red-200">▶️ YouTube</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-700 text-[10px] font-bold border border-cyan-200">🎬 Vimeo</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">📁 Google Drive</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 text-[10px] font-bold border border-teal-200">🎥 Link .mp4</span>
+                                </div>
+
+                                {/* LIVE EMBED PREVIEW */}
+                                {embedUrl.trim() && (
+                                    <div className="mt-3 pt-3 border-t border-[#F2F2F2]">
+                                        <p className="text-[10px] font-black uppercase text-[#292929]/50 tracking-wider mb-2">Live Preview:</p>
+                                        <div className="max-h-60 overflow-hidden rounded-xl">
+                                            <MediaPlayer
+                                                source={normalizeEmbedInput(embedUrl)}
+                                                mediaType="video"
+                                                title={videoTitle || "Preview Video"}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {uploadError && <p className="text-xs text-red-500 font-medium">{uploadError}</p>}
+                        {formError && <p className="text-xs text-red-500 font-medium">{formError}</p>}
                     </div>
+
                     <div className="flex justify-end gap-3 mt-8">
                         <button onClick={() => { setShowAdd(false); setShowEdit(false); }} className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-[#292929]/50 hover:bg-[#F2F2F2] transition-colors ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`} disabled={uploadLoading}>Batal</button>
                         <button onClick={handleSaveVideo} className={`bg-[#00BFFF] text-[#FFFFFF] px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer hover:opacity-90 ${uploadLoading ? "opacity-70 cursor-not-allowed" : ""}`} disabled={uploadLoading}>
@@ -354,21 +478,28 @@ export default function KelolaIsiEdukasi() {
             {showPreview && selectedVideo && (
                 <ModalWrapper>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg text-[#292929]">{selectedVideo.title}</h3>
+                        <div>
+                            <h3 className="font-bold text-lg text-[#292929]">{selectedVideo.title}</h3>
+                            {(() => {
+                                const info = parseMediaSource(selectedVideo.video_file, "video");
+                                return (
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1 ${info.badgeColor}`}>
+                                        <span>{info.icon}</span>
+                                        <span>{info.provider}</span>
+                                    </span>
+                                );
+                            })()}
+                        </div>
                         <button onClick={() => setShowPreview(false)} className="text-[#292929]/40 hover:text-[#292929] cursor-pointer">✕</button>
                     </div>
 
-                    <div className="rounded-2xl overflow-hidden bg-black aspect-video mt-4 shadow-inner">
-                        <video
-                            key={selectedVideo.id}
-                            controls
-                            autoPlay
-                            preload="auto"
-                            className="w-full h-full"
-                            src={getVideoUrl(selectedVideo.video_file)}
-                        >
-                            Browser kamu tidak mendukung pemutaran video.
-                        </video>
+                    <div className="mt-4">
+                        <MediaPlayer
+                            source={selectedVideo.video_file}
+                            mediaType="video"
+                            title={selectedVideo.title}
+                            autoPlay={true}
+                        />
                     </div>
 
                     <button
@@ -411,7 +542,7 @@ export default function KelolaIsiEdukasi() {
 function ModalWrapper({ children }) {
     return (
         <div className="fixed inset-0 bg-[#292929]/50 flex items-center justify-center z-[700] px-4 backdrop-blur-sm transition-all">
-            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl">
+            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
                 {children}
             </div>
         </div>

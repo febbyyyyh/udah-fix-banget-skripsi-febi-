@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import Footer from "../../components/user/Footer";
+import MediaPlayer from "../../components/common/MediaPlayer";
+import { parseMediaSource } from "../../utils/mediaEmbed";
 
 // FIX: ELEMEN BERWARNA CERAH (Biru Elektrik)
 const TinySparkle = ({ className }) => (
@@ -164,22 +166,16 @@ export default function Meditation() {
 
                 {/* List Audio Card Bertumpuk */}
                 {recommendations.data.map((audio) => {
-                  const audioPath = audio.audio_file
-                    ? "/" + String(audio.audio_file).replace(/^\/+/, "")
-                    : null;
                   const targetMeditationId =
                     audio.meditation_type_id ||
                     recommendations.recommended_meditation_type_id;
+                  const info = parseMediaSource(audio.audio_file, "audio");
 
                   return (
-                    <Link
-                      key={audio.id}
-                      to={`/meditation/${targetMeditationId}`}
-                      className="relative group"
-                    >
+                    <div key={audio.id} className="relative group">
                       <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-1.5 translate-y-1.5" />
-                      <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl p-6 flex flex-col transition-all hover:border-[#00BFFF] cursor-pointer">
-                        <div className="flex justify-between items-center mb-4">
+                      <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl p-6 flex flex-col transition-all">
+                        <div className="flex justify-between items-start mb-4 gap-2 flex-wrap">
                           <div>
                             <p className="font-black text-lg text-[#292929] uppercase tracking-tight">
                               {audio.title}
@@ -189,29 +185,22 @@ export default function Meditation() {
                               {audio.type_name || recommendations.category_name}
                             </p>
                           </div>
-                          <span className="text-xs font-black text-[#00BFFF] uppercase tracking-wider">
-                            Lihat sesi
-                          </span>
+                          {targetMeditationId && (
+                            <Link
+                              to={`/meditation/${targetMeditationId}`}
+                              className="text-xs font-black text-[#00BFFF] uppercase tracking-wider hover:underline"
+                            >
+                              Lihat sesi →
+                            </Link>
+                          )}
                         </div>
 
-                        {audioPath ? (
-                          <audio
-                            controls
-                            src={
-                              audioPath
-                                ? audioPath.startsWith("http")
-                                  ? audioPath
-                                  : "/" +
-                                    String(audioPath).replace(/^\/+/, "")
-                                : ""
-                            }
-                            className="w-full bg-[#F2F2F2] rounded-xl border border-[#292929]/10"
-                            onPlay={(e) => {
-                              e.preventDefault();
-                              window.dispatchEvent(
-                                new Event("stop-relaxation-music"),
-                              );
-                            }}
+                        {audio.audio_file ? (
+                          <MediaPlayer
+                            source={audio.audio_file}
+                            mediaType="audio"
+                            title={audio.title}
+                            compact={true}
                           />
                         ) : (
                           <div className="w-full px-4 py-6 rounded-xl bg-[#F2F2F2] border border-[#E5E7EB] text-sm text-[#292929]/70">
@@ -219,7 +208,7 @@ export default function Meditation() {
                           </div>
                         )}
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

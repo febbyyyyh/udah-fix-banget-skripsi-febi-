@@ -13,10 +13,9 @@ import meditationAudioRoutes from "./routes/meditationAudio.js";
 import learngrowRoutes from "./routes/learngrow.js";
 import db, { testDBConnection } from "./config/db.js";
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
 
@@ -117,6 +116,14 @@ app.listen(PORT, () => {
     const ok = await testDBConnection({ retries: 3, delay: 2000 });
     if (!ok) {
       console.warn("⚠️ Unable to connect to DB after retries. Check your .env and network settings.");
+    } else {
+      try {
+        await db.query("ALTER TABLE meditation_audios MODIFY COLUMN audio_file TEXT NOT NULL");
+        await db.query("ALTER TABLE learngrow_videos MODIFY COLUMN video_file TEXT NOT NULL");
+        console.log("✅ Verified media columns (audio_file, video_file) are TEXT for embed support");
+      } catch (alterErr) {
+        console.warn("⚠️ Column check note:", alterErr.message);
+      }
     }
   })();
 });

@@ -96,9 +96,17 @@ export const deletePlaylist = async (req, res) => {
         // 1. Hapus semua file video fisik
         const [videos] = await db.query("SELECT video_file FROM learngrow_videos WHERE playlist_id = ?", [id]);
         videos.forEach(v => {
-            if (v.video_file) {
-                const vPath = path.join(process.cwd(), "uploads/learngrow/videos", v.video_file);
-                if (fs.existsSync(vPath)) fs.unlinkSync(vPath);
+            if (
+                v.video_file &&
+                !v.video_file.startsWith("http://") &&
+                !v.video_file.startsWith("https://") &&
+                !v.video_file.startsWith("<iframe") &&
+                !v.video_file.startsWith("//")
+            ) {
+                const vPath = path.join(process.cwd(), "uploads/learngrow/videos", path.basename(v.video_file));
+                if (fs.existsSync(vPath)) {
+                    try { fs.unlinkSync(vPath); } catch (e) { /* ignore */ }
+                }
             }
         });
 

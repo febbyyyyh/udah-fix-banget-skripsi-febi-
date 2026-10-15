@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Footer from "../../components/user/Footer";
+import MediaPlayer from "../../components/common/MediaPlayer";
+import { parseMediaSource } from "../../utils/mediaEmbed";
 
 // ELEMEN TAMBAHAN: ORNAMEN BINTANG LEBIH PEKAT & BESAR
 const TinySparkle = ({ className }) => (
@@ -110,48 +112,64 @@ export default function EducationDetail() {
                         </p>
                     </div>
 
-                    {/* VIDEO GRID (MODIFIKASI: Card Menggunakan Konsep Bertumpuk Solid Neo-Brutalism) */}
+                    {/* VIDEO GRID (MODIFIKASI: Mendukung File Video & Sistem Embed Video) */}
                     <div className="mt-16 mb-20">
                         {videos.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {videos.map((video) => (
-                                    <div
-                                        key={video.id}
-                                        onClick={() => setPreview(video)}
-                                        className="relative group rounded-2xl cursor-pointer"
-                                    >
-                                        {/* Efek Bayangan Solid Belakang */}
-                                        <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-2 translate-y-2 transition-transform duration-200 group-hover:translate-x-3 group-hover:translate-y-3" />
+                                {videos.map((video) => {
+                                    const info = parseMediaSource(video.video_file, "video");
+                                    return (
+                                        <div
+                                            key={video.id}
+                                            onClick={() => setPreview(video)}
+                                            className="relative group rounded-2xl cursor-pointer"
+                                        >
+                                            {/* Efek Bayangan Solid Belakang */}
+                                            <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-2 translate-y-2 transition-transform duration-200 group-hover:translate-x-3 group-hover:translate-y-3" />
 
-                                        {/* Kontainer Card Utama - Dikunci Putih Bersih */}
-                                        <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl overflow-hidden flex flex-col transition-all duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1">
+                                            {/* Kontainer Card Utama - Dikunci Putih Bersih */}
+                                            <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl overflow-hidden flex flex-col transition-all duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1">
 
-                                            {/* VIDEO THUMBNAIL WRAPPER */}
-                                            <div className="w-full h-48 bg-[#F2F2F2] overflow-hidden relative border-b-4 border-[#292929]">
-                                                <video
-                                                    src={`/uploads/learngrow/videos/${video.video_file}#t=0.1`}
-                                                    className="w-full h-full object-cover pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity"
-                                                />
+                                                {/* VIDEO THUMBNAIL WRAPPER */}
+                                                <div className="w-full h-48 bg-[#F2F2F2] overflow-hidden relative border-b-4 border-[#292929]">
+                                                    {info.thumbnailUrl ? (
+                                                        <img
+                                                            src={info.thumbnailUrl}
+                                                            alt={video.title}
+                                                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                                                        />
+                                                    ) : info.isEmbed ? (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center bg-[#292929] text-white p-4 text-center">
+                                                            <span className="text-4xl mb-2">{info.icon}</span>
+                                                            <span className="text-xs font-black uppercase tracking-wider text-[#00BFFF]">{info.provider}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <video
+                                                            src={`/uploads/learngrow/videos/${video.video_file}#t=0.1`}
+                                                            className="w-full h-full object-cover pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity"
+                                                        />
+                                                    )}
 
-                                                {/* PLAY BUTTON ICON OVERLAY */}
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-12 h-12 bg-[#FFFFFF] border-2 border-[#292929] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#00BFFF] ml-0.5" fill="currentColor" viewBox="0 0 16 16">
-                                                            <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445" />
-                                                        </svg>
+                                                    {/* PLAY BUTTON ICON OVERLAY */}
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <div className="w-12 h-12 bg-[#FFFFFF] border-2 border-[#292929] rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#00BFFF] ml-0.5" fill="currentColor" viewBox="0 0 16 16">
+                                                                <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445" />
+                                                            </svg>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {/* VIDEO TITLE PANEL */}
-                                            <div className="px-5 py-5 bg-[#FFFFFF]">
-                                                <h3 className="text-sm font-black text-[#292929] line-clamp-2 leading-relaxed group-hover:text-[#00BFFF] transition-colors uppercase">
-                                                    {video.title}
-                                                </h3>
+                                                {/* VIDEO TITLE PANEL */}
+                                                <div className="px-5 py-5 bg-[#FFFFFF]">
+                                                    <h3 className="text-sm font-black text-[#292929] line-clamp-2 leading-relaxed group-hover:text-[#00BFFF] transition-colors uppercase">
+                                                        {video.title}
+                                                    </h3>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             /* Kosong State Box */
@@ -195,13 +213,14 @@ export default function EducationDetail() {
                         </div>
 
                         {/* Video Frame */}
-                        <video
-                            src={`/uploads/learngrow/videos/${preview.video_file}`}
-                            controls
-                            autoPlay
-                            className="w-full max-h-[70vh] object-contain bg-black"
-                            onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
-                        />
+                        <div className="p-2 md:p-4 bg-black">
+                            <MediaPlayer
+                                source={preview.video_file}
+                                mediaType="video"
+                                title={preview.title}
+                                autoPlay={true}
+                            />
+                        </div>
                     </div>
                 </div>
             )}

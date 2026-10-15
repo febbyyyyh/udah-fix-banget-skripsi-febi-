@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import MediaPlayer from "../../components/common/MediaPlayer";
+import { parseMediaSource, normalizeEmbedInput } from "../../utils/mediaEmbed";
 
 export default function KelolaIsiMeditasi() {
     const { id } = useParams();
@@ -20,7 +22,9 @@ export default function KelolaIsiMeditasi() {
 
     // Form States
     const [title, setTitle] = useState("");
+    const [sourceMode, setSourceMode] = useState("file"); // "file" | "embed"
     const [audioFile, setAudioFile] = useState(null);
+    const [embedUrl, setEmbedUrl] = useState("");
     const [catName, setCatName] = useState("");
     const [catDesc, setCatDesc] = useState("");
     const [catCategoryType, setCatCategoryType] = useState("general");
@@ -85,14 +89,26 @@ export default function KelolaIsiMeditasi() {
             return;
         }
 
-        if (showAdd && !audioFile) {
-            setFormError("Gagal simpan. Semua kolom wajib diisi.");
-            return;
+        if (sourceMode === "file") {
+            if (showAdd && !audioFile) {
+                setFormError("Gagal simpan. File audio wajib dipilih.");
+                return;
+            }
+        } else {
+            if (!embedUrl || !embedUrl.trim()) {
+                setFormError("Gagal simpan. URL atau kode embed audio wajib diisi.");
+                return;
+            }
         }
 
         const formData = new FormData();
-        formData.append("title", title);
-        if (audioFile) formData.append("audio_file", audioFile);
+        formData.append("title", title.trim());
+
+        if (sourceMode === "file") {
+            if (audioFile) formData.append("audio_file", audioFile);
+        } else {
+            formData.append("embed_url", normalizeEmbedInput(embedUrl));
+        }
 
         try {
             setFormError("");
@@ -118,6 +134,7 @@ export default function KelolaIsiMeditasi() {
                 setShowEdit(false);
                 setTitle("");
                 setAudioFile(null);
+                setEmbedUrl("");
                 setFormError("");
                 showSuccess("Audio berhasil disimpan!");
                 setAudios(await fetchAudios());
@@ -181,14 +198,35 @@ export default function KelolaIsiMeditasi() {
         }
     };
 
-    if (!category) return null;
-
-    const getAudioUrl = (path) => {
-        if (!path) return null;
-        if (path.startsWith("http")) return path;
-        const cleanPath = path.startsWith('/') ? path : `/${path}`;
-        return `${cleanPath}`;
+    const openAddModal = () => {
+        setTitle("");
+        setAudioFile(null);
+        setEmbedUrl("");
+        setSourceMode("file");
+        setFormError("");
+        setUploadError("");
+        setShowAdd(true);
     };
+
+    const openEditModal = (audio) => {
+        setSelectedAudio(audio);
+        setTitle(audio.title);
+        const info = parseMediaSource(audio.audio_file, "audio");
+        if (info.isEmbed) {
+            setSourceMode("embed");
+            setEmbedUrl(audio.audio_file);
+            setAudioFile(null);
+        } else {
+            setSourceMode("file");
+            setEmbedUrl("");
+            setAudioFile(null);
+        }
+        setFormError("");
+        setUploadError("");
+        setShowEdit(true);
+    };
+
+    if (!category) return null;
 
     return (
         <div className="p-4 bg-[#FFFFFF] text-[#292929] min-h-screen">
@@ -200,9 +238,8 @@ export default function KelolaIsiMeditasi() {
                 ← Kembali ke Kelola Meditasi
             </button>
 
-            {/* ================= INFO PLAYLIST (SUDAH DI-AKALI TANPA IKON GAMBAR) ================= */}
+            {/* ================= INFO PLAYLIST ================= */}
             <div className="bg-[#FFFFFF] border-2 border-[#F2F2F2] rounded-3xl p-8 mb-8 max-w-5xl relative shadow-sm">
-                {/* Diakali memakai button text minimalis modern */}
                 <button
                     onClick={() => setShowEditCategory(true)}
                     className="absolute top-5 right-5 px-3 py-1.5 rounded-xl bg-[#F2F2F2] text-[#292929]/60 hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all text-xs font-black uppercase tracking-wider cursor-pointer"
@@ -222,7 +259,7 @@ export default function KelolaIsiMeditasi() {
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="font-black text-lg tracking-tight">Daftar Audio Meditasi</h2>
                     <button
-                        onClick={() => { setTitle(""); setAudioFile(null); setFormError(""); setUploadError(""); setShowAdd(true); }}
+                        onClick={openAddModal}
                         className="bg-[#00BFFF] text-[#FFFFFF] px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all hover:opacity-90 active:scale-95 cursor-pointer shadow-sm"
                     >
                         + Tambah Audio
@@ -235,48 +272,51 @@ export default function KelolaIsiMeditasi() {
                             <tr>
                                 <th className="px-6 py-4 w-16">No</th>
                                 <th className="px-6 py-4">Judul Audio</th>
+                                <th className="px-6 py-4">Tipe Media</th>
                                 <th className="px-6 py-4">Konten</th>
                                 <th className="px-6 py-4 text-center w-48">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y-2 divide-[#F2F2F2]">
-                            {audios.map((audio, i) => (
-                                <tr key={audio.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
-                                    <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
-                                    <td className="px-6 py-4 font-bold text-[#292929]">{audio.title}</td>
-                                    <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => { setSelectedAudio(audio); setShowPreview(true); }}
-                                            className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
-                                        >
-                                            Preview Audio
-                                        </button>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex justify-center gap-2">
+                            {audios.map((audio, i) => {
+                                const info = parseMediaSource(audio.audio_file, "audio");
+                                return (
+                                    <tr key={audio.id} className="hover:bg-[#F2F2F2]/20 transition-colors">
+                                        <td className="px-6 py-4 text-[#292929]/40 font-bold">{i + 1}</td>
+                                        <td className="px-6 py-4 font-bold text-[#292929]">{audio.title}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${info.badgeColor}`}>
+                                                <span>{info.icon}</span>
+                                                <span>{info.provider}</span>
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <button
-                                                onClick={() => {
-                                                    setSelectedAudio(audio);
-                                                    setTitle(audio.title);
-                                                    setAudioFile(null);
-                                                    setFormError("");
-                                                    setUploadError("");
-                                                    setShowEdit(true);
-                                                }}
-                                                className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
+                                                onClick={() => { setSelectedAudio(audio); setShowPreview(true); }}
+                                                className="text-[#00BFFF] font-black text-xs uppercase tracking-wider hover:underline cursor-pointer"
                                             >
-                                                Edit
+                                                Preview Audio
                                             </button>
-                                            <button
-                                                onClick={() => { setSelectedAudio(audio); setShowDelete(true); }}
-                                                className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
-                                            >
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-center gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(audio)}
+                                                    className="bg-[#F2F2F2] text-[#292929] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-[#00BFFF] hover:text-[#FFFFFF] transition-all cursor-pointer"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => { setSelectedAudio(audio); setShowDelete(true); }}
+                                                    className="bg-red-50 text-red-500 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-100 transition-all cursor-pointer"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -330,7 +370,7 @@ export default function KelolaIsiMeditasi() {
                 </ModalWrapper>
             )}
 
-            {/* ================= MODAL: ADD / EDIT AUDIO ================= */}
+            {/* ================= MODAL: ADD / EDIT AUDIO (WITH EMBED SUPPORT) ================= */}
             {(showAdd || showEdit) && (
                 <ModalWrapper>
                     <h3 className="font-black text-xl mb-6 tracking-tight">
@@ -338,6 +378,7 @@ export default function KelolaIsiMeditasi() {
                     </h3>
 
                     <div className="space-y-5">
+                        {/* Judul Audio */}
                         <div>
                             <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1">
                                 Judul Audio
@@ -350,30 +391,111 @@ export default function KelolaIsiMeditasi() {
                             />
                         </div>
 
-                        <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
-                            <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">
-                                File Audio (.mp3, .wav)
+                        {/* MODE SELECTOR TAB: FILE UPLOAD vs EMBED LINK */}
+                        <div>
+                            <label className="text-xs font-black text-[#292929]/50 uppercase tracking-wider ml-1 mb-2 block">
+                                Sumber Media Audio
                             </label>
-
-                            <input
-                                type="file"
-                                accept="audio/*"
-                                onChange={(e) => { setAudioFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
-                                className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
-                            />
-
-                            {showEdit && (
-                                <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">
-                                    *Biarkan kosong jika tidak ingin mengubah file audio
-                                </p>
-                            )}
-                            {uploadError && (
-                                <p className="text-xs text-red-500 mt-3 font-medium">{uploadError}</p>
-                            )}
-                            {formError && (
-                                <p className="text-xs text-red-500 mt-3 font-medium">{formError}</p>
-                            )}
+                            <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F2F2F2] rounded-2xl border-2 border-[#292929]/10">
+                                <button
+                                    type="button"
+                                    onClick={() => { setSourceMode("file"); setFormError(""); }}
+                                    className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        sourceMode === "file"
+                                            ? "bg-[#FFFFFF] text-[#292929] shadow-sm border border-[#292929]/10"
+                                            : "text-[#292929]/60 hover:text-[#292929]"
+                                    }`}
+                                >
+                                    <span>📁</span> Upload File
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setSourceMode("embed"); setFormError(""); }}
+                                    className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        sourceMode === "embed"
+                                            ? "bg-[#00BFFF] text-[#FFFFFF] shadow-sm"
+                                            : "text-[#292929]/60 hover:text-[#292929]"
+                                    }`}
+                                >
+                                    <span>🔗</span> Embed / Link
+                                </button>
+                            </div>
                         </div>
+
+                        {/* TAB 1: FILE UPLOAD */}
+                        {sourceMode === "file" && (
+                            <div className="p-5 border-2 border-dashed border-[#00BFFF]/30 bg-[#F2F2F2]/40 rounded-2xl">
+                                <label className="block text-xs font-black text-[#292929]/50 uppercase tracking-wider mb-2">
+                                    File Audio (.mp3, .wav)
+                                </label>
+
+                                <input
+                                    type="file"
+                                    accept="audio/*"
+                                    onChange={(e) => { setAudioFile(e.target.files[0]); setFormError(""); setUploadError(""); }}
+                                    className="text-xs text-[#292929]/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-[#00BFFF] file:text-[#FFFFFF] file:hover:opacity-90 cursor-pointer w-full"
+                                />
+
+                                {showEdit && (
+                                    <p className="text-[10px] text-[#292929]/40 mt-2 italic font-medium">
+                                        *Biarkan kosong jika tidak ingin mengganti file audio yang ada
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB 2: EMBED / LINK */}
+                        {sourceMode === "embed" && (
+                            <div className="p-5 border-2 border-[#00BFFF]/40 bg-[#FFFFFF] rounded-2xl space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-black text-[#292929]/70 uppercase tracking-wider">
+                                        URL / Kode Embed Audio
+                                    </label>
+                                    <span className="text-[10px] font-bold text-[#00BFFF] bg-[#00BFFF]/10 px-2 py-0.5 rounded-md">
+                                        Multi-Platform
+                                    </span>
+                                </div>
+
+                                <textarea
+                                    rows="2"
+                                    value={embedUrl}
+                                    onChange={(e) => { setEmbedUrl(e.target.value); setFormError(""); setUploadError(""); }}
+                                    placeholder="Contoh: https://open.spotify.com/track/... atau https://youtu.be/... atau https://soundcloud.com/... atau kode <iframe...>"
+                                    className="w-full bg-[#F2F2F2] border-2 border-transparent focus:border-[#00BFFF] focus:bg-[#FFFFFF] px-3 py-2.5 rounded-xl outline-none text-xs font-mono transition-all resize-none"
+                                />
+
+                                {/* Platform Badges Help */}
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">🟢 Spotify</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-red-50 text-red-700 text-[10px] font-bold border border-red-200">▶️ YouTube</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-200">☁️ SoundCloud</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">📁 Google Drive</span>
+                                    <span className="px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 text-[10px] font-bold border border-teal-200">🎵 Link .mp3/.wav</span>
+                                </div>
+
+                                {/* LIVE EMBED PREVIEW */}
+                                {embedUrl.trim() && (
+                                    <div className="mt-3 pt-3 border-t border-[#F2F2F2]">
+                                        <p className="text-[10px] font-black uppercase text-[#292929]/50 tracking-wider mb-2">Live Preview:</p>
+                                        <div className="max-h-56 overflow-y-auto rounded-xl">
+                                            <MediaPlayer
+                                                source={normalizeEmbedInput(embedUrl)}
+                                                mediaType="audio"
+                                                title={title || "Preview Audio"}
+                                                compact={true}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {uploadError && (
+                            <p className="text-xs text-red-500 font-medium">{uploadError}</p>
+                        )}
+                        {formError && (
+                            <p className="text-xs text-red-500 font-medium">{formError}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 mt-8">
@@ -396,18 +518,33 @@ export default function KelolaIsiMeditasi() {
                 </ModalWrapper>
             )}
 
-            {/* ================= MODAL: PREVIEW ================= */}
-            {showPreview && (
+            {/* ================= MODAL: PREVIEW AUDIO ================= */}
+            {showPreview && selectedAudio && (
                 <ModalWrapper>
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg text-[#292929]">{selectedAudio.title}</h3>
+                        <div>
+                            <h3 className="font-bold text-lg text-[#292929]">{selectedAudio.title}</h3>
+                            {(() => {
+                                const info = parseMediaSource(selectedAudio.audio_file, "audio");
+                                return (
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border mt-1 ${info.badgeColor}`}>
+                                        <span>{info.icon}</span>
+                                        <span>{info.provider}</span>
+                                    </span>
+                                );
+                            })()}
+                        </div>
                         <button onClick={() => setShowPreview(false)} className="text-[#292929]/40 hover:text-[#292929] cursor-pointer">✕</button>
                     </div>
 
-                    <audio controls key={selectedAudio.id} className="w-full mt-4 bg-[#F2F2F2] rounded-xl">
-                        <source src={getAudioUrl(selectedAudio.audio_file)} type="audio/mpeg" />
-                        Browser kamu tidak mendukung pemutar audio.
-                    </audio>
+                    <div className="mt-4">
+                        <MediaPlayer
+                            source={selectedAudio.audio_file}
+                            mediaType="audio"
+                            title={selectedAudio.title}
+                            autoPlay={true}
+                        />
+                    </div>
 
                     <button onClick={() => setShowPreview(false)} className="w-full mt-6 bg-[#F2F2F2] text-[#292929] py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:opacity-80 cursor-pointer">
                         Tutup Preview
@@ -447,7 +584,7 @@ export default function KelolaIsiMeditasi() {
 function ModalWrapper({ children }) {
     return (
         <div className="fixed inset-0 bg-[#292929]/50 backdrop-blur-sm flex items-center justify-center z-[700] px-4 transition-all">
-            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl">
+            <div className="bg-[#FFFFFF] border-2 border-[#00BFFF] rounded-3xl p-8 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
                 {children}
             </div>
         </div>

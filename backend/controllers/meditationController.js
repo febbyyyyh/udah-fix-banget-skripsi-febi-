@@ -118,7 +118,7 @@ export const getAudiosByMeditationId = async (req, res) => {
 
         // 1. Ambil detail kategori
         const [typeInfo] = await db.query(
-            `SELECT name, description, cover_image FROM meditation_types WHERE id = ?`,
+            `SELECT * FROM meditation_types WHERE id = ?`,
             [id]
         );
 

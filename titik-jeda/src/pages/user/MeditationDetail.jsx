@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Footer from "../../components/user/Footer";
+import MediaPlayer from "../../components/common/MediaPlayer";
+import { parseMediaSource } from "../../utils/mediaEmbed";
 
 // FIX: ELEMEN BERWARNA CERAH (Biru Elektrik)
 const TinySparkle = ({ className }) => (
@@ -104,27 +106,30 @@ export default function MeditationDetail() {
                 {/* AUDIO LIST AREA */}
                 <div className="w-full max-w-4xl mt-12 mb-20 flex flex-col gap-6">
                     {data.audios.length > 0 ? (
-                        data.audios.map((audio) => (
-                            <div key={audio.id} className="relative group">
-                                {/* Efek Bayangan Solid Hitam di Belakang Card */}
-                                <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-1.5 translate-y-1.5" />
+                        data.audios.map((audio) => {
+                            const info = parseMediaSource(audio.audio_file, "audio");
+                            return (
+                                <div key={audio.id} className="relative group">
+                                    {/* Efek Bayangan Solid Hitam di Belakang Card */}
+                                    <div className="absolute inset-0 bg-[#292929] rounded-2xl translate-x-1.5 translate-y-1.5" />
 
-                                {/* Kontainer Pemutar Audio Utama dengan Border Tebal */}
-                                <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl p-6 flex flex-col transition-all">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <p className="font-black text-lg text-[#292929] uppercase tracking-tight">
-                                            {audio.title}
-                                        </p>
+                                    {/* Kontainer Pemutar Audio Utama dengan Border Tebal */}
+                                    <div className="relative bg-[#FFFFFF] border-4 border-[#292929] rounded-2xl p-6 flex flex-col transition-all">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <p className="font-black text-lg text-[#292929] uppercase tracking-tight">
+                                                {audio.title}
+                                            </p>
+                                        </div>
+
+                                        <MediaPlayer
+                                            source={audio.audio_file}
+                                            mediaType="audio"
+                                            title={audio.title}
+                                        />
                                     </div>
-                                    <audio
-                                        controls
-                                        src={'/' + String(audio.audio_file || '').replace(/^\/+/, '')}
-                                        className="w-full bg-[#F2F2F2] rounded-xl border border-[#292929]/10"
-                                        onPlay={() => window.dispatchEvent(new Event("stop-relaxation-music"))}
-                                    />
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         /* Kosong State Box */
                         <div className="relative group w-full">

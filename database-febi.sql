@@ -103,7 +103,7 @@ CREATE TABLE `learngrow_videos` (
   `id` int(11) NOT NULL,
   `playlist_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `video_file` varchar(255) NOT NULL,
+  `video_file` text NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -125,7 +125,7 @@ CREATE TABLE `meditation_audios` (
   `id` int(11) NOT NULL,
   `meditation_type_id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `audio_file` varchar(255) NOT NULL,
+  `audio_file` text NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
