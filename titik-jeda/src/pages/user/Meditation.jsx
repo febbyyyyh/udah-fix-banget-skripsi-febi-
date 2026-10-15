@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Footer from "../../components/user/Footer";
 import MediaPlayer from "../../components/common/MediaPlayer";
-import { parseMediaSource } from "../../utils/mediaEmbed";
 
 // FIX: ELEMEN BERWARNA CERAH (Biru Elektrik)
 const TinySparkle = ({ className }) => (
@@ -169,7 +168,6 @@ export default function Meditation() {
                   const targetMeditationId =
                     audio.meditation_type_id ||
                     recommendations.recommended_meditation_type_id;
-                  const info = parseMediaSource(audio.audio_file, "audio");
 
                   return (
                     <div key={audio.id} className="relative group">
